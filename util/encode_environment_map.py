@@ -14,7 +14,7 @@ config.read("deploy_config.ini")
 DEPLOY_DIRECTORY = os.path.abspath(config.get("Paths", "DEPLOY_DIRECTORY"))
 BYTES_FOR_SIZE = 8
 
-img = Image.open(os.path.join(UTIL_DIR, "Pathfinding_Obstacles.png"))
+img = Image.open(os.path.join(UTIL_DIR, "environment_map.png"))
 x_size, y_size = img.size
 
 
