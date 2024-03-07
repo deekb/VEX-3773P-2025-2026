@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="39cd7db1-486d-4cee-adbc-f55ab34e6b59" name="Changes" comment="renamed compiled folder to docs so that GitHub pages detects it">
-      <change afterPath="$PROJECT_DIR$/deploy/deploy.txt" afterDir="false" />
+    <list default="true" id="39cd7db1-486d-4cee-adbc-f55ab34e6b59" name="Changes" comment="added deploy.txt">
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -187,7 +191,8 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "git-widget-placeholder": "master"
+    "git-widget-placeholder": "master",
+    "node.js.selected.package.tslint": "(autodetect)"
   }
 }]]></component>
   <component name="RunManager">
@@ -219,11 +224,21 @@
     </recent_temporary>
   </component>
   <component name="TaskManager">
+    <task id="LOCAL-00001" summary="added deploy.txt">
+      <option name="closed" value="true" />
+      <created>1709778085806</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1709778085806</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="renamed compiled folder to docs so that GitHub pages detects it" />
-    <option name="LAST_COMMIT_MESSAGE" value="renamed compiled folder to docs so that GitHub pages detects it" />
+    <MESSAGE value="added deploy.txt" />
+    <option name="LAST_COMMIT_MESSAGE" value="added deploy.txt" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
