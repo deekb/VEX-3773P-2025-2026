@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="39cd7db1-486d-4cee-adbc-f55ab34e6b59" name="Changes" comment="added deploy.txt">
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="39cd7db1-486d-4cee-adbc-f55ab34e6b59" name="Changes" comment="Documentation now opens in a new tab" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -232,13 +229,31 @@
       <option name="project" value="LOCAL" />
       <updated>1709778085806</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Added README.md and moved documentation to its own branch">
+      <option name="closed" value="true" />
+      <created>1709778221520</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1709778221520</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Documentation now opens in a new tab">
+      <option name="closed" value="true" />
+      <created>1709778463365</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1709778463365</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="renamed compiled folder to docs so that GitHub pages detects it" />
     <MESSAGE value="added deploy.txt" />
-    <option name="LAST_COMMIT_MESSAGE" value="added deploy.txt" />
+    <MESSAGE value="Added README.md and moved documentation to its own branch" />
+    <MESSAGE value="Documentation now opens in a new tab" />
+    <option name="LAST_COMMIT_MESSAGE" value="Documentation now opens in a new tab" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
