@@ -18,7 +18,6 @@ MATRIX_9_THOUGH_1_3X3_DATA = [
 ]
 
 
-
 class TestMatrix(unittest.TestCase):
     def setUp(self):
         self.shape = MATRIX_SHAPE_3X3
