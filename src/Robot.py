@@ -1,11 +1,11 @@
-from VEXLib.Robot.TelemteryRobot import TelemetryTickBasedRobot
+from VEXLib.Robot.TelemteryRobot import TelemetryRobot
 from vex import Motor, GearSetting, Ports
 
 
 # print = Telemetry.Telemetry.send_telemetry_message
 
 
-class Robot(TelemetryTickBasedRobot):
+class Robot(TelemetryRobot):
     def __init__(self, brain):
         super().__init__(brain)
         self.motor = Motor(Ports.PORT1, GearSetting.RATIO_18_1, False)
