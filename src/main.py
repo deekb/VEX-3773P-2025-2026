@@ -14,7 +14,7 @@ def main():
         from VEXLib.Util import time as time
         import sys
 
-        robot = Robot(Brain())
+        robot = Robot(brain)
 
         robot_thread = Thread(robot.start)
 

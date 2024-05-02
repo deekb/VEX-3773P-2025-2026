@@ -9,7 +9,7 @@ class Robot(TelemetryRobot):
     def __init__(self, brain):
         super().__init__(brain)
         self.motor = Motor(Ports.PORT1, GearSetting.RATIO_18_1, False)
-        self.i = int(0)
+        self.i = 0
 
     def setup(self):
         print("Setup")
