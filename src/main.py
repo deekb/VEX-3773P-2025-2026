@@ -1,7 +1,6 @@
-def main():
+def main(brain):
     while True:
-        from vex import Brain, Thread, wait, MSEC
-        brain = Brain()
+        from vex import Thread, wait, MSEC
         if not brain.sdcard.is_inserted():
             brain.screen.print("Please insert the SD card")
             print("Please insert the SD card")
