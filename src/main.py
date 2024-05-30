@@ -10,9 +10,14 @@ def main():
             wait(1000, MSEC)  # Make sure that the SD card is well-situated
             brain.screen.clear_screen()
             brain.screen.set_cursor(1, 1)
-        from Robot import Robot
-        from VEXLib.Util import time as time
-        import sys
+        try:
+            from Robot import Robot
+            from VEXLib.Util import time as time
+            import sys
+        except (OSError, ImportError):
+            brain.screen.print("Error loading modules, retrying...")
+            wait(1000, MSEC)
+            continue
 
         robot = Robot(brain)
 
