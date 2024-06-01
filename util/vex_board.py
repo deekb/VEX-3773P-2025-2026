@@ -1,11 +1,11 @@
+import math
 import os
+import socket
 import threading
 import time
-import socket
+
 import pyglet
 from pyglet import image
-import math
-
 from pyglet.gui import PushButton
 
 # Socket parameters
@@ -134,7 +134,7 @@ class NetworkHandler:
 
                 if "PING" in line:
                     self.last_ping_response_time_in_milliseconds = (
-                                                                               time.monotonic() - self.last_ping_send_time_in_seconds) * 1000
+                                                                           time.monotonic() - self.last_ping_send_time_in_seconds) * 1000
                 if "ROBOT_HEARTBEAT" in line:
                     self.last_heartbeat_time_in_seconds = time.monotonic()
 
@@ -167,8 +167,7 @@ class NetworkHandler:
     def ping_robot(self):
         if self.socket is not None:
             self.send_message(PING_ROBOT_MESSAGE)
-            self.last_ping_send_time_in_seconds = time.monotonic()
-            # print("PING -> Robot")
+            self.last_ping_send_time_in_seconds = time.monotonic()  # print("PING -> Robot")
 
     def ping_rpi(self):
         if self.socket is not None:
@@ -200,6 +199,9 @@ class NetworkHandler:
     def restart_rpi(self):
         self.send_message("RPI:RESTART")
 
+    def restart_robot(self):
+        self.send_message("ROBOT:RESTART")
+
     def restart_rpi_bridge(self):
         self.send_message("RPI:RESTART_BRIDGE")
 
@@ -222,35 +224,15 @@ class VexBoardWindow(pyglet.window.Window):
         self.robot_online_image = pyglet.sprite.Sprite(pyglet.resource.image("robot-outline-1.png"), x=0, y=0)
         self.robot_offline_image = pyglet.sprite.Sprite(pyglet.resource.image("robot-off-outline-1.png"), x=0, y=0)
 
-        self.rpi_status_label = pyglet.text.Label("Offline",
-                                                  x=64,
-                                                  y=64,
-                                                  font_size=40,
-                                                  anchor_x='left',
-                                                  anchor_y='bottom',
-                                                  color=(255, 0, 0, 255),
-                                                  font_name="Aller",
-                                                  )
+        self.rpi_status_label = pyglet.text.Label("Offline", x=64, y=64, font_size=40, anchor_x='left',
+                                                  anchor_y='bottom', color=(255, 0, 0, 255), font_name="Aller", )
 
-        self.robot_status_label = pyglet.text.Label("Offline",
-                                                    x=64,
-                                                    y=0,
-                                                    font_size=40,
-                                                    anchor_x='left',
-                                                    anchor_y='bottom',
-                                                    color=(255, 0, 0, 255),
-                                                    font_name="Aller",
-                                                    )
+        self.robot_status_label = pyglet.text.Label("Offline", x=64, y=0, font_size=40, anchor_x='left',
+                                                    anchor_y='bottom', color=(255, 0, 0, 255), font_name="Aller", )
 
-        self.ping_time_label = pyglet.text.Label(f"Offline",
-                                                 font_size=20,
-                                                 x=self.width,
-                                                 y=self.height,
-                                                 anchor_x='right',
-                                                 anchor_y='top',
-                                                 color=(255, 0, 0, 255),
-                                                 font_name="Aller",
-                                                 )
+        self.ping_time_label = pyglet.text.Label(f"Offline", font_size=20, x=self.width, y=self.height,
+                                                 anchor_x='right', anchor_y='top', color=(255, 0, 0, 255),
+                                                 font_name="Aller", )
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == pyglet.window.mouse.LEFT:
@@ -265,16 +247,10 @@ class VexBoardWindow(pyglet.window.Window):
             if name in self.labels:
                 self.labels[name].text = f"{widget.name}: {widget.value}"
             else:
-                self.labels[name] = (pyglet.text.Label(f"{widget.name}: {widget.value}",
-                                                       font_size=16,
-                                                       x=self.new_widget_position_x,
-                                                       y=self.new_widget_position_y,
-                                                       anchor_x='left',
-                                                       anchor_y='top',
-                                                       color=(255, 255, 255, 255),
-                                                       font_name="Aller",
-                                                       )
-                                     )
+                self.labels[name] = (
+                    pyglet.text.Label(f"{widget.name}: {widget.value}", font_size=16, x=self.new_widget_position_x,
+                                      y=self.new_widget_position_y, anchor_x='left', anchor_y='top',
+                                      color=(255, 255, 255, 255), font_name="Aller", ))
                 self.new_widget_position_y -= 30
 
     def draw_robot_status(self, online):
@@ -301,7 +277,7 @@ class VexBoardWindow(pyglet.window.Window):
         if online:
             self.ping_time_label.text = f"Ping: {round(self.network_handler.robot_ping_time())}ms"
             self.ping_time_label.color = (0, 255, 0, 255) if self.network_handler.robot_ping_time() <= 100 else (
-            255, 0, 0, 255)
+                255, 0, 0, 255)
         else:
             self.ping_time_label.text = "Offline"
             self.ping_time_label.color = (255, 0, 0, 255)
@@ -334,48 +310,36 @@ class VexLogWindow(pyglet.window.Window):
         super().__init__(width, height, "VexLog")
         self.network_handler = network_handler
         self.text = ""
-        self.log_label = pyglet.text.Label(self.text,
-                                           font_size=16,
-                                           anchor_x='left',
-                                           anchor_y='top',
-                                           color=(0, 255, 0, 255),
-                                           multiline=True,
-                                           width=width,
-                                           font_name="Aller",
-                                           )
+        self.log_label = pyglet.text.Label(self.text, font_size=16, anchor_x='left', anchor_y='top',
+                                           color=(0, 255, 0, 255), multiline=True, width=width, font_name="Aller", )
 
         restart_image = pyglet.resource.image("restart-1.png")
         power_cycle_image = pyglet.resource.image("power-cycle-1.png")
 
-        self.restart_bridge_button = PushButton(0, self.height - 64, restart_image, restart_image)
-        self.restart_rpi_button = PushButton(0, self.height - 128, power_cycle_image, power_cycle_image)
+        self.restart_robot_button = PushButton(0, self.height - 64, restart_image, restart_image)
+        self.restart_bridge_button = PushButton(0, self.height - 128, restart_image, restart_image)
+        self.restart_rpi_button = PushButton(0, self.height - 192, power_cycle_image, power_cycle_image)
 
-        self.restart_bridge_label = pyglet.text.Label("Restart bridge",
-                                                      x=64,
-                                                      y=self.height,
-                                                      font_size=40,
-                                                      anchor_x='left',
-                                                      anchor_y='top',
-                                                      color=(255, 255, 255, 255),
-                                                      font_name="Aller",
-                                                      )
+        self.restart_robot_label = pyglet.text.Label("Restart robot", x=64, y=self.height, font_size=40,
+                                                     anchor_x='left', anchor_y='top', color=(255, 255, 255, 255),
+                                                     font_name="Aller", )
 
-        self.restart_rpi_label = pyglet.text.Label("Restart RPI",
-                                                   x=64,
-                                                   y=self.height - 64,
-                                                   font_size=40,
-                                                   anchor_x='left',
-                                                   anchor_y='top',
-                                                   color=(255, 255, 255, 255),
-                                                   font_name="Aller",
-                                                   )
+        self.restart_bridge_label = pyglet.text.Label("Restart bridge", x=64, y=self.height - 64, font_size=40,
+                                                      anchor_x='left', anchor_y='top', color=(255, 255, 255, 255),
+                                                      font_name="Aller", )
 
+        self.restart_rpi_label = pyglet.text.Label("Restart RPI", x=64, y=self.height - 128, font_size=40,
+                                                   anchor_x='left', anchor_y='top', color=(255, 255, 255, 255),
+                                                   font_name="Aller", )
+
+        self.push_handlers(self.restart_robot_button)
         self.push_handlers(self.restart_bridge_button)
         self.push_handlers(self.restart_rpi_button)
 
+        self.restart_robot_button.set_handler('on_press', self.network_handler.restart_robot)
         self.restart_bridge_button.set_handler('on_press', self.network_handler.restart_rpi_bridge)
-        self.restart_rpi_button.set_handler('on_press', self.network_handler.restart_rpi)
-        # self.button.set_handler('on_release', my_on_release_handler)
+        self.restart_rpi_button.set_handler('on_press',
+                                            self.network_handler.restart_rpi)  # self.button.set_handler('on_release', my_on_release_handler)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == pyglet.window.mouse.RIGHT:
@@ -388,20 +352,14 @@ class VexLogWindow(pyglet.window.Window):
         pyglet.image.SolidColorImagePattern((30, 43, 54, 255)).create_image(self.width, self.height).blit(0, 0)
         last_20 = self.text.split("\n")[-20:]
 
-        self.log_label = pyglet.text.Label("\n".join(last_20),
-                                           x=0,
-                                           y=self.height,
-                                           font_size=16,
-                                           anchor_x='left',
-                                           anchor_y='top',
-                                           color=(255, 255, 255, 255),
-                                           multiline=True,
-                                           width=500,
-                                           font_name="Aller",
-                                           )
+        self.log_label = pyglet.text.Label("\n".join(last_20), x=0, y=self.height, font_size=16, anchor_x='left',
+                                           anchor_y='top', color=(255, 255, 255, 255), multiline=True, width=500,
+                                           font_name="Aller", )
         self.log_label.draw()
+        self.restart_robot_button._sprite.draw()
         self.restart_bridge_button._sprite.draw()
         self.restart_rpi_button._sprite.draw()
+        self.restart_robot_label.draw()
         self.restart_bridge_label.draw()
         self.restart_rpi_label.draw()
 
