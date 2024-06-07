@@ -15,13 +15,15 @@ from vex import *
 class Robot(TelemetryRobot, TimedRobot):
     def __init__(self, brain):
         super().__init__(brain)
-        self.left_drivetrain_1 = Motor(Ports.PORT1, GearSetting.RATIO_6_1, False)
-        self.left_drivetrain_2 = Motor(Ports.PORT2, GearSetting.RATIO_6_1, False)
-        self.left_drivetrain_3 = Motor(Ports.PORT3, GearSetting.RATIO_6_1, False)
+        self.left_drivetrain_1 = Motor(Ports.PORT1, GearSetting.RATIO_6_1, True)
+        self.left_drivetrain_2 = Motor(Ports.PORT2, GearSetting.RATIO_6_1, True)
+        self.left_drivetrain_3 = Motor(Ports.PORT3, GearSetting.RATIO_6_1, True)
 
-        self.right_drivetrain_1 = Motor(Ports.PORT4, GearSetting.RATIO_6_1, True)
-        self.right_drivetrain_2 = Motor(Ports.PORT5, GearSetting.RATIO_6_1, True)
-        self.right_drivetrain_3 = Motor(Ports.PORT6, GearSetting.RATIO_6_1, True)
+        self.right_drivetrain_1 = Motor(Ports.PORT4, GearSetting.RATIO_6_1, False)
+        self.right_drivetrain_2 = Motor(Ports.PORT5, GearSetting.RATIO_6_1, False)
+        self.right_drivetrain_3 = Motor(Ports.PORT6, GearSetting.RATIO_6_1, False)
+
+        self.controller = Controller(PRIMARY)
 
         self.left_drivetrain_PID = PIDFController(0.2, 0.15, 0.0, 0.175, 0.01, 6)
         self.right_drivetrain_PID = PIDFController(0.2, 0.15, 0.0, 0.175, 0.01, 6)
@@ -113,7 +115,7 @@ class Robot(TelemetryRobot, TimedRobot):
         # target_speed = random.randint(-60, 60)
         # start_time = time.time()
         # while time.time() - start_time < 2:
-        self.update_efforts_from_target_speed(20, -20)
+        self.update_efforts_from_target_speed(self.controller.axis3.position() * 70/100, self.controller.axis2.position() * 70/100)
 
         # if not self.i % 20:
         #     self.telemetry.send_message(("autonomous" if self.is_autonomous_control() else "driver control") + " " + ("enabled" if self.is_enabled() else "disabled"))
