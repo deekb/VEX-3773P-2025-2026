@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Unittests for tests" type="tests" factoryName="Unittests" nameIsGenerated="true">
+  <configuration default="false" name="Unittests" type="tests" factoryName="Unittests">
     <module name="VEXlib" />
     <option name="ENV_FILES" value="" />
     <option name="INTERPRETER_OPTIONS" value="" />

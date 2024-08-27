@@ -14,8 +14,8 @@ class TestGeometryUtil(unittest.TestCase):
         self.assertAlmostEqual(GeometryUtil.area_triangle((0, 0), (0, 0), (0, 0)), 0.0, places=5)
 
     def test_centroid(self):
-        self.assertAlmostEqual(GeometryUtil.centroid([(0, 0), (3, 0), (3, 4)]), (2, 4 / 3), places=5)
-        self.assertAlmostEqual(GeometryUtil.centroid([(0.0, 0.0), (0.0, 3), (4, 3)]), (4 / 3, 2), places=5)
+        self.assertAlmostEqual(GeometryUtil.centroid([(0.0, 0.0), (3.0, 0.0), (3.0, 4.0)]), (2.0, 4.0 / 3.0), places=5)
+        self.assertAlmostEqual(GeometryUtil.centroid([(0.0, 0.0), (0.0, 3.0), (4.0, 3.0)]), (4.0 / 3.0, 2.0), places=5)
 
     def test_intersection_point(self):
         self.assertAlmostEqual(GeometryUtil.intersection_point((0, 0), (2, 2), (0, 2), (2, 0)), (1, 1), places=5)
