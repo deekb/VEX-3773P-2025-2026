@@ -68,7 +68,7 @@ class TestTranslation1d(unittest.TestCase):
 
     def test_str(self):
         t1 = Translation1d(3.0)
-        self.assertEqual(str(t1), "3.0")
+        self.assertEqual(str(t1), "3.0 m")
 
 
 if __name__ == '__main__':

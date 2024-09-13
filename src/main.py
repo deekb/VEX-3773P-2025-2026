@@ -24,19 +24,19 @@ def main(brain):
         robot_thread = Thread(robot.start)
 
         while not robot.restart_requested:
-            if robot.telemetry.serial.peek(True) == "UPLOAD":
-                robot.telemetry.serial.receive(True)
-                robot.telemetry.serial.send("OK")
-                files = {}
-                while not robot.telemetry.serial.peek(True) == "FILE_LIST_DONE":
-                    if "FILE:" in robot.telemetry.serial.peek(True):
-                        message = robot.telemetry.serial.receive(True)
-                        file_name, file_hash = message.split(":")[-1].split("|")
-                        files[file_name] = file_hash
-
-                robot.telemetry.serial.send(str(files))
-
-                robot.telemetry.serial.send("OK")
+            # if robot.telemetry.serial.peek(True) == "UPLOAD":
+            #     robot.telemetry.serial.receive(True)
+            #     robot.telemetry.serial.send("OK")
+            #     files = {}
+            #     while not robot.telemetry.serial.peek(True) == "FILE_LIST_DONE":
+            #         if "FILE:" in robot.telemetry.serial.peek(True):
+            #             message = robot.telemetry.serial.receive(True)
+            #             file_name, file_hash = message.split(":")[-1].split("|")
+            #             files[file_name] = file_hash
+            #
+            #     robot.telemetry.serial.send(str(files))
+            #
+            #     robot.telemetry.serial.send("OK")
             time.sleep(0.05)
         print("Restarting robot")
         robot_thread.stop()

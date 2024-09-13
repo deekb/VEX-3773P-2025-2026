@@ -175,15 +175,15 @@ def md5sum_file(filepath):
         return md5sum(f.read())
 
 def test():
-    exec("import timeit")
+    # import timeit
     x = 20000
-    print(round(x/timeit.timeit("""md5sum(b"Secret Message")""", globals=globals(), number=x)))
-    # data = str("Secret Message").encode("UTF-8")
-    # print("str2hash: ", data)
-    # print(md5sum(data))
-    # data = str("Secret Message2").encode("UTF-8")
-    # print("str2hash: ", data)
-    # print(md5sum(data))
+    # print(round(x/timeit.timeit("""md5sum(b"Secret Message")""", globals=globals(), number=x)))
+    data = str("Secret Message").encode("UTF-8")
+    print("str2hash: ", data)
+    print(md5sum(data))
+    data = str("Secret Message2").encode("UTF-8")
+    print("str2hash: ", data)
+    print(md5sum(data))
 
 
 if __name__ == "__main__":
