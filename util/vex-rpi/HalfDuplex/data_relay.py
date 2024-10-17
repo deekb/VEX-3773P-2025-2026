@@ -33,7 +33,6 @@ def socket_to_serial(network_socket, serial_connection, connection_synchronizer)
                 log(f"[socket_to_serial]: Informed connection_synchronizer that the network socket was disconnected")
                 break
             try:
-                if self.
                 serial_connection.send_message(received)
             except Exception:
                 log(f"[socket_to_serial]: Critical error in serial_connection.send_message: {traceback.format_exc()}")

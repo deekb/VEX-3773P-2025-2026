@@ -27,8 +27,10 @@ class NetworkSocket:
         log(f"[NetworkSocket.start_listener] Connected to client at {self.client_address[0]}:{self.client_address[1]}")
         atexit.register(self.close)
 
-    def send_message(self, message, end="\n"):
-        self.connection.sendall((message + end).encode())
+    def send_message(self, message, end=b"\n"):
+        if not isinstance(message, bytes):
+            message = message.encode()
+        self.connection.sendall((message + end))
 
     def receive_message(self):
         received = self.connection.recv(self.buffer_size).decode()

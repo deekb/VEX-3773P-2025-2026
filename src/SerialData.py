@@ -41,11 +41,8 @@ def split_int_to_bytes(bytes_, length=16):
         bytes_ >>= 8
     return output_bytes
 
-def hex_format(bytes_, sep_every_n_bytes=4):
-    if not sep_every_n_bytes:
-        return bytes_.hex().upper()
-    return "|".join([bytes_[i:i+sep_every_n_bytes].hex().upper() for i in range(0, len(bytes_), sep_every_n_bytes)])
-
+def hex_format(bytes_):
+    return bytes_.hex().upper()
 
 class Frame:
     def __init__(self, frame_header=None,
@@ -118,14 +115,14 @@ class Frame:
 
         output = header + format_ + self.data + self.crc
 
-        print()
-        print(' - '.join([hex_format(header), hex_format(format_), hex_format(self.data), hex_format(self.crc)]))
-        print(' - '.join(['HEAD', 'FORM', 'DATA', ' '*(len(hex_format(self.data))-7), 'CRC']))
-        print()
+        # print()
+        # print(' - '.join([hex_format(header), hex_format(format_), hex_format(self.data), hex_format(self.crc)]))
+        # print(' - '.join(['HEAD', 'FORM', 'DATA', ' '*(len(hex_format(self.data))-7), 'CRC']))
+        # print()
 
         return output
 
-
+#
 # message = "this is my random message"
 #
 # frame = Frame(frame_header=split_int_to_bytes(0xEB90),
@@ -134,7 +131,7 @@ class Frame:
 #               frame_id=1,
 #               data=bytes(message, "ISO-8859-1"),
 #               crc_function=crc_bytes)
-
+#
 # frame_bytes = (frame.get_bytearray())
 # print(f"Message is {len(message)} bytes")
 # print(f"Frame is {len(frame_bytes)} bytes")

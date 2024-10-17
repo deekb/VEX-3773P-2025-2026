@@ -29,14 +29,11 @@ class SerialConnection:
         except serial.SerialException:
             return False
 
-    def send_message(self, data, end="\n"):
-        self.serial_connection.write((data + end).encode())
+    def send_message(self, data, end=b"\n"):
+        self.serial_connection.write(data + end)
 
     def get_message(self):
-        try:
-            return self.serial_connection.readline().strip().decode()
-        except UnicodeDecodeError:
-            return
+        return self.serial_connection.readline()
 
     def discard_serial_buffers(self):
         if self.serial_connection:
@@ -51,4 +48,7 @@ class SerialConnection:
 
     def close(self):
         if self.serial_connection:
+            print("Closing serial connection")
             self.serial_connection.close()
+        else:
+            print("Serial connection not open")

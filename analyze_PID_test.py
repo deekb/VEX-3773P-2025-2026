@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 data = []
 with open("PID_test.txt", "r") as file:
     for line in file:
-        if line.startswith("PIDF:"):  # Check if line is not empty
+        if line.startswith("PIDF:"):
             measurement = {}
             entries = line.split(":")
             entries = entries[1:]  # Discard PIDF header

@@ -4,6 +4,11 @@ from VEXLib.Geometry.RotationalVelocity import RotationalVelocity
 from VEXLib.Geometry.Translation1d import Distance
 from vex import Ports, GearSetting, Brain
 
+class Preferences:
+    """Preferences about how the robot should function"""
+    ARCADE_CONTROL = False
+    PRINT_POSE = True
+
 
 class SmartPorts:
     """Drivetrain"""
@@ -16,6 +21,7 @@ class SmartPorts:
     REAR_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT15
 
     SCORING_MOTOR = Ports.PORT6
+    WALL_STAKE_MOTOR = Ports.PORT8
 
     INERTIAL_SENSOR = Ports.PORT12
 
@@ -23,9 +29,7 @@ class SmartPorts:
 class ThreeWirePorts:
     """Scoring Mechanism"""
     brain = Brain()
-    PTO_PISTON = brain.three_wire_port.a
     MOBILE_GOAL_CLAMP_PISTON = brain.three_wire_port.b
-    LIMIT_SWITCH = brain.three_wire_port.c
     del brain
 
 
@@ -36,6 +40,14 @@ class GearRatios:
 class DrivetrainProperties:
     MAX_ACHIEVABLE_SPEED = RotationalVelocity.from_rotations_per_minute(600)
     MOTOR_TO_WHEEL_GEAR_RATIO = (36 / 60)
+    ENCODER_TO_WHEEL_GEAR_RATIO = (24 / 60)
     TRACK_WIDTH = Distance.from_inches(13.5)
     WHEEL_DIAMETER = Distance.from_inches(3.235)
     WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * math.pi
+
+
+class ScoringMechanismProperties:
+    STARTUP_POSITION = 0
+    DOCKED_POSITION = 0
+    MAX_POSITION = 440
+    SCORING_SPEED_PERCENT = 100

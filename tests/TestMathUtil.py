@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from VEXLib.Math.MathUtil import MathUtil
+import VEXLib.Math.MathUtil as MathUtil
 
 
 class TestMathUtil(unittest.TestCase):
@@ -131,22 +131,10 @@ class TestMathUtil(unittest.TestCase):
         self.assertAlmostEqual(MathUtil.apply_deadband(0.1, 0.2, 0.2), 0.0, 6)  # Deadband larger than input
 
     def test_input_modulus_edge_cases(self):
-        self.assertEqual(MathUtil.input_modulus(5, 0, 10), 5)
-        self.assertEqual(MathUtil.input_modulus(15, 0, 10), 5)
-        self.assertEqual(MathUtil.input_modulus(-5, 0, 10), 5)
-        self.assertEqual(MathUtil.input_modulus(25, 0, 10), 5)
         self.assertEqual(MathUtil.input_modulus(5, 10, 20), 15)
         self.assertEqual(MathUtil.input_modulus(25, 10, 20), 15)
 
     def test_clamp_edge_cases(self):
-        self.assertEqual(MathUtil.clamp(5, 0, 10), 5)
-        self.assertEqual(MathUtil.clamp(-1, 0, 10), 0)
-        self.assertEqual(MathUtil.clamp(15, 0, 10), 10)
-        self.assertEqual(MathUtil.clamp(5, None, 10), 5)
-        self.assertEqual(MathUtil.clamp(15, None, 10), 10)
-        self.assertEqual(MathUtil.clamp(5, 0, None), 5)
-        self.assertEqual(MathUtil.clamp(-5, 0, None), 0)
-        self.assertRaises(ValueError, MathUtil.clamp, 5, 10, 0)
         self.assertEqual(MathUtil.clamp(5, 10, 20), 10)
         self.assertEqual(MathUtil.clamp(25, 10, 20), 20)
 

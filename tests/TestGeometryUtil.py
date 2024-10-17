@@ -1,5 +1,5 @@
 import unittest
-from VEXLib.Geometry.GeometryUtil import GeometryUtil
+from VEXLib.Geometry import GeometryUtil
 
 class TestGeometryUtil(unittest.TestCase):
 

@@ -37,7 +37,7 @@ def main(brain):
             #     robot.telemetry.serial.send(str(files))
             #
             #     robot.telemetry.serial.send("OK")
-            time.sleep(0.05)
+            time.sleep(0.1)
         print("Restarting robot")
         robot_thread.stop()
         robot.on_disable()

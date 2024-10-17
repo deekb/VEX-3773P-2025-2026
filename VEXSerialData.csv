@@ -1,0 +1,86 @@
+Baud Rate,115200,,
+Bits per byte,10,,
+,,,
+Item,Length (Bits),Value,Description
+Frame Header,16,0xEB90,Mike Kaufman's favorite number
+Frame Type,4,0x1,Configuration frame
+Data Length,12,0x000,No data
+Frame ID,16,0xXXXX,Sequential number with wrap
+CRC,32,0xXXXX,CRC
+Frames/second,1152,,
+,,,
+Item,Length (Bits),Value,Description
+Frame Header,16,0xEB90,Mike Kaufman's favorite number
+Frame Type,4,0x2,Command frame
+Data Length,12,0x200,512 bytes
+Frame ID,16,0xXXXX,Sequential number with wrap
+Data,4096,0xXXXX….,Data bytes
+CRC,32,0xXXXX,CRC
+Frames/second,22.0689655172414,,
+,,,
+Item,Length (Bits),Value,Description
+Frame Header,16,0xEB90,Mike Kaufman's favorite number
+Frame Type,4,0x3,Data frame
+Data Length,12,0x200,512 bytes
+Frame ID,16,0xXXXX,Sequential number with wrap
+Data,4096,0xXXXX….,Data bytes
+CRC,32,0xXXXX,CRC
+Frames/second,22.0689655172414,,
+,,,
+Item,Length (Bits),Value,Description
+Frame Header,16,0xEB90,Mike Kaufman's favorite number
+Frame Type,4,0x8,Acknowledge
+Data Length,12,0x000,No data
+Frame ID,16,0xXXXX,Frame ID received
+CRC,32,0xXXXX,CRC
+Frames/second,1152,,
+,,,
+Item,Length (Bits),Value,Description
+Frame Header,16,0xEB90,Mike Kaufman's favorite number
+Frame Type,4,0x9,Negative acknowledge
+Data Length,12,0x000,No data
+Frame ID,16,0xXXXX,Frame ID received
+CRC,32,0xXXXX,CRC
+Frames/second,1152,,
+,,,
+Item,Length (Bits),Value,Description
+Frame Header,16,0xEB90,Mike Kaufman's favorite number
+Frame Type,4,0xA,Frame error detected
+Data Length,12,0x000,No data
+Frame ID,16,0xXXXX,Frame ID received
+CRC,32,0xXXXX,CRC
+Frames/second,1152,,
+,,,
+,,,
+Frame Type,Description,,
+0x0,Invalid,,
+0x1,Configuration frame,,
+0x2,Command frame,,
+0x3,Data frame,,
+0x4,Reserved,,
+0x5,Reserved,,
+0x6,Reserved,,
+0x7,Reserved,,
+0x8,Acknowledge,,
+0x9,Negative acknowledge,,
+0xA,Frame error detected,,
+0xB,Reserved,,
+0xC,Reserved,,
+0xD,Reserved,,
+0xE,Reserved,,
+0xF,Invalid,,
+,,,
+Configuration Function,Description,,
+0x0000,Invalid,,
+0x0001,Set baud rate,,
+0x0002,Set acknowledge timeout,,
+0x0003,Transmit token,,
+0xFFFF,Invalid,,
+,,,
+Command Function,Description,,
+0x0000,Invalid,,
+0x0001,Query file,,
+0x0002,Query file CRC,,
+0x0003,Receive file,,
+0x0004,Transmit file,,
+0xFFFF,Invalid,,
