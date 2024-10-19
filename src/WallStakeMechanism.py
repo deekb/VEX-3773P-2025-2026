@@ -77,16 +77,18 @@ class WallStakeMechanism:
 
         The method sleeps for 50 milliseconds between checks.
         """
-        # if self.docking:
-        #     if abs(self.motor.position(DEGREES)) < 5:
-        #         self.docking = False
-        #         self.motor.set_velocity(0, PERCENT)
-        #         self.motor.set_stopping(COAST)
-        # if self.motor.position(DEGREES) > Constants.ScoringMechanismProperties.MAX_POSITION:
-        #     self.motor.set_velocity(0, PERCENT)
+        while True:
 
-        if abs(self.motor.position(DEGREES)) < 500:
-            self.motor.set_stopping(BRAKE)
-        else:
-            self.motor.set_stopping(HOLD)
-        time.sleep(0.05)
+            # if self.docking:
+            #     if abs(self.motor.position(DEGREES)) < 5:
+            #         self.docking = False
+            #         self.motor.set_velocity(0, PERCENT)
+            #         self.motor.set_stopping(COAST)
+            # if self.motor.position(DEGREES) > Constants.ScoringMechanismProperties.MAX_POSITION:
+            #     self.motor.set_velocity(0, PERCENT)
+
+            if abs(self.motor.position(DEGREES)) < 500:
+                self.motor.set_stopping(BRAKE)
+            else:
+                self.motor.set_stopping(HOLD)
+            time.sleep(0.05)

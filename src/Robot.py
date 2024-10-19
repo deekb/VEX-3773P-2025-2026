@@ -37,6 +37,10 @@ class Robot(TimedRobot):
     def red_negative_auto(self):
         self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(90)
         self.mobile_goal_clamp.release_mobile_goal()
+
+        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
+        self.wall_stake_mechanism.motor.spin_to_position(160, DEGREES, wait=False)
+
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-25), 90)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-70), 60, ramp_down=False)
         self.mobile_goal_clamp.clamp_mobile_goal()
@@ -49,6 +53,10 @@ class Robot(TimedRobot):
 
     def blue_negative_auto(self):
         self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(-90)
+
+        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
+        self.wall_stake_mechanism.motor.spin_to_position(160, DEGREES, wait=False)
+
         self.mobile_goal_clamp.release_mobile_goal()
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-25), -90)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-70), -60, ramp_down=False)
@@ -63,7 +71,7 @@ class Robot(TimedRobot):
     def red_positive_auto(self):
         self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(90)
         self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(80, DEGREES, wait=False)
+        self.wall_stake_mechanism.motor.spin_to_position(160, DEGREES, wait=False)
 
         self.mobile_goal_clamp.release_mobile_goal()
         # self.debug_wait()
@@ -83,21 +91,25 @@ class Robot(TimedRobot):
         self.mobile_goal_clamp.release_mobile_goal()
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-27), 90)
         self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(650, DEGREES, wait=True)
+        self.wall_stake_mechanism.motor.spin_to_position(530, DEGREES, wait=True)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 90)
-        self.wall_stake_mechanism.motor.spin_to_position(80, DEGREES, wait=False)
+        self.wall_stake_mechanism.motor.spin_to_position(160, DEGREES, wait=False)
         time.sleep(0.5)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-26), 90)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-60), 0)
         self.mobile_goal_clamp.clamp_mobile_goal()
         self.scoring_mechanism.spin_motor_at_speed(-100)
         time.sleep(0.5)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 230)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-5), 230)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), 90)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), -90)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), 180)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(60), 85)
         time.sleep(1)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(30), 90)
-
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 90)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -140)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-30), -60)
+        self.mobile_goal_clamp.release_mobile_goal()
+        # self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), -60)
+        # self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), -127)
 
     # def on_autonomous(self):
     #     self.red_positive_auto()
@@ -147,7 +159,9 @@ class Robot(TimedRobot):
             right_speed = self.controller.axis2.position()
 
         if self.controller.buttonA.pressing():
-            self.skills_auto()
+            # self.skills_auto()
+            # self.red_negative_auto()
+            self.red_positive_auto()
 
 
         self.drivetrain.set_speed_percent(left_speed, right_speed)
