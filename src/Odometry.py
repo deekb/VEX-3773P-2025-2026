@@ -4,11 +4,11 @@ from VEXLib.Geometry.Translation1d import Distance
 from VEXLib.Geometry.Translation2d import Translation2d
 import VEXLib.Math.MathUtil as MathUtil
 from VEXLib.Util import time
-from vex import DEGREES
+from vex import DEGREES, Inertial
 
 
 class TankOdometry:
-    def __init__(self, left_rotation_sensor, right_rotation_sensor, inertial_sensor):
+    def __init__(self, left_rotation_sensor, right_rotation_sensor, inertial_sensor: Inertial):
         # Devices
         self.left_rotation_sensor = left_rotation_sensor
         self.right_rotation_sensor = right_rotation_sensor

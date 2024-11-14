@@ -30,6 +30,7 @@ class ThreeWirePorts:
     """Scoring Mechanism"""
     brain = Brain()
     MOBILE_GOAL_CLAMP_PISTON = brain.three_wire_port.b
+    DOINKER_PISTON = brain.three_wire_port.c
     del brain
 
 

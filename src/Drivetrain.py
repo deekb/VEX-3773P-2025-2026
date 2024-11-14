@@ -1,5 +1,4 @@
 import math
-
 import Constants
 from Odometry import TankOdometry
 from VEXLib.Algorithms.PID import PIDController
@@ -11,8 +10,58 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 import VEXLib.Units.Units as Units
 from VEXLib.Geometry.Translation2d import Translation2d
 import VEXLib.Math.MathUtil as MathUtil
-from VEXLib.Util import time
-from vex import Motor, GearSetting, FORWARD, VOLT, Inertial, Rotation, Ports, TURNS, DEGREES
+from VEXLib.Util import ContinuousTimer
+from vex import Motor, GearSetting, FORWARD, VOLT, Inertial, Rotation, Ports, TURNS, DEGREES, Thread
+
+
+# class FixedMotor(Motor):
+#     def __init__(self, port, gear_ration, reversed_, speed_smoothing_window=5):
+#         super().__init__(port, gear_ration, reversed_)
+#         self.last_position = 0
+#         self.speed_smoothing_window = speed_smoothing_window
+#
+#         self.thread = Thread(self._mainloop)
+#
+#     def mainloop(self):
+#         while True:
+#             self._tick()
+#
+#     def _tick(self):
+#         x = x
+#
+#
+#     def update_drivetrain_velocities(self):
+#         current_time = ContinuousTimer.time()
+#         dx = (current_time - self.previous_speed_sample_time)
+#         if dx >= Units.milliseconds_to_seconds(self.SPEED_SAMPLE_TIME_MS):
+#             current_left_position = self.left_rotation_sensor.position(TURNS)
+#             current_right_position = self.right_rotation_sensor.position(TURNS)
+#
+#             left_dy = (current_left_position - self.last_left_drivetrain_position)
+#             right_dy = (current_right_position - self.last_right_drivetrain_position)
+#
+#             left_output = left_dy / dx
+#             right_output = right_dy / dx
+#
+#             self.previous_left_speeds.append(left_output)
+#             self.previous_right_speeds.append(right_output)
+#             self.previous_left_speeds = self.previous_left_speeds[-self.SPEED_SMOOTHING_WINDOW:]
+#             self.previous_right_speeds = self.previous_right_speeds[-self.SPEED_SMOOTHING_WINDOW:]
+#             self.last_left_drivetrain_position = current_left_position
+#             self.last_right_drivetrain_position = current_right_position
+#             self.previous_speed_sample_time = current_time
+#
+#         left_average_speed = sum(self.previous_left_speeds) / len(self.previous_left_speeds)
+#         right_average_speed = sum(self.previous_right_speeds) / len(self.previous_right_speeds)
+#
+#         return left_average_speed, right_average_speed
+#
+#
+#     def velocity(self, *args):
+#         return 0
+#
+#     def
+
 
 
 class Drivetrain:
@@ -27,7 +76,8 @@ class Drivetrain:
         self.rear_left_motor = Motor(Constants.SmartPorts.REAR_LEFT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, True)
 
         self.front_right_motor = Motor(Constants.SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
-        self.middle_right_motor = Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
+        self.middle_right_motor = Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1,
+                                        False)
         self.rear_left_motor = Motor(Constants.SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
 
         # Make lists containing the left and right sets of motors
@@ -64,7 +114,7 @@ class Drivetrain:
         # Initialize the previous positions of the drivetrain to 0
         self.last_left_drivetrain_position = 0
         self.last_right_drivetrain_position = 0
-        self.previous_speed_sample_time = time.time()
+        self.previous_speed_sample_time = ContinuousTimer.time()
 
         self.previous_left_speeds = [0 for _ in range(5)]
         self.previous_right_speeds = [0 for _ in range(5)]
@@ -97,7 +147,7 @@ class Drivetrain:
         self.set_voltage(left_controller_output, right_controller_output)
 
     def update_drivetrain_velocities(self):
-        current_time = time.time()
+        current_time = ContinuousTimer.time()
         dx = (current_time - self.previous_speed_sample_time)
         if dx >= Units.milliseconds_to_seconds(self.SPEED_SAMPLE_TIME_MS):
             current_left_position = self.left_rotation_sensor.position(TURNS)
@@ -174,25 +224,27 @@ class Drivetrain:
         if ramp_up:
             initial_state = State(0, 0)
         else:
-            initial_state = State(0, self.trapezoidal_profile.constraints.max_velocity * MathUtil.sign(distance.to_inches()))
+            initial_state = State(0, self.trapezoidal_profile.constraints.max_velocity * MathUtil.sign(
+                distance.to_inches()))
 
         if ramp_down:
             goal_state = State(distance.to_inches(), 0)
         else:
-            goal_state = State(distance.to_inches(), self.trapezoidal_profile.constraints.max_velocity * MathUtil.sign(distance.to_inches()))
+            goal_state = State(distance.to_inches(),
+                               self.trapezoidal_profile.constraints.max_velocity * MathUtil.sign(distance.to_inches()))
 
         # Get current time
-        start_time = time.time()
+        start_time = ContinuousTimer.time()
 
         self.trapezoidal_profile.calculate(0, initial_state, goal_state)
 
         total_time = self.trapezoidal_profile.total_time()
-        elapsed_time = time.time() - start_time
+        elapsed_time = ContinuousTimer.time() - start_time
 
         while elapsed_time < total_time + 0.5:
-            elapsed_time = time.time() - start_time
+            elapsed_time = ContinuousTimer.time() - start_time
             target_distance_traveled = self.trapezoidal_profile.calculate(elapsed_time, initial_state, goal_state)
-            print("TIME: " + str(time.time() - start_time))
+            print("TIME: " + str(ContinuousTimer.time() - start_time))
             print("TARGET: " + str(target_distance_traveled))
 
             left_position = self.get_left_position().to_inches() - left_start_position
@@ -211,7 +263,7 @@ class Drivetrain:
             self.update_motor_voltages()
             self.update_odometry()
             # Delay to control loop frequency
-            time.sleep(0.01)  # Adjust as necessary
+            ContinuousTimer.sleep(0.01)  # Adjust as necessary
         self.set_speed_percent(0, 0)
         self.set_voltage(0, 0)
         self.left_drivetrain_PID.reset()
@@ -262,19 +314,3 @@ class Drivetrain:
         self.set_voltage(0, 0)
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
-
-    # @staticmethod
-    # def calculate_optimal_turn(current_heading, target_heading):
-    #     # Calculate the angular difference between the current and target headings with the minimum absolute value
-    #     current_heading = current_heading % (math.pi * 2)
-    #     target_heading = target_heading % (math.pi * 2)
-    #
-    #     angular_difference = target_heading - current_heading
-    #
-    #     # Normalize the angular difference between -π and π
-    #     if angular_difference > math.pi:
-    #         angular_difference -= 2 * math.pi
-    #     elif angular_difference < -math.pi:
-    #         angular_difference += 2 * math.pi
-    #
-    #     return angular_difference

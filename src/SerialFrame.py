@@ -1,162 +1,141 @@
-from math import log, ceil, floor
-from CRC import crc_bytes
+# Define a constant for the start byte (16 bits)
+START_BYTE = 0xEB90
 
-# TODO: Ensure 0xA (\n) won't screw up transmission
+# Define the length of each element of the frame in a dictionary
+FRAME_ELEMENT_LENGTHS = {
+    'start_byte': 2,  # 16 bits = 2 bytes
+    'frame_id': 4,    # 32 bits = 4 bytes
+    'length': 4,      # 32 bits = 4 bytes
+    'frame_type': 1,  # 8 bits = 1 byte
+    'data_type_length': 1,  # 8 bits = 1 byte (length of data_type)
+    'data_type': None,  # Variable length, determined by data_type
+    'data': None,      # Variable length, determined by the data length
+    'crc': 2           # 16 bits = 2 bytes
+}
 
-def byte_count(integer):
-    return ceil(log(integer + 1, 16))
-
-
-def quad_count(integer):
-    return ceil(byte_count(integer) / 2)
-
-
-def split_int_to_bytes(bytes_, length=16):
-    output_bytes = bytes()
-
-    for _ in range(0, floor(quad_count(bytes_))):
-        quad = bytes_ & 0xff
-        output_bytes = bytes([quad]) + output_bytes
-        bytes_ >>= 8
-    return output_bytes
-
-
-def hex_format(bytes_):
-    return bytes_.hex().upper()
-
-
-from math import log, ceil, floor
-from CRC import crc_bytes
-
-# Constants
-FRAME_HEADER = split_int_to_bytes(0xEB90)
-FRAME_HEADER_SIZE = 2  # 16 bits or 2 bytes
-FRAME_TYPE_SIZE = 1  # 4 bits or part of a byte
-DATA_LENGTH_SIZE = 2  # 12 bits or 2 bytes
-FRAME_ID_SIZE = 2  # 16 bits or 2 bytes
-CRC_SIZE = 4  # 32 bits or 4 bytes
-
-MAX_DATA_SIZE = 512  # 4096 bits or 512 bytes
-
-
-class FrameType:
+class FrameType(object):
+    """Class representing frame types."""
+    INVALID = 0x0
     CONFIGURATION = 0x1
     COMMAND = 0x2
     DATA = 0x3
-    ACK = 0x8
-    NACK = 0x9
-    ERROR = 0xA
+    RESERVED_1 = 0x4
+    RESERVED_2 = 0x5
+    RESERVED_3 = 0x6
+    RESERVED_4 = 0x7
+    ACKNOWLEDGE = 0x8
+    NEGATIVE_ACKNOWLEDGE = 0x9
+    FRAME_ERROR = 0xA
+    RESERVED_5 = 0xB
+    RESERVED_6 = 0xC
+    RESERVED_7 = 0xD
+    RESERVED_8 = 0xE
+    INVALID_2 = 0xF
 
+def crc_xmodem(data: bytes) -> int:
+    """Calculate the CRC XMODEM checksum (16-bit)."""
+    crc = 0x0000
+    for byte in data:
+        crc ^= byte << 8
+        for _ in range(8):
+            if crc & 0x8000:
+                crc = (crc << 1) ^ 0x1021  # XMODEM polynomial
+            else:
+                crc <<= 1
+            crc &= 0xFFFF  # Keep CRC as a 16-bit value
+    return crc
 
-class Frame:
-    def __init__(self):
-        # Start with enough space for header, type, data length, frame ID, but no data initially
-        self.data = bytearray(FRAME_HEADER_SIZE + FRAME_TYPE_SIZE + DATA_LENGTH_SIZE + FRAME_ID_SIZE + CRC_SIZE)
-        self.payload = bytearray()  # This will store the actual data payload
-        self._frame_id = 0  # Initial frame ID
-
-    @property
-    def bytes(self):
-        # Return the full frame (header + type + data + CRC)
-        return self.data[:-CRC_SIZE] + self.payload + self.data[-CRC_SIZE:]
-
-    @bytes.setter
-    def bytes(self, bytes_):
-        # Allows setting the entire byte sequence if necessary
-        self.data = bytearray(bytes_[:len(self.data) - CRC_SIZE])
-        self.payload = bytearray(bytes_[len(self.data) - CRC_SIZE:-CRC_SIZE])
-        self.data[-CRC_SIZE:] = bytes_[-CRC_SIZE:]
-
-    @property
-    def frame_header(self):
-        return self.data[0:FRAME_HEADER_SIZE]
-
-    @frame_header.setter
-    def frame_header(self, value):
-        self.data[0:FRAME_HEADER_SIZE] = value
-
-    @property
-    def frame_type(self):
-        return (self.data[FRAME_HEADER_SIZE] >> 4) & 0xF
-
-    @frame_type.setter
-    def frame_type(self, value):
-        value = (value & 0xF) << 4
-        self.data[FRAME_HEADER_SIZE] = value | (self.data[FRAME_HEADER_SIZE] & 0x0F)
-
-    @property
-    def data_length(self):
-        length_bytes = self.data[
-                       FRAME_HEADER_SIZE + FRAME_TYPE_SIZE: FRAME_HEADER_SIZE + FRAME_TYPE_SIZE + DATA_LENGTH_SIZE]
-        return int.from_bytes(length_bytes, byteorder='big') & 0xFFF  # 12-bit data length
-
-    @data_length.setter
-    def data_length(self, value):
-        # Data length is 12 bits, store it in 2 bytes
-        value = value & 0xFFF
-        length_bytes = value.to_bytes(DATA_LENGTH_SIZE, byteorder='big')
-        self.data[
-        FRAME_HEADER_SIZE + FRAME_TYPE_SIZE: FRAME_HEADER_SIZE + FRAME_TYPE_SIZE + DATA_LENGTH_SIZE] = length_bytes
-
-    @property
-    def frame_id(self):
-        frame_id_bytes = self.data[FRAME_HEADER_SIZE + FRAME_TYPE_SIZE + DATA_LENGTH_SIZE:
-                                   FRAME_HEADER_SIZE + FRAME_TYPE_SIZE + DATA_LENGTH_SIZE + FRAME_ID_SIZE]
-        return int.from_bytes(frame_id_bytes, byteorder='big')
-
-    @frame_id.setter
-    def frame_id(self, value):
-        # Frame ID is 16 bits
-        value = value & 0xFFFF
-        frame_id_bytes = value.to_bytes(FRAME_ID_SIZE, byteorder='big')
-        self.data[FRAME_HEADER_SIZE + FRAME_TYPE_SIZE + DATA_LENGTH_SIZE:
-                  FRAME_HEADER_SIZE + FRAME_TYPE_SIZE + DATA_LENGTH_SIZE + FRAME_ID_SIZE] = frame_id_bytes
-
-    @property
-    def crc(self):
-        # Return the CRC part of the frame
-        return self.data[-CRC_SIZE:]
-
-    @crc.setter
-    def crc(self, value):
-        self.data[-CRC_SIZE:] = value
-
-    def calculate_crc(self):
-        # Calculate CRC over the entire frame excluding the CRC bytes
-        crc_value = crc_bytes(self.data[:-CRC_SIZE] + self.payload)
-        self.crc = crc_value.to_bytes(CRC_SIZE, byteorder='big')
-
-    def set_data(self, payload):
-        """Sets the data payload and adjusts the frame."""
-        if len(payload) > MAX_DATA_SIZE:
-            raise ValueError(f"Data payload cannot exceed {MAX_DATA_SIZE} bytes.")
-
-        # Set the data payload and update the data length
-        self.payload = bytearray(payload)
-        self.data_length = len(self.payload)
-
-        # After setting data, we need to recalculate the CRC
-        self.calculate_crc()
-
-    def prepare_frame(self, frame_type, frame_id=None):
-        # Set basic frame components
-        self.frame_header = FRAME_HEADER
-        self.frame_type = frame_type
-
-        # Handle frame ID
-        if frame_id is None:
-            frame_id = self._frame_id
-            self._frame_id = (self._frame_id + 1) & 0xFFFF  # Auto-increment with wrap-around
+class SerialFrame:
+    def __init__(self, frame_id: int, frame_type: int, data_type: str, data: bytes):
         self.frame_id = frame_id
+        self.frame_type = frame_type
+        self.data_type = data_type
+        self.data = data
 
-        # Calculate and set CRC (after setting data)
-        self.calculate_crc()
+    @property
+    def length(self) -> int:
+        """Get the length of the data."""
+        return len(self.data)
+
+    def to_bytes(self) -> bytes:
+        """Convert the frame to a byte representation for transmission."""
+        start_byte_bytes = START_BYTE.to_bytes(FRAME_ELEMENT_LENGTHS['start_byte'], 'big')
+        frame_id_bytes = self.frame_id.to_bytes(FRAME_ELEMENT_LENGTHS['frame_id'], 'big')
+        length_bytes = self.length.to_bytes(FRAME_ELEMENT_LENGTHS['length'], 'big')
+
+        data_type_bytes = self.data_type.encode('utf-8')
+        data_type_length = len(data_type_bytes).to_bytes(FRAME_ELEMENT_LENGTHS['data_type_length'], 'big')
+        data_type_full = data_type_length + data_type_bytes
+
+        frame_type_bytes = self.frame_type.to_bytes(FRAME_ELEMENT_LENGTHS['frame_type'], 'big')  # Add frame type byte
+
+        # Concatenate the components before calculating the CRC
+        frame_bytes = start_byte_bytes + frame_id_bytes + length_bytes + frame_type_bytes + data_type_full + self.data
+
+        # Calculate the CRC XMODEM checksum
+        crc = crc_xmodem(frame_bytes)
+        crc_bytes = crc.to_bytes(FRAME_ELEMENT_LENGTHS['crc'], 'big')
+
+        return frame_bytes + crc_bytes
+
+    @classmethod
+    def from_bytes(cls, byte_data: bytes) -> 'SerialFrame':
+        """Create a SerialFrame instance from byte data and verify the checksum."""
+        start_byte_length = FRAME_ELEMENT_LENGTHS['start_byte']
+        frame_id_length = FRAME_ELEMENT_LENGTHS['frame_id']
+        length_length = FRAME_ELEMENT_LENGTHS['length']
+        frame_type_length = FRAME_ELEMENT_LENGTHS['frame_type']
+        crc_length = FRAME_ELEMENT_LENGTHS['crc']
+
+        # Minimum frame size check before proceeding with parsing
+        min_frame_size = (start_byte_length + frame_id_length + length_length + frame_type_length + 1)  # Add 1 byte for data_type_length field
+        if len(byte_data) < min_frame_size:
+            raise ValueError("Incomplete frame: Expected at least %d bytes, got %d" % (min_frame_size, len(byte_data)))
+
+        start_index = byte_data.find(START_BYTE.to_bytes(start_byte_length, 'big'))
+        if start_index == -1:
+            raise ValueError("Start byte not found in the data. Data: %s..." % str(byte_data[:30]))
+
+        # Extract frame_id (4 bytes)
+        frame_id = int.from_bytes(byte_data[start_index + start_byte_length:start_index + start_byte_length + frame_id_length], 'big')
+
+        # Extract length (4 bytes)
+        length = int.from_bytes(byte_data[start_index + start_byte_length + frame_id_length:start_index + start_byte_length + frame_id_length + length_length], 'big')
+
+        # Check if there's enough data for the full frame including the payload and CRC
+        full_frame_size = (min_frame_size + length + crc_length)  # Total size of frame
+        if len(byte_data) < full_frame_size:
+            raise ValueError("Incomplete frame: Expected %d bytes, got %d" % (full_frame_size, len(byte_data)))
+
+        # Extract frame_type (1 byte)
+        frame_type = byte_data[start_index + start_byte_length + frame_id_length + length_length]
+
+        # Extract data_type_length (1 byte) and the data_type itself
+        data_type_length = byte_data[start_index + start_byte_length + frame_id_length + length_length + frame_type_length]
+        data_type_start = start_index + start_byte_length + frame_id_length + length_length + frame_type_length + 1
+        data_type_end = data_type_start + data_type_length
+        data_type = byte_data[data_type_start:data_type_end].decode('utf-8')
+
+        # Extract the data (variable length based on 'length')
+        data_start = data_type_end
+        data = byte_data[data_start:data_start + length]
+
+        # Extract the checksum (last 2 bytes)
+        received_crc = int.from_bytes(byte_data[data_start + length:data_start + length + crc_length], 'big')
+
+        # Recalculate the CRC for the frame data (excluding the received CRC)
+        frame_bytes = byte_data[start_index:data_start + length]
+        calculated_crc = crc_xmodem(frame_bytes)
+
+        # Verify if the received CRC matches the calculated CRC
+        if received_crc != calculated_crc:
+            raise ValueError("Checksum mismatch! Received: %d, Calculated: %d" % (received_crc, calculated_crc))
+
+        # If checksums match, create and return the SerialFrame object
+        return cls(frame_id=frame_id, frame_type=frame_type, data_type=data_type, data=data)
 
 
-# Example usage
-frame = Frame()
-frame.prepare_frame(FrameType.COMMAND)
-frame.set_data(b'This is a test message')
-bytes_ = frame.bytes
-print(bytes_)
-print(bytes_.hex().upper())
+    def __str__(self) -> str:
+        """Return a string representation of the frame."""
+        return "Frame ID: %d, Frame Type: %d, Length: %d bytes, Data Type: %s, Data: %s" % (
+            self.frame_id, self.frame_type, self.length, self.data_type, self.data)

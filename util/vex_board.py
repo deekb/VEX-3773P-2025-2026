@@ -9,8 +9,8 @@ from pyglet import image
 from pyglet.gui import PushButton
 
 # Socket parameters
-HOST = "192.168.1.1"
-PORT = 10002  # Port to connect to (non-privileged ports are >= 1024)
+HOST = "raspberrypi.local"
+PORT = 3773  # Port to connect to (non-privileged ports are >= 1024)
 SOCKET_RECONNECT_INTERVAL_IN_SECONDS = 1
 
 # Ping parameters

@@ -1,6 +1,6 @@
 import Constants
 from VEXLib.Util import time
-from vex import Motor, GearSetting, FORWARD, PERCENT, DEGREES, HOLD, Thread, COAST, BRAKE
+from vex import Motor, GearSetting, FORWARD, PERCENT, DEGREES, HOLD, Thread, COAST, BRAKE, REVERSE, VOLT
 
 
 class WallStakeMechanism:
@@ -22,13 +22,22 @@ class WallStakeMechanism:
             docking (bool): Whether the mechanism is currently docking.
             thread (vex.Thread): A thread that runs the `tick` method to handle real-time operations.
         """
-        self.motor = Motor(Constants.SmartPorts.WALL_STAKE_MOTOR, GearSetting.RATIO_36_1, False)
+        self.motor = Motor(Constants.SmartPorts.WALL_STAKE_MOTOR, GearSetting.RATIO_36_1, True)
         self.motor.set_stopping(HOLD)
         self.motor.spin(FORWARD)
         self.motor.set_velocity(0)
         self.motor.set_position(Constants.ScoringMechanismProperties.STARTUP_POSITION, DEGREES)
         self.docking = False
-        self.thread = Thread(self.tick)
+        # self.thread = Thread(self.tick)
+
+    # def calibrate(self):
+    #     self.motor.spin(REVERSE, 6, VOLT)
+    #     wait(200, MSEC)
+    #     while motor.velocity(PERCENT) > 2:
+    #         wait(10, MSEC)
+    #     self.motor.set_velocity(0, PERCENT)
+    #     self.motor.spin(FORWARD)
+
 
     def dock(self):
         """
@@ -46,6 +55,7 @@ class WallStakeMechanism:
         The motor is set to move backward at a defined speed to dock the mechanism.
         """
         self.docking = False
+        # self.motor.spin(FORWARD)
         self.motor.set_velocity(-Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
 
     def start_scoring(self):
@@ -55,6 +65,7 @@ class WallStakeMechanism:
         The motor is set to move forward at a defined speed to extend the mechanism.
         """
         self.docking = False
+        # self.motor.spin(FORWARD)
         self.motor.set_velocity(Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
 
     def stop(self):

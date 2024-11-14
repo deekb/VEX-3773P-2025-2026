@@ -1,4 +1,4 @@
-def main(brain):
+def main(brain, autonomous):
     while True:
         from vex import Thread, wait, MSEC
         if not brain.sdcard.is_inserted():
@@ -9,17 +9,14 @@ def main(brain):
             wait(1000, MSEC)  # Make sure that the SD card is well-situated
             brain.screen.clear_screen()
             brain.screen.set_cursor(1, 1)
-        # try:
         from Robot import Robot
+        # from TickBasedRobotTest import Robot
+        # from VEXGFX import Robot
+        # from WirelessUploadRobot import Robot
         from VEXLib.Util import time as time
-        from hash import test, md5sum, md5sum_file
         import sys
-        # except (OSError, ImportError):
-        #     brain.screen.print("Error loading modules, retrying...")
-        #     wait(1000, MSEC)
-        #     continue
 
-        robot = Robot(brain)
+        robot = Robot(brain, autonomous)
 
         robot_thread = Thread(robot.start)
 
