@@ -144,6 +144,34 @@ class Robot(TickBasedRobot):
         time.sleep(3)
         self.mobile_goal_clamp.release_mobile_goal()
 
+    def win_point(self):
+        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
+        self.mobile_goal_clamp.release_mobile_goal()
+        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
+        self.wall_stake_mechanism.motor.spin_to_position(110, DEGREES, wait=False)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), 0)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -90)
+        self.wall_stake_mechanism.motor.spin_to_position(-100, DEGREES, wait=False)
+        time.sleep(0.5)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -90)
+        self.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 125)
+        self.mobile_goal_clamp.clamp_mobile_goal()
+        self.scoring_mechanism.spin_motor_at_speed(100)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), 5)
+        # # time.sleep(1)
+        # self.scoring_mechanism.spin_motor_at_speed(-100)
+        # time.sleep(0.25)
+        # self.scoring_mechanism.spin_motor_at_speed(100)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(45), -80)
+        # time.sleep(1)
+        # self.scoring_mechanism.spin_motor_at_speed(-100)
+        # time.sleep(0.5)
+        # self.scoring_mechanism.spin_motor_at_speed(100)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(80), 170)
+
+
+
     def on_autonomous(self):
         self.brain.screen.print("on_autonomous")
         self.brain.screen.print(self.autonomous)
@@ -157,6 +185,8 @@ class Robot(TickBasedRobot):
             self.blue_positive()
         if "skills" in self.autonomous:
             self.skills()
+        if "win_point" in self.autonomous:
+            self.win_point()
         self.on_driver_control()
 
     def on_enable(self):
@@ -175,6 +205,10 @@ class Robot(TickBasedRobot):
 
         self.controller.buttonL1.pressed(self.wall_stake_mechanism.start_docking)
         self.controller.buttonL1.released(self.wall_stake_mechanism.stop)
+
+        self.wall_stake_mechanism.motor.spin(FORWARD, -3, VOLT)
+        time.sleep(2)
+        self.wall_stake_mechanism.motor.set_velocity(0, PERCENT)
 
         # self.controller.buttonX.pressed(self.trigger_restart)
 

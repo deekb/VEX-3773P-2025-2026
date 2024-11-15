@@ -105,7 +105,7 @@ class Drivetrain:
         # self.rotation_PID.enable_continuous_input(-math.pi, math.pi)
 
         # Initialize a TrapezoidProfile object to define the speed and acceleration profiles of the drivetrain
-        self.trapezoidal_profile = TrapezoidProfile(Constraints(30, 50))
+        self.trapezoidal_profile = TrapezoidProfile(Constraints(50, 100))
 
         # Speed smoothing
         self.SPEED_SAMPLE_TIME_MS = speed_sample_time_ms
@@ -199,7 +199,7 @@ class Drivetrain:
         self.rotation_PID.setpoint += angular_difference
         self.rotation_PID.reset()
         self.rotation_PID.update(self.odometry.get_rotation().to_radians())
-        while not self.rotation_PID.at_setpoint(threshold=Rotation2d.from_degrees(2).to_radians()):
+        while not self.rotation_PID.at_setpoint(threshold=Rotation2d.from_degrees(4).to_radians()):
             output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
             output = MathUtil.clamp(output, -speed, speed)
             self.set_speed_percent(output * 100, -output * 100)
