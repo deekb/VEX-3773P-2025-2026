@@ -134,7 +134,6 @@ class Drivetrain:
 
     # TODO Ensure this doesn't break things
     def set_voltage(self, left_voltage, right_voltage):
-        print("SV: "+ str(left_voltage) + ", " + str(right_voltage))
         for motor in self.left_motors:
             motor.spin(FORWARD, left_voltage, VOLT)
         for motor in self.right_motors:
@@ -218,11 +217,6 @@ class Drivetrain:
         left_start_position = self.get_left_position().to_inches()
         right_start_position = self.get_right_position().to_inches()
 
-        left_position = self.get_left_position().to_inches() - left_start_position
-        right_position = self.get_right_position().to_inches() - right_start_position
-
-        distance_traveled = MathUtil.average(left_position, right_position)
-
         if ramp_up:
             initial_state = State(0, 0)
         else:
@@ -264,8 +258,7 @@ class Drivetrain:
             self.set_speed_percent(output_speed + (rotation_output * 100), output_speed - (rotation_output * 100))
             self.update_motor_voltages()
             self.update_odometry()
-            # Delay to control loop frequency
-            ContinuousTimer.sleep(0.01)  # Adjust as necessary
+
         self.set_speed_percent(0, 0)
         self.set_voltage(0, 0)
         self.left_drivetrain_PID.reset()
