@@ -7,7 +7,8 @@ from vex import Ports, GearSetting, Brain
 class Preferences:
     """Preferences about how the robot should function"""
     ARCADE_CONTROL = False
-    PRINT_POSE = True
+    VOLTAGE_CONTROL = True
+    PRINT_POSE = False
 
 
 class SmartPorts:

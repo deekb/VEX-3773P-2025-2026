@@ -17,13 +17,22 @@ class Robot(TickBasedRobot):
         self.drivetrain = Drivetrain()
         self.left_distance_sensor = Distance(Ports.PORT5)
         self.right_distance_sensor = Distance(Ports.PORT4)
-        self.i = 0
         self.mobile_goal_clamp = MobileGoalClamp()
         self.scoring_mechanism = ScoringMechanism()
         self.wall_stake_mechanism = WallStakeMechanism()
         self.doinker = CornerMechanism()
+        self.autonomous_mappings = {
+            "red_negative_4_rings_and_touch": AutonomousRoutines.red_negative_4_rings_and_touch,
+            "red_negative": AutonomousRoutines.red_negative,
+            "red_positive": AutonomousRoutines.red_positive,
+            "blue_negative": AutonomousRoutines.blue_negative,
+            "blue_positive": AutonomousRoutines.blue_positive,
+            "skills": AutonomousRoutines.skills,
+            "red_win_point": AutonomousRoutines.red_win_point,
+            "blue_win_point": AutonomousRoutines.blue_win_point,
+        }
+
         self.autonomous = autonomous
-        # self.autonomous_thread = Thread(lambda: None)
 
     def debug_wait(self):
         while not self.controller.buttonA.pressing():
@@ -34,40 +43,20 @@ class Robot(TickBasedRobot):
     def on_autonomous(self):
         self.brain.screen.print("Autonomous: ")
         self.brain.screen.print(self.autonomous)
-
-        function = lambda: None
-        if "red_negative_4_rings_and_touch" in self.autonomous:
-            function = AutonomousRoutines.red_negative_4_rings_and_touch
-        elif "red_negative" in self.autonomous:
-            function = AutonomousRoutines.red_negative
-        elif "red_positive" in self.autonomous:
-            function = AutonomousRoutines.red_positive
-        elif "blue_negative" in self.autonomous:
-            function = AutonomousRoutines.blue_negative
-        elif "blue_positive" in self.autonomous:
-            function = AutonomousRoutines.blue_positive
-        elif "skills" in self.autonomous:
-            function = AutonomousRoutines.skills
-        elif "red_win_point" in self.autonomous:
-            function = AutonomousRoutines.red_win_point
-        elif "blue_win_point" in self.autonomous:
-            function = AutonomousRoutines.blue_win_point
-
-        function()
-        # self.autonomous_thread = Thread(function)
+        self.autonomous_mappings[self.autonomous](self)
 
     def on_enable(self):
         self.drivetrain.odometry.inertial_sensor.set_rotation(0, DEGREES)
         self.drivetrain.left_drivetrain_PID.reset()
         self.drivetrain.right_drivetrain_PID.reset()
         self.drivetrain.set_speed_percent(0, 0)
+        self.drivetrain.update_motor_voltages()
 
     def on_driver_control(self):
         self.wall_stake_mechanism.motor.set_velocity(0, PERCENT)
         self.wall_stake_mechanism.motor.spin(FORWARD)
 
     def on_setup(self):
-        # self.register_telemetry()
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
         self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.start_scoring)
@@ -95,20 +84,20 @@ class Robot(TickBasedRobot):
             left_speed = self.controller.axis3.position() / 100
             right_speed = self.controller.axis2.position() / 100
 
-        left_speed = MathUtil.apply_deadband(left_speed, 0.05, 1)
-        right_speed = MathUtil.apply_deadband(right_speed, 0.05, 1)
+        if Preferences.VOLTAGE_CONTROL:
+            left_speed = MathUtil.apply_deadband(left_speed, 0.05, 1)
+            right_speed = MathUtil.apply_deadband(right_speed, 0.05, 1)
 
-        left_speed = MathUtil.cubic_filter(left_speed, linearity=0.4)
-        right_speed = MathUtil.cubic_filter(right_speed, linearity=0.4)
+            left_speed = MathUtil.cubic_filter(left_speed, linearity=0.4)
+            right_speed = MathUtil.cubic_filter(right_speed, linearity=0.4)
 
-        self.drivetrain.set_voltage(left_speed * 12, right_speed * 12)
-
-        # self.drivetrain.update_motor_voltages()
-        self.drivetrain.update_odometry()
+            self.drivetrain.set_voltage(left_speed * 12, right_speed * 12)
+        else:
+            self.drivetrain.update_motor_voltages()
 
         if Preferences.PRINT_POSE:
             print(self.drivetrain.odometry.get_pose())
 
+        self.drivetrain.update_odometry()
         self.wall_stake_mechanism.tick()
-
         self.scoring_mechanism.spin_motor_at_speed(scoring_mechanism_speed)
