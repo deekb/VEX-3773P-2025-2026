@@ -1,6 +1,9 @@
+from VEXLib.Math import clamp
+
 import Constants
 from VEXLib.Util import time
-from vex import Motor, GearSetting, FORWARD, PERCENT, DEGREES, HOLD, Thread, COAST, BRAKE, REVERSE, VOLT
+from vex import Motor, GearSetting, FORWARD, PERCENT, DEGREES, HOLD, Thread, BRAKE, REVERSE, VOLT, DigitalIn, \
+    wait, MSEC, Limit
 
 
 class WallStakeMechanism:
@@ -22,31 +25,24 @@ class WallStakeMechanism:
             docking (bool): Whether the mechanism is currently docking.
             thread (vex.Thread): A thread that runs the `tick` method to handle real-time operations.
         """
+        self.limit_switch = Limit(Constants.ThreeWirePorts.WALL_STAKE_CALIBRATION_LIMIT_SWITCH)
         self.motor = Motor(Constants.SmartPorts.WALL_STAKE_MOTOR, GearSetting.RATIO_36_1, True)
-        self.motor.set_stopping(HOLD)
         self.motor.spin(FORWARD)
         self.motor.set_velocity(0)
-        self.motor.set_position(Constants.ScoringMechanismProperties.STARTUP_POSITION, DEGREES)
-        self.docking = False
-        # self.thread = Thread(self.tick)
+        self.target_velocity = 0
 
-    # def calibrate(self):
-    #     self.motor.spin(REVERSE, 6, VOLT)
-    #     wait(200, MSEC)
-    #     while motor.velocity(PERCENT) > 2:
-    #         wait(10, MSEC)
-    #     self.motor.set_velocity(0, PERCENT)
-    #     self.motor.spin(FORWARD)
+    def calibrate(self):
+        while not self.limit_switch.pressing():
+            self.motor.spin(FORWARD, -5, VOLT)
+            wait(10, MSEC)
 
+        while self.limit_switch.pressing():
+            self.motor.spin(FORWARD, 5, VOLT)
+            wait(10, MSEC)
 
-    def dock(self):
-        """
-        Initiates the docking process.
-
-        The motor starts moving the mechanism to dock by setting the motor's velocity to a negative number.
-        """
-        self.docking = True
-        self.motor.set_velocity(-Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
+        self.motor.set_position(0, DEGREES)
+        self.motor.set_velocity(0, PERCENT)
+        self.motor.spin(FORWARD)
 
     def start_docking(self):
         """
@@ -54,9 +50,7 @@ class WallStakeMechanism:
 
         The motor is set to move backward at a defined speed to dock the mechanism.
         """
-        self.docking = False
-        # self.motor.spin(FORWARD)
-        self.motor.set_velocity(-Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
+        self.target_velocity = -Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT
 
     def start_scoring(self):
         """
@@ -64,9 +58,7 @@ class WallStakeMechanism:
 
         The motor is set to move forward at a defined speed to extend the mechanism.
         """
-        self.docking = False
-        # self.motor.spin(FORWARD)
-        self.motor.set_velocity(Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
+        self.target_velocity = Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT
 
     def stop(self):
         """
@@ -74,8 +66,7 @@ class WallStakeMechanism:
 
         The motor is paused and placed into PID hold mode to maintain its position.
         """
-        self.motor.set_velocity(0, PERCENT)
-        self.motor.set_stopping(HOLD)
+        self.target_velocity = 0
 
     def tick(self):
         """
@@ -88,18 +79,13 @@ class WallStakeMechanism:
 
         The method sleeps for 50 milliseconds between checks.
         """
-        while True:
+        if self.limit_switch.pressing():
+            self.motor.set_stopping(BRAKE)
+        else:
+            self.motor.set_stopping(HOLD)
 
-            # if self.docking:
-            #     if abs(self.motor.position(DEGREES)) < 5:
-            #         self.docking = False
-            #         self.motor.set_velocity(0, PERCENT)
-            #         self.motor.set_stopping(COAST)
-            # if self.motor.position(DEGREES) > Constants.ScoringMechanismProperties.MAX_POSITION:
-            #     self.motor.set_velocity(0, PERCENT)
+        if self.motor.position(DEGREES) > 610:
+            self.target_velocity = clamp(self.target_velocity, None, 0)
 
-            if abs(self.motor.position(DEGREES)) < 500:
-                self.motor.set_stopping(BRAKE)
-            else:
-                self.motor.set_stopping(HOLD)
-            time.sleep(0.05)
+        self.motor.spin(FORWARD)
+        self.motor.set_velocity(self.target_velocity, PERCENT)

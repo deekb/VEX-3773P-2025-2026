@@ -20,7 +20,8 @@ class SmartPorts:
     MIDDLE_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT13
     REAR_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT15
 
-    SCORING_MOTOR = Ports.PORT6
+    SCORING_ELEVEN_WATT_MOTOR = Ports.PORT6
+    SCORING_FIVE_POINT_FIVE_WATT_MOTOR = Ports.PORT3
     WALL_STAKE_MOTOR = Ports.PORT8
 
     INERTIAL_SENSOR = Ports.PORT12
@@ -31,6 +32,7 @@ class ThreeWirePorts:
     brain = Brain()
     MOBILE_GOAL_CLAMP_PISTON = brain.three_wire_port.b
     DOINKER_PISTON = brain.three_wire_port.c
+    WALL_STAKE_CALIBRATION_LIMIT_SWITCH = brain.three_wire_port.d
     del brain
 
 

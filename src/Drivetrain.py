@@ -105,7 +105,7 @@ class Drivetrain:
         # self.rotation_PID.enable_continuous_input(-math.pi, math.pi)
 
         # Initialize a TrapezoidProfile object to define the speed and acceleration profiles of the drivetrain
-        self.trapezoidal_profile = TrapezoidProfile(Constraints(50, 100))
+        self.trapezoidal_profile = TrapezoidProfile(Constraints(30, 50))
 
         # Speed smoothing
         self.SPEED_SAMPLE_TIME_MS = speed_sample_time_ms
@@ -134,6 +134,7 @@ class Drivetrain:
 
     # TODO Ensure this doesn't break things
     def set_voltage(self, left_voltage, right_voltage):
+        print("SV: "+ str(left_voltage) + ", " + str(right_voltage))
         for motor in self.left_motors:
             motor.spin(FORWARD, left_voltage, VOLT)
         for motor in self.right_motors:
@@ -213,6 +214,7 @@ class Drivetrain:
     def move_distance_towards_direction_trap(self, distance, direction, ramp_up=True, ramp_down=True, turn_first=True):
         if turn_first:
             self.turn_to_gyro(direction)
+
         left_start_position = self.get_left_position().to_inches()
         right_start_position = self.get_right_position().to_inches()
 

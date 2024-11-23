@@ -1,5 +1,6 @@
 import json
 
+from VEXLib.Algorithms.TrapezoidProfile import TrapezoidProfile, Constraints
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Geometry.Translation1d import Translation1d
@@ -47,8 +48,6 @@ class Robot(TickBasedRobot):
 
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-25), 90)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-70), 60, ramp_down=False)
-        # TODO: This is bad
-        self.on_driver_control()
 
         self.mobile_goal_clamp.clamp_mobile_goal()
         self.scoring_mechanism.spin_motor_at_speed(100)
@@ -62,7 +61,6 @@ class Robot(TickBasedRobot):
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), -60)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-50), -60)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), -120)
-        time.sleep(5)
 
     def blue_negative(self):
         self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(-90)
@@ -73,8 +71,6 @@ class Robot(TickBasedRobot):
         self.mobile_goal_clamp.release_mobile_goal()
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-25), -90)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-70), -60, ramp_down=False)
-        # TODO: This is bad
-        self.on_driver_control()
 
         self.mobile_goal_clamp.clamp_mobile_goal()
         self.scoring_mechanism.spin_motor_at_speed(100)
@@ -82,7 +78,6 @@ class Robot(TickBasedRobot):
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(55), -5)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(30), 83)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-5), 83)
-        time.sleep(5)
 
     def red_positive(self):
         self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(90)
@@ -92,8 +87,6 @@ class Robot(TickBasedRobot):
         self.mobile_goal_clamp.release_mobile_goal()
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-32), 90)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-80), 120, ramp_down=False)
-        # TODO: This is bad
-        self.on_driver_control()
 
         self.mobile_goal_clamp.clamp_mobile_goal()
         self.scoring_mechanism.spin_motor_at_speed(100)
@@ -109,9 +102,6 @@ class Robot(TickBasedRobot):
         self.mobile_goal_clamp.release_mobile_goal()
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-32), -90)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-80), -120, ramp_down=False)
-
-        # TODO: This is bad
-        self.on_driver_control()
 
         self.mobile_goal_clamp.clamp_mobile_goal()
         self.scoring_mechanism.spin_motor_at_speed(100)
@@ -144,36 +134,107 @@ class Robot(TickBasedRobot):
         time.sleep(3)
         self.mobile_goal_clamp.release_mobile_goal()
 
-    def win_point(self):
+    def red_win_point(self):
+        self.println("1")
+        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(100, 90))
+        self.println("2")
         self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
+        self.println("3")
         self.mobile_goal_clamp.release_mobile_goal()
+        self.println("4")
         self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(110, DEGREES, wait=False)
+        self.println("5")
+        self.wall_stake_mechanism.motor.spin_to_position(140, DEGREES, wait=False)
+        self.println("6")
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), 0)
+        self.println("7")
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -90)
-        self.wall_stake_mechanism.motor.spin_to_position(-100, DEGREES, wait=False)
-        time.sleep(0.5)
+        self.println("8")
+        self.wall_stake_mechanism.motor.spin_to_position(-300, DEGREES, wait=False)
+        self.println("9")
+        time.sleep(0.25)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -90)
         self.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 125)
         self.mobile_goal_clamp.clamp_mobile_goal()
         self.scoring_mechanism.spin_motor_at_speed(100)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), 5)
+
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), 5)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), -80)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), -80)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -45)
+
+    def blue_win_point(self):
+        self.trapezoidal_profile = TrapezoidProfile(Constraints(50, 100))
+        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
+        self.mobile_goal_clamp.release_mobile_goal()
+        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
+        self.wall_stake_mechanism.motor.spin_to_position(140, DEGREES, wait=False)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), -0)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), 90)
+        self.wall_stake_mechanism.motor.spin_to_position(-100, DEGREES, wait=False)
+        time.sleep(0.5)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 90)
+        self.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), -125)
+        self.mobile_goal_clamp.clamp_mobile_goal()
+        self.scoring_mechanism.spin_motor_at_speed(100)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), -5)
         # # time.sleep(1)
         # self.scoring_mechanism.spin_motor_at_speed(-100)
         # time.sleep(0.25)
         # self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(45), -80)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(45), 80)
         # time.sleep(1)
         # self.scoring_mechanism.spin_motor_at_speed(-100)
         # time.sleep(0.5)
         # self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(80), 170)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(80), -170)
 
+    def alliance_stake_test(self):
+        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
+        self.wall_stake_mechanism.motor.spin_to_position(110+100, DEGREES, wait=False)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), 0)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -90)
+        self.wall_stake_mechanism.motor.spin_to_position(-100+100, DEGREES, wait=False)
+        time.sleep(0.5)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -90)
+        self.wall_stake_mechanism.motor.spin_to_position(200+100, DEGREES, wait=False)
 
+    def println(self, message):
+        self.brain.screen.print(message)
+        self.brain.screen.next_row()
+
+    def red_negative_4_rings_and_touch(self):
+        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 100))
+        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
+        self.mobile_goal_clamp.release_mobile_goal()
+        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
+        self.wall_stake_mechanism.motor.spin_to_position(140, DEGREES, wait=False)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), 0)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -90)
+        self.wall_stake_mechanism.motor.spin_to_position(-300, DEGREES, wait=False)
+        time.sleep(0.1)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -90)
+        self.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
+        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 50))
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 125)
+        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 100))
+        self.mobile_goal_clamp.clamp_mobile_goal()
+        self.scoring_mechanism.spin_motor_at_speed(100)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), 5)
+
+        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 500))
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), 5)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), -80)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), -80)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -45)
+        self.wall_stake_mechanism.motor.spin_to_position(0, DEGREES, wait=False)
+        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 0)
 
     def on_autonomous(self):
-        self.brain.screen.print("on_autonomous")
+        self.brain.screen.print("Autonomous: ")
         self.brain.screen.print(self.autonomous)
         if "red_negative" in self.autonomous:
             self.red_negative()
@@ -185,12 +246,19 @@ class Robot(TickBasedRobot):
             self.blue_positive()
         if "skills" in self.autonomous:
             self.skills()
-        if "win_point" in self.autonomous:
-            self.win_point()
-        self.on_driver_control()
+        if "red_win_point" in self.autonomous:
+            self.println("RWP")
+            self.red_win_point()
+        if "blue_win_point" in self.autonomous:
+            self.blue_win_point()
+        if "red_negative_4_rings_and_touch" in self.autonomous:
+            self.red_negative_4_rings_and_touch()
 
     def on_enable(self):
         self.drivetrain.odometry.inertial_sensor.set_rotation(0, DEGREES)
+        self.drivetrain.left_drivetrain_PID.reset()
+        self.drivetrain.right_drivetrain_PID.reset()
+        self.drivetrain.set_speed_percent(0, 0)
 
     def on_driver_control(self):
         self.wall_stake_mechanism.motor.set_velocity(0, PERCENT)
@@ -206,53 +274,39 @@ class Robot(TickBasedRobot):
         self.controller.buttonL1.pressed(self.wall_stake_mechanism.start_docking)
         self.controller.buttonL1.released(self.wall_stake_mechanism.stop)
 
-        self.wall_stake_mechanism.motor.spin(FORWARD, -3, VOLT)
-        time.sleep(2)
-        self.wall_stake_mechanism.motor.set_velocity(0, PERCENT)
+        self.wall_stake_mechanism.calibrate()
 
-        # self.controller.buttonX.pressed(self.trigger_restart)
+    def driver_control_periodic(self):
+        scoring_mechanism_speed = 0
 
-    def periodic(self):
-        if self._competition.is_driver_control():
-            # message = b"This is a test message"
-            #
-            # frame = Frame(frame_header=[0xEB, 0x90], frame_type=0x3, data_length=len(message), frame_id=1,
-            #               data=message, crc_function=crc_bytes)
-            # frame_bytearray = frame.get_bytearray()
-            # self.output_buffer.append(frame_bytearray + b"\n")
-            # self.output_buffer.append(frame_bytearray.hex().upper().encode() + b"\n")
+        if self.controller.buttonR2.pressing():
+            scoring_mechanism_speed = 100
+        elif self.controller.buttonL2.pressing():
+            scoring_mechanism_speed = -100
 
-            # print(frame_bytearray + b"\n")
+        if Preferences.ARCADE_CONTROL:
+            forward_speed = self.controller.axis3.position() / 100
+            turn_speed = self.controller.axis4.position() / 100
+            left_speed = forward_speed - turn_speed
+            right_speed = forward_speed + turn_speed
+        else:
+            left_speed = self.controller.axis3.position() / 100
+            right_speed = self.controller.axis2.position() / 100
 
+        left_speed = MathUtil.apply_deadband(left_speed, 0.05, 1)
+        right_speed = MathUtil.apply_deadband(right_speed, 0.05, 1)
 
-            scoring_mechanism_speed = 0
+        left_speed = MathUtil.cubic_filter(left_speed, linearity=0.4)
+        right_speed = MathUtil.cubic_filter(right_speed, linearity=0.4)
 
-            if self.controller.buttonR2.pressing():
-                scoring_mechanism_speed = 100
-            elif self.controller.buttonL2.pressing():
-                scoring_mechanism_speed = -100
+        self.drivetrain.set_voltage(left_speed * 12, right_speed * 12)
 
-            if Preferences.ARCADE_CONTROL:
-                forward_speed = self.controller.axis3.position() / 100
-                turn_speed = self.controller.axis4.position() / 100
-                left_speed = forward_speed - turn_speed
-                right_speed = forward_speed + turn_speed
-            else:
-                left_speed = self.controller.axis3.position() / 100
-                right_speed = self.controller.axis2.position() / 100
+        # self.drivetrain.update_motor_voltages()
+        self.drivetrain.update_odometry()
 
-            left_speed = MathUtil.apply_deadband(left_speed, 0.05, 1)
-            right_speed = MathUtil.apply_deadband(right_speed, 0.05, 1)
+        if Preferences.PRINT_POSE:
+            print(self.drivetrain.odometry.get_pose())
 
-            left_speed = MathUtil.cubic_filter(left_speed, linearity=0.4)
-            right_speed = MathUtil.cubic_filter(right_speed, linearity=0.4)
+        self.wall_stake_mechanism.tick()
 
-            self.drivetrain.set_voltage(left_speed * 12, right_speed * 12)
-
-            # self.drivetrain.update_motor_voltages()
-            self.drivetrain.update_odometry()
-
-            if Preferences.PRINT_POSE:
-                print(self.drivetrain.odometry.get_pose())
-
-            self.scoring_mechanism.spin_motor_at_speed(scoring_mechanism_speed)
+        self.scoring_mechanism.spin_motor_at_speed(scoring_mechanism_speed)
