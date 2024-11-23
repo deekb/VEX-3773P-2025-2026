@@ -1,10 +1,6 @@
-import json
-
 from VEXLib.Algorithms.TrapezoidProfile import TrapezoidProfile, Constraints
 from VEXLib.Geometry.Rotation2d import Rotation2d
-from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Geometry.Translation1d import Translation1d
-from VEXLib.Robot.TelemteryRobot import TelemetryRobot
 from VEXLib.Robot.NewTickBasedRobot import TickBasedRobot
 from VEXLib.Util import time
 from Drivetrain import Drivetrain
@@ -13,8 +9,6 @@ from ScoringMechanism import ScoringMechanism
 from WallStakeMechanism import WallStakeMechanism
 from CornerMechanism import CornerMechanism
 from Constants import Preferences
-from SerialData import Frame
-from CRC import crc_bytes
 import VEXLib.Math.MathUtil as MathUtil
 from vex import *
 
@@ -32,6 +26,7 @@ class Robot(TickBasedRobot):
         self.wall_stake_mechanism = WallStakeMechanism()
         self.doinker = CornerMechanism()
         self.autonomous = autonomous
+        # self.autonomous_thread = Thread(lambda: None)
 
     def debug_wait(self):
         while not self.controller.buttonA.pressing():
@@ -135,23 +130,14 @@ class Robot(TickBasedRobot):
         self.mobile_goal_clamp.release_mobile_goal()
 
     def red_win_point(self):
-        self.println("1")
         self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(100, 90))
-        self.println("2")
         self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
-        self.println("3")
         self.mobile_goal_clamp.release_mobile_goal()
-        self.println("4")
         self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.println("5")
         self.wall_stake_mechanism.motor.spin_to_position(140, DEGREES, wait=False)
-        self.println("6")
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), 0)
-        self.println("7")
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -90)
-        self.println("8")
         self.wall_stake_mechanism.motor.spin_to_position(-300, DEGREES, wait=False)
-        self.println("9")
         time.sleep(0.25)
         self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -90)
         self.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
@@ -236,23 +222,27 @@ class Robot(TickBasedRobot):
     def on_autonomous(self):
         self.brain.screen.print("Autonomous: ")
         self.brain.screen.print(self.autonomous)
-        if "red_negative" in self.autonomous:
-            self.red_negative()
-        if "red_positive" in self.autonomous:
-            self.red_positive()
-        if "blue_negative" in self.autonomous:
-            self.blue_negative()
-        if "blue_positive" in self.autonomous:
-            self.blue_positive()
-        if "skills" in self.autonomous:
-            self.skills()
-        if "red_win_point" in self.autonomous:
-            self.println("RWP")
-            self.red_win_point()
-        if "blue_win_point" in self.autonomous:
-            self.blue_win_point()
+
+        function = lambda: None
         if "red_negative_4_rings_and_touch" in self.autonomous:
-            self.red_negative_4_rings_and_touch()
+            function = self.red_negative_4_rings_and_touch
+        elif "red_negative" in self.autonomous:
+            function = self.red_negative
+        elif "red_positive" in self.autonomous:
+            function = self.red_positive
+        elif "blue_negative" in self.autonomous:
+            function = self.blue_negative
+        elif "blue_positive" in self.autonomous:
+            function = self.blue_positive
+        elif "skills" in self.autonomous:
+            function = self.skills
+        elif "red_win_point" in self.autonomous:
+            function = self.red_win_point
+        elif "blue_win_point" in self.autonomous:
+            function = self.blue_win_point
+
+        function()
+        # self.autonomous_thread = Thread(function)
 
     def on_enable(self):
         self.drivetrain.odometry.inertial_sensor.set_rotation(0, DEGREES)
