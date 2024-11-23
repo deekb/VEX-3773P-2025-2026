@@ -1,8 +1,4 @@
-from VEXLib.Algorithms.TrapezoidProfile import TrapezoidProfile, Constraints
-from VEXLib.Geometry.Rotation2d import Rotation2d
-from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Robot.NewTickBasedRobot import TickBasedRobot
-from VEXLib.Util import time
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
@@ -10,6 +6,7 @@ from WallStakeMechanism import WallStakeMechanism
 from CornerMechanism import CornerMechanism
 from Constants import Preferences
 import VEXLib.Math.MathUtil as MathUtil
+import AutonomousRoutines
 from vex import *
 
 
@@ -34,212 +31,27 @@ class Robot(TickBasedRobot):
         while self.controller.buttonA.pressing():
             pass
 
-    def red_negative(self):
-        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(90)
-        self.mobile_goal_clamp.release_mobile_goal()
-
-        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(50, DEGREES, wait=False)
-
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-25), 90)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-70), 60, ramp_down=False)
-
-        self.mobile_goal_clamp.clamp_mobile_goal()
-        self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), 60, ramp_up=False, turn_first=True)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(55), 5)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(30), -83)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-25), -83)
-        # self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(10), 0)
-
-
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), -60)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-50), -60)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), -120)
-
-    def blue_negative(self):
-        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(-90)
-
-        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(50, DEGREES, wait=False)
-
-        self.mobile_goal_clamp.release_mobile_goal()
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-25), -90)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-70), -60, ramp_down=False)
-
-        self.mobile_goal_clamp.clamp_mobile_goal()
-        self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -60, ramp_up=False)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(55), -5)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(30), 83)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-5), 83)
-
-    def red_positive(self):
-        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(90)
-        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(50, DEGREES, wait=False)
-
-        self.mobile_goal_clamp.release_mobile_goal()
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-32), 90)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-80), 120, ramp_down=False)
-
-        self.mobile_goal_clamp.clamp_mobile_goal()
-        self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(45), 180)
-        time.sleep(3)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(140), 0)
-
-    def blue_positive(self):
-        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(-90)
-        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(50, DEGREES, wait=False)
-
-        self.mobile_goal_clamp.release_mobile_goal()
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-32), -90)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-80), -120, ramp_down=False)
-
-        self.mobile_goal_clamp.clamp_mobile_goal()
-        self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(45), -180)
-        time.sleep(3)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(140), -0)
-
-    def skills(self):
-        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(90)
-        self.mobile_goal_clamp.release_mobile_goal()
-        # self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-7), 90)
-
-        # self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 90)
-        # self.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
-        # time.sleep(0.5)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-33), 90)
-        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(75, DEGREES, wait=True)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-60), 0)
-        self.mobile_goal_clamp.clamp_mobile_goal()
-        self.scoring_mechanism.spin_motor_at_speed(100)
-        time.sleep(0.5)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), -90)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), 180)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(60), 85)
-        time.sleep(1)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 90)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -140)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-30), -60)
-        time.sleep(3)
-        self.mobile_goal_clamp.release_mobile_goal()
-
-    def red_win_point(self):
-        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(100, 90))
-        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
-        self.mobile_goal_clamp.release_mobile_goal()
-        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(140, DEGREES, wait=False)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), 0)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -90)
-        self.wall_stake_mechanism.motor.spin_to_position(-300, DEGREES, wait=False)
-        time.sleep(0.25)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -90)
-        self.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 125)
-        self.mobile_goal_clamp.clamp_mobile_goal()
-        self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), 5)
-
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), 5)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), -80)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), -80)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -45)
-
-    def blue_win_point(self):
-        self.trapezoidal_profile = TrapezoidProfile(Constraints(50, 100))
-        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
-        self.mobile_goal_clamp.release_mobile_goal()
-        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(140, DEGREES, wait=False)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), -0)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), 90)
-        self.wall_stake_mechanism.motor.spin_to_position(-100, DEGREES, wait=False)
-        time.sleep(0.5)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 90)
-        self.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), -125)
-        self.mobile_goal_clamp.clamp_mobile_goal()
-        self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), -5)
-        # # time.sleep(1)
-        # self.scoring_mechanism.spin_motor_at_speed(-100)
-        # time.sleep(0.25)
-        # self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(45), 80)
-        # time.sleep(1)
-        # self.scoring_mechanism.spin_motor_at_speed(-100)
-        # time.sleep(0.5)
-        # self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(80), -170)
-
-    def alliance_stake_test(self):
-        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(110+100, DEGREES, wait=False)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), 0)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -90)
-        self.wall_stake_mechanism.motor.spin_to_position(-100+100, DEGREES, wait=False)
-        time.sleep(0.5)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -90)
-        self.wall_stake_mechanism.motor.spin_to_position(200+100, DEGREES, wait=False)
-
-    def println(self, message):
-        self.brain.screen.print(message)
-        self.brain.screen.next_row()
-
-    def red_negative_4_rings_and_touch(self):
-        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 100))
-        self.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
-        self.mobile_goal_clamp.release_mobile_goal()
-        self.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
-        self.wall_stake_mechanism.motor.spin_to_position(140, DEGREES, wait=False)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-38), 0)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -90)
-        self.wall_stake_mechanism.motor.spin_to_position(-300, DEGREES, wait=False)
-        time.sleep(0.1)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -90)
-        self.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
-        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 50))
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 125)
-        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 100))
-        self.mobile_goal_clamp.clamp_mobile_goal()
-        self.scoring_mechanism.spin_motor_at_speed(100)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), 5)
-
-        self.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 500))
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), 5)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), -80)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), -80)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -45)
-        self.wall_stake_mechanism.motor.spin_to_position(0, DEGREES, wait=False)
-        self.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 0)
-
     def on_autonomous(self):
         self.brain.screen.print("Autonomous: ")
         self.brain.screen.print(self.autonomous)
 
         function = lambda: None
         if "red_negative_4_rings_and_touch" in self.autonomous:
-            function = self.red_negative_4_rings_and_touch
+            function = AutonomousRoutines.red_negative_4_rings_and_touch
         elif "red_negative" in self.autonomous:
-            function = self.red_negative
+            function = AutonomousRoutines.red_negative
         elif "red_positive" in self.autonomous:
-            function = self.red_positive
+            function = AutonomousRoutines.red_positive
         elif "blue_negative" in self.autonomous:
-            function = self.blue_negative
+            function = AutonomousRoutines.blue_negative
         elif "blue_positive" in self.autonomous:
-            function = self.blue_positive
+            function = AutonomousRoutines.blue_positive
         elif "skills" in self.autonomous:
-            function = self.skills
+            function = AutonomousRoutines.skills
         elif "red_win_point" in self.autonomous:
-            function = self.red_win_point
+            function = AutonomousRoutines.red_win_point
         elif "blue_win_point" in self.autonomous:
-            function = self.blue_win_point
+            function = AutonomousRoutines.blue_win_point
 
         function()
         # self.autonomous_thread = Thread(function)
