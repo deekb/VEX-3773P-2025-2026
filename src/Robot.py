@@ -23,6 +23,7 @@ class Robot(TickBasedRobot):
         self.doinker = CornerMechanism()
         self.autonomous_mappings = {
             "red_negative_4_rings_and_touch": AutonomousRoutines.red_negative_4_rings_and_touch,
+            "blue_negative_4_rings_and_touch": AutonomousRoutines.blue_negative_4_rings_and_touch,
             "red_negative": AutonomousRoutines.red_negative,
             "red_positive": AutonomousRoutines.red_positive,
             "blue_negative": AutonomousRoutines.blue_negative,
@@ -57,6 +58,7 @@ class Robot(TickBasedRobot):
         self.wall_stake_mechanism.motor.spin(FORWARD)
 
     def on_setup(self):
+        self.brain.screen.draw_image_from_file("/deploy/logo_vertical.png", 0, 0)
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
         self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.start_scoring)
