@@ -59,11 +59,14 @@ class Robot(TickBasedRobot):
     def on_setup(self):
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
         self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
-        self.controller.buttonR1.pressed(self.wall_stake_mechanism.start_scoring)
+        self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_in)
         self.controller.buttonR1.released(self.wall_stake_mechanism.stop)
 
-        self.controller.buttonL1.pressed(self.wall_stake_mechanism.start_docking)
+        self.controller.buttonL1.pressed(self.wall_stake_mechanism.move_out)
         self.controller.buttonL1.released(self.wall_stake_mechanism.stop)
+
+        self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
+        self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
 
         self.wall_stake_mechanism.calibrate()
 
