@@ -93,7 +93,7 @@ class Drivetrain:
         # Initialize the inertial sensor
         self.inertial = Inertial(Constants.SmartPorts.INERTIAL_SENSOR)
 
-        self.odometry = TankOdometry(self.left_rotation_sensor, self.right_rotation_sensor, self.inertial)
+        self.odometry = TankOdometry(self.inertial)
 
         # TODO: Tune PIDs
         self.left_drivetrain_PID = PIDFController(1, 3, 0, 1, 0.01, 12)
@@ -103,9 +103,6 @@ class Drivetrain:
         self.position_PID = PIDController(10, 1, 0, 0.01, 10)
         self.rotation_PID = PIDController(1, 1, 0, 0.01, 0)
         # self.rotation_PID.enable_continuous_input(-math.pi, math.pi)
-
-        # Initialize a TrapezoidProfile object to define the speed and acceleration profiles of the drivetrain
-        self.trapezoidal_profile = TrapezoidProfile(Constraints(30, 50))
 
         # Speed smoothing
         self.SPEED_SAMPLE_TIME_MS = speed_sample_time_ms
@@ -126,6 +123,10 @@ class Drivetrain:
         self.track_width = Constants.DrivetrainProperties.TRACK_WIDTH
         self.wheel_diameter = Constants.DrivetrainProperties.WHEEL_DIAMETER
         self.wheel_circumference = Constants.DrivetrainProperties.WHEEL_CIRCUMFERENCE
+
+        # Initialize a TrapezoidProfile object to define the speed and acceleration profiles of the drivetrain
+        self.trapezoidal_profile = TrapezoidProfile(Constraints(30 * self.encoder_to_wheel_gear_ratio, 50 * self.encoder_to_wheel_gear_ratio))
+
 
         self.target_pose = Pose2d()
 
@@ -150,8 +151,11 @@ class Drivetrain:
         current_time = ContinuousTimer.time()
         dx = (current_time - self.previous_speed_sample_time)
         if dx >= Units.milliseconds_to_seconds(self.SPEED_SAMPLE_TIME_MS):
-            current_left_position = self.left_rotation_sensor.position(TURNS)
-            current_right_position = self.right_rotation_sensor.position(TURNS)
+            # current_left_position = self.left_rotation_sensor.position(TURNS) / self.encoder_to_wheel_gear_ratio
+            # current_right_position = self.right_rotation_sensor.position(TURNS) / self.encoder_to_wheel_gear_ratio
+
+            current_left_position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.left_motors]) / self.motor_to_wheel_gear_ratio
+            current_right_position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.right_motors]) / self.motor_to_wheel_gear_ratio
 
             left_dy = (current_left_position - self.last_left_drivetrain_position)
             right_dy = (current_right_position - self.last_right_drivetrain_position)
@@ -173,13 +177,25 @@ class Drivetrain:
         return left_average_speed, right_average_speed
 
     def get_left_position(self):
+        # left_position = Rotation2d.from_degrees(
+        #     self.left_rotation_sensor.position(DEGREES) * self.encoder_to_wheel_gear_ratio)
+        # return GeometryUtil.arc_length_from_rotation(self.wheel_circumference, left_position)
+
+        position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.left_motors])
+
         left_position = Rotation2d.from_degrees(
-            self.left_rotation_sensor.position(DEGREES) * self.encoder_to_wheel_gear_ratio)
+             position * self.motor_to_wheel_gear_ratio)
         return GeometryUtil.arc_length_from_rotation(self.wheel_circumference, left_position)
 
     def get_right_position(self):
+        # right_position = Rotation2d.from_degrees(
+        #     self.right_rotation_sensor.position(DEGREES) * self.encoder_to_wheel_gear_ratio)
+        # return GeometryUtil.arc_length_from_rotation(self.wheel_circumference, right_position)
+
+        position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.right_motors])
+
         right_position = Rotation2d.from_degrees(
-            self.right_rotation_sensor.position(DEGREES) * self.encoder_to_wheel_gear_ratio)
+            position * self.motor_to_wheel_gear_ratio)
         return GeometryUtil.arc_length_from_rotation(self.wheel_circumference, right_position)
 
     def set_speed_rotations_per_second(self, left_speed, right_speed):

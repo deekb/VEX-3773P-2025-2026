@@ -8,10 +8,8 @@ from vex import DEGREES, Inertial
 
 
 class TankOdometry:
-    def __init__(self, left_rotation_sensor, right_rotation_sensor, inertial_sensor: Inertial):
+    def __init__(self, inertial_sensor: Inertial):
         # Devices
-        self.left_rotation_sensor = left_rotation_sensor
-        self.right_rotation_sensor = right_rotation_sensor
         self.inertial_sensor = inertial_sensor
 
         # State variables
