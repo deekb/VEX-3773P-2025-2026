@@ -1,4 +1,4 @@
-from VEXLib.Math import clamp
+from VEXLib.Math import clamp, MathUtil
 
 import Constants
 from VEXLib.Util import time
@@ -25,11 +25,16 @@ class WallStakeMechanism:
             docking (bool): Whether the mechanism is currently docking.
             thread (vex.Thread): A thread that runs the `tick` method to handle real-time operations.
         """
+        self.manual_control = True
+
         self.limit_switch = Limit(Constants.ThreeWirePorts.WALL_STAKE_CALIBRATION_LIMIT_SWITCH)
         self.motor = Motor(Constants.SmartPorts.WALL_STAKE_MOTOR, GearSetting.RATIO_36_1, True)
         self.motor.spin(FORWARD)
         self.motor.set_velocity(0)
         self.target_velocity = 0
+
+        self.DOCKING_POSITION = 10
+        self.SCORING_POSITION = 645
 
     def calibrate(self):
         while not self.limit_switch.pressing():
@@ -44,21 +49,33 @@ class WallStakeMechanism:
         self.motor.set_velocity(0, PERCENT)
         self.motor.spin(FORWARD)
 
-    def start_docking(self):
+    def move_out(self):
         """
         Starts the process of docking the wall stake mechanism.
 
         The motor is set to move backward at a defined speed to dock the mechanism.
         """
+        self.manual_control = True
         self.target_velocity = -Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT
 
-    def start_scoring(self):
+    def move_in(self):
         """
         Starts the process of moving the wall stake mechanism to score a ring.
 
         The motor is set to move forward at a defined speed to extend the mechanism.
         """
+        self.manual_control = True
         self.target_velocity = Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT
+
+    def dock(self):
+        self.manual_control = False
+        self.motor.set_velocity(75, PERCENT)
+        self.motor.spin_to_position(self.DOCKING_POSITION, DEGREES, wait=False)
+
+    def score(self):
+        self.manual_control = False
+        self.motor.set_velocity(75, PERCENT)
+        self.motor.spin_to_position(self.SCORING_POSITION, DEGREES, wait=False)
 
     def stop(self):
         """
@@ -84,8 +101,12 @@ class WallStakeMechanism:
         else:
             self.motor.set_stopping(HOLD)
 
-        if self.motor.position(DEGREES) > 610:
-            self.target_velocity = clamp(self.target_velocity, None, 0)
+        if self.manual_control:
+            if self.limit_switch.pressing():
+                self.target_velocity = MathUtil.clamp(self.target_velocity, 0, None)
 
-        self.motor.spin(FORWARD)
-        self.motor.set_velocity(self.target_velocity, PERCENT)
+            if self.motor.position(DEGREES) > 645:
+                self.target_velocity = clamp(self.target_velocity, None, 0)
+
+            self.motor.spin(FORWARD)
+            self.motor.set_velocity(self.target_velocity, PERCENT)
