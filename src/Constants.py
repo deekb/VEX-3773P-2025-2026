@@ -44,7 +44,7 @@ class GearRatios:
 class DrivetrainProperties:
     MAX_ACHIEVABLE_SPEED = RotationalVelocity.from_rotations_per_minute(600)
     MOTOR_TO_WHEEL_GEAR_RATIO = (36 / 60)
-    ENCODER_TO_WHEEL_GEAR_RATIO = (24 / 60)
+    ENCODER_TO_WHEEL_GEAR_RATIO = (12 / 60)
     TRACK_WIDTH = Distance.from_inches(13.5)
     WHEEL_DIAMETER = Distance.from_inches(3.235)
     WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * math.pi

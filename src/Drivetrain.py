@@ -76,8 +76,7 @@ class Drivetrain:
         self.rear_left_motor = Motor(Constants.SmartPorts.REAR_LEFT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, True)
 
         self.front_right_motor = Motor(Constants.SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
-        self.middle_right_motor = Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1,
-                                        False)
+        self.middle_right_motor = Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
         self.rear_left_motor = Motor(Constants.SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
 
         # Make lists containing the left and right sets of motors
@@ -101,7 +100,7 @@ class Drivetrain:
 
         # Set up the PIDs to control the position and heading of the robot
         self.position_PID = PIDController(10, 1, 0, 0.01, 10)
-        self.rotation_PID = PIDController(1, 1, 0, 0.01, 0)
+        self.rotation_PID = PIDController(0.7, 0, 0.1, 0.01, 0)
         # self.rotation_PID.enable_continuous_input(-math.pi, math.pi)
 
         # Speed smoothing
@@ -125,8 +124,7 @@ class Drivetrain:
         self.wheel_circumference = Constants.DrivetrainProperties.WHEEL_CIRCUMFERENCE
 
         # Initialize a TrapezoidProfile object to define the speed and acceleration profiles of the drivetrain
-        self.trapezoidal_profile = TrapezoidProfile(Constraints(30 * self.encoder_to_wheel_gear_ratio, 50 * self.encoder_to_wheel_gear_ratio))
-
+        self.trapezoidal_profile = TrapezoidProfile(Constraints(30 * self.motor_to_wheel_gear_ratio, 50 * self.motor_to_wheel_gear_ratio))
 
         self.target_pose = Pose2d()
 
@@ -154,8 +152,8 @@ class Drivetrain:
             # current_left_position = self.left_rotation_sensor.position(TURNS) / self.encoder_to_wheel_gear_ratio
             # current_right_position = self.right_rotation_sensor.position(TURNS) / self.encoder_to_wheel_gear_ratio
 
-            current_left_position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.left_motors]) / self.motor_to_wheel_gear_ratio
-            current_right_position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.right_motors]) / self.motor_to_wheel_gear_ratio
+            current_left_position = MathUtil.average_iterable([motor.position(TURNS) for motor in self.left_motors]) * self.motor_to_wheel_gear_ratio
+            current_right_position = MathUtil.average_iterable([motor.position(TURNS) for motor in self.right_motors]) * self.motor_to_wheel_gear_ratio
 
             left_dy = (current_left_position - self.last_left_drivetrain_position)
             right_dy = (current_right_position - self.last_right_drivetrain_position)

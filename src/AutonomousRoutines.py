@@ -18,7 +18,7 @@ def red_negative(robot):
     robot.mobile_goal_clamp.clamp_mobile_goal()
     robot.scoring_mechanism.spin_motor_at_speed(100)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), 60, ramp_up=False,
-                                                         turn_first=True)
+                                                          turn_first=True)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(55), 5)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(30), -83)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-25), -83)
@@ -90,23 +90,36 @@ def skills(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-33), 90)
     robot.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
     robot.wall_stake_mechanism.motor.spin_to_position(75, DEGREES, wait=True)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-60), 0)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-60), 0, ramp_down=False)
     robot.mobile_goal_clamp.clamp_mobile_goal()
     robot.scoring_mechanism.spin_motor_at_speed(100)
     time.sleep(0.5)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), -90)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), 180)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(60), 85)
-    time.sleep(1)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 90)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(65), -90)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(62), 180)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(80), 85)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -140)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-30), -60)
-    time.sleep(3)
+    time.sleep(1)
     robot.mobile_goal_clamp.release_mobile_goal()
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(27),
+                                                          -60)  # TODO: THIS IS THE DIAGONAL MOVE
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-190), 180)
+    robot.mobile_goal_clamp.clamp_mobile_goal()
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(60), -90)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(65), 0)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), 90)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 0)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), 0)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-30), -135)
+    robot.mobile_goal_clamp.release_mobile_goal()
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(10), -135)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(220), -105)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(80), -145)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(130), -25)
 
 
 def red_win_point(robot):
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(100, 90))
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 70))
     robot.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
     robot.mobile_goal_clamp.release_mobile_goal()
     robot.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
@@ -116,20 +129,23 @@ def red_win_point(robot):
     robot.wall_stake_mechanism.motor.spin_to_position(-300, DEGREES, wait=False)
     time.sleep(0.25)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -90)
-    robot.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 125)
+    robot.wall_stake_mechanism.motor.spin_to_position(300, DEGREES, wait=False)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 30))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-90), 130)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 70))
     robot.mobile_goal_clamp.clamp_mobile_goal()
     robot.scoring_mechanism.spin_motor_at_speed(100)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), 5)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(45), -5)
 
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), 5)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), -80)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), -80)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -45)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), -90)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), -90, ramp_up=False,
+                                                          ramp_down=False)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), -165, ramp_up=False,
+                                                          ramp_down=False)
 
 
 def blue_win_point(robot):
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(100, 90))
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 70))
     robot.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
     robot.mobile_goal_clamp.release_mobile_goal()
     robot.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
@@ -139,16 +155,18 @@ def blue_win_point(robot):
     robot.wall_stake_mechanism.motor.spin_to_position(-300, DEGREES, wait=False)
     time.sleep(0.25)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 90)
-    robot.wall_stake_mechanism.motor.spin_to_position(200, DEGREES, wait=False)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), -125)
+    robot.wall_stake_mechanism.motor.spin_to_position(300, DEGREES, wait=False)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 30))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-90), -130)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 70))
     robot.mobile_goal_clamp.clamp_mobile_goal()
     robot.scoring_mechanism.spin_motor_at_speed(100)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), -5)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(45), 5)
 
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), -5)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), 80)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), 80)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 45)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), 90)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), 90, ramp_up=False, ramp_down=False)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), 165, ramp_up=False, ramp_down=False)
+
 
 def alliance_stake_test(robot):
     robot.wall_stake_mechanism.motor.set_velocity(50, PERCENT)
@@ -192,6 +210,7 @@ def red_negative_4_rings_and_touch(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), -45)
     robot.wall_stake_mechanism.motor.spin_to_position(0, DEGREES, wait=False)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 0)
+
 
 def blue_negative_4_rings_and_touch(robot):
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 100))
