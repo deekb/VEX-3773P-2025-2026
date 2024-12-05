@@ -29,6 +29,17 @@ class Robot(TickBasedRobot):
         }
 
         self.autonomous = lambda: None
+        self.animation_thread = Thread(self.animation)
+
+    def animation(self):
+        i = 0
+
+        while True:
+            self.brain.screen.draw_image_from_file("/deploy/animation/frame_" + str(i) + ".png", 0, 0)
+            wait(200, MSEC)
+            i += 1
+            if i > 4:
+                i = 0
 
     def debug_wait(self):
         while not self.controller.buttonA.pressing():
@@ -92,8 +103,6 @@ class Robot(TickBasedRobot):
         self.autonomous = self.autonomous_mappings[auto]
 
     def on_setup(self):
-        self.brain.screen.draw_image_from_file("/deploy/logo_vertical.png", 0, 0)
-
         self.select_autonomous_routine()
 
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
