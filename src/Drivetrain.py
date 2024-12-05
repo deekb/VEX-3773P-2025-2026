@@ -93,6 +93,7 @@ class Drivetrain:
         self.inertial = Inertial(Constants.SmartPorts.INERTIAL_SENSOR)
 
         self.odometry = TankOdometry(self.inertial)
+        self.ANGLE_DIRECTION = 1
 
         # TODO: Tune PIDs
         self.left_drivetrain_PID = PIDFController(1, 3, 0, 1, 0.01, 12)
@@ -127,6 +128,9 @@ class Drivetrain:
         self.trapezoidal_profile = TrapezoidProfile(Constraints(30 * self.motor_to_wheel_gear_ratio, 50 * self.motor_to_wheel_gear_ratio))
 
         self.target_pose = Pose2d()
+
+    def set_angles_inverted(self, inverted):
+        self.ANGLE_DIRECTION = -1 if inverted else 1
 
     def update_odometry(self):
         self.odometry.update(self.get_left_position(), self.get_right_position())
@@ -208,7 +212,7 @@ class Drivetrain:
 
     def turn_to_gyro(self, target_heading_degrees, speed=0.5):
         old_target_heading = self.rotation_PID.setpoint
-        new_target_heading = Rotation2d.from_degrees(target_heading_degrees).to_radians()
+        new_target_heading = Rotation2d.from_degrees(target_heading_degrees * self.ANGLE_DIRECTION).to_radians()
         angular_difference = MathUtil.smallest_angular_difference(old_target_heading, new_target_heading)
         self.rotation_PID.setpoint += angular_difference
         self.rotation_PID.reset()
