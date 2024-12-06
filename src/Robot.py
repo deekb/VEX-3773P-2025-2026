@@ -28,18 +28,18 @@ class Robot(TickBasedRobot):
             "win_point": AutonomousRoutines.win_point,
         }
 
-        self.autonomous = lambda: None
+        self.autonomous = lambda *args: None
         self.animation_thread = Thread(self.animation)
 
     def animation(self):
-        i = 0
+        i = 1
 
         while True:
-            self.brain.screen.draw_image_from_file("/deploy/animation/frame_" + str(i) + ".png", 0, 0)
-            wait(200, MSEC)
+            self.brain.screen.draw_image_from_file("/deploy/logo_vertical_frame_" + str(i) + ".png", 0, 0)
+            wait(10, MSEC)
             i += 1
-            if i > 4:
-                i = 0
+            if i > 10:
+                i = 1
 
     def debug_wait(self):
         while not self.controller.buttonA.pressing():
@@ -50,7 +50,7 @@ class Robot(TickBasedRobot):
     def on_autonomous(self):
         self.brain.screen.print("Autonomous: ")
         self.brain.screen.print(self.autonomous)
-        self.autonomous_mappings[self.autonomous](self)
+        self.autonomous(self)
 
     def on_enable(self):
         self.drivetrain.odometry.inertial_sensor.set_rotation(0, DEGREES)
@@ -68,6 +68,7 @@ class Robot(TickBasedRobot):
 
         while True:
             self.controller.screen.clear_screen()
+            self.controller.screen.set_cursor(1, 1)
             self.controller.screen.print(options[selection_index])
             while not (
                     self.controller.buttonRight.pressing() or self.controller.buttonLeft.pressing() or self.controller.buttonA.pressing()):
@@ -93,9 +94,12 @@ class Robot(TickBasedRobot):
 
     def select_autonomous_routine(self):
         color = self.get_selection(["red", "blue", "skills"])
+        while self.controller.buttonA.pressing():
+            wait(5, MSEC)
         if color == "skills":
             self.drivetrain.set_angles_inverted(False)
             self.autonomous = AutonomousRoutines.skills
+            return
 
         auto = self.get_selection(list(self.autonomous_mappings.keys()))
 
@@ -120,6 +124,9 @@ class Robot(TickBasedRobot):
 
     def driver_control_periodic(self):
         scoring_mechanism_speed = 0
+
+        # if self.controller.buttonUp.pressing():
+        #     self.on_autonomous()
 
         if self.controller.buttonR2.pressing():
             scoring_mechanism_speed = 100
