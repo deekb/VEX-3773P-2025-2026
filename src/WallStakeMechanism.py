@@ -34,7 +34,7 @@ class WallStakeMechanism:
         self.target_velocity = 0
 
         self.DOCKING_POSITION = 10
-        self.SCORING_POSITION = 645
+        self.SCORING_POSITION = 645+20
 
     def calibrate(self):
         while not self.limit_switch.pressing():
@@ -105,7 +105,7 @@ class WallStakeMechanism:
             if self.limit_switch.pressing():
                 self.target_velocity = MathUtil.clamp(self.target_velocity, 0, None)
 
-            if self.motor.position(DEGREES) > 645:
+            if self.motor.position(DEGREES) > 645+20:
                 self.target_velocity = clamp(self.target_velocity, None, 0)
 
             self.motor.spin(FORWARD)
