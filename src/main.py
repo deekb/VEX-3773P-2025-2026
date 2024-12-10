@@ -1,4 +1,4 @@
-def main(brain, autonomous):
+def main(brain):
     while True:
         from vex import Thread, wait, MSEC
         if not brain.sdcard.is_inserted():
@@ -16,7 +16,7 @@ def main(brain, autonomous):
         from VEXLib.Util import time as time
         import sys
 
-        robot = Robot(brain, autonomous)
+        robot = Robot(brain)
 
         robot_thread = Thread(robot.start)
 

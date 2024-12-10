@@ -11,7 +11,7 @@ from vex import *
 
 
 class Robot(TickBasedRobot):
-    def __init__(self, brain, autonomous):
+    def __init__(self, brain):
         super().__init__(brain)
         self.controller = Controller(PRIMARY)
         self.drivetrain = Drivetrain()
@@ -22,18 +22,24 @@ class Robot(TickBasedRobot):
         self.wall_stake_mechanism = WallStakeMechanism()
         self.doinker = CornerMechanism()
         self.autonomous_mappings = {
-            "red_negative_4_rings_and_touch": AutonomousRoutines.red_negative_4_rings_and_touch,
-            "blue_negative_4_rings_and_touch": AutonomousRoutines.blue_negative_4_rings_and_touch,
-            "red_negative": AutonomousRoutines.red_negative,
-            "red_positive": AutonomousRoutines.red_positive,
-            "blue_negative": AutonomousRoutines.blue_negative,
-            "blue_positive": AutonomousRoutines.blue_positive,
-            "skills": AutonomousRoutines.skills,
-            "red_win_point": AutonomousRoutines.red_win_point,
-            "blue_win_point": AutonomousRoutines.blue_win_point,
+            # "negative_4_rings_and_touch": AutonomousRoutines.negative_4_rings_and_touch,
+            "negative": AutonomousRoutines.negative,
+            "positive": AutonomousRoutines.positive,
+            "win_point": AutonomousRoutines.win_point,
         }
 
-        self.autonomous = autonomous
+        self.autonomous = lambda *args: None
+        self.animation_thread = Thread(self.animation)
+
+    def animation(self):
+        i = 1
+
+        while True:
+            self.brain.screen.draw_image_from_file("/deploy/logo_vertical_frame_" + str(i) + ".png", 0, 0)
+            wait(10, MSEC)
+            i += 1
+            if i > 10:
+                i = 1
 
     def debug_wait(self):
         while not self.controller.buttonA.pressing():
@@ -44,7 +50,7 @@ class Robot(TickBasedRobot):
     def on_autonomous(self):
         self.brain.screen.print("Autonomous: ")
         self.brain.screen.print(self.autonomous)
-        self.autonomous_mappings[self.autonomous](self)
+        self.autonomous(self)
 
     def on_enable(self):
         self.drivetrain.odometry.inertial_sensor.set_rotation(0, DEGREES)
@@ -57,8 +63,52 @@ class Robot(TickBasedRobot):
         self.wall_stake_mechanism.motor.set_velocity(0, PERCENT)
         self.wall_stake_mechanism.motor.spin(FORWARD)
 
+    def get_selection(self, options):
+        selection_index = 0
+
+        while True:
+            self.controller.screen.clear_screen()
+            self.controller.screen.set_cursor(1, 1)
+            self.controller.screen.print(options[selection_index])
+            while not (
+                    self.controller.buttonRight.pressing() or self.controller.buttonLeft.pressing() or self.controller.buttonA.pressing()):
+                wait(5, MSEC)
+
+            if self.controller.buttonA.pressing():
+                break
+
+            if self.controller.buttonRight.pressing():
+                selection_index += 1
+            elif self.controller.buttonLeft.pressing():
+                selection_index -= 1
+
+            while self.controller.buttonRight.pressing() or self.controller.buttonLeft.pressing():
+                wait(5, MSEC)
+
+            if selection_index < 0:
+                selection_index = 0
+            elif selection_index >= len(options) - 1:
+                selection_index = len(options) - 1
+
+        return options[selection_index]
+
+    def select_autonomous_routine(self):
+        color = self.get_selection(["red", "blue", "skills"])
+        while self.controller.buttonA.pressing():
+            wait(5, MSEC)
+        if color == "skills":
+            self.drivetrain.set_angles_inverted(False)
+            self.autonomous = AutonomousRoutines.skills
+            return
+
+        auto = self.get_selection(list(self.autonomous_mappings.keys()))
+
+        self.drivetrain.set_angles_inverted(color == "blue")
+        self.autonomous = self.autonomous_mappings[auto]
+
     def on_setup(self):
-        self.brain.screen.draw_image_from_file("/deploy/logo_vertical.png", 0, 0)
+        self.select_autonomous_routine()
+
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
         self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_in)
@@ -74,6 +124,9 @@ class Robot(TickBasedRobot):
 
     def driver_control_periodic(self):
         scoring_mechanism_speed = 0
+
+        # if self.controller.buttonUp.pressing():
+        #     self.on_autonomous()
 
         if self.controller.buttonR2.pressing():
             scoring_mechanism_speed = 100
