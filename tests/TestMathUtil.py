@@ -114,11 +114,11 @@ class TestMathUtil(unittest.TestCase):
         self.assertEqual(MathUtil.factorial(5), 120)
         self.assertEqual(MathUtil.factorial(10), 3628800)
 
-    def test_sin_accurate(self):
-        self.assertAlmostEqual(MathUtil.sin_accurate(math.pi / 2), 1.0, places=5)
-        self.assertAlmostEqual(MathUtil.sin_accurate(math.pi), 0.0, places=5)
-        self.assertAlmostEqual(MathUtil.sin_accurate(3 * math.pi / 2), -1.0, places=5)
-        self.assertAlmostEqual(MathUtil.sin_accurate(2 * math.pi), 0.0, places=5)
+    def test_sin(self):
+        self.assertAlmostEqual(MathUtil.sin(math.pi / 2), 1.0, places=5)
+        self.assertAlmostEqual(MathUtil.sin(math.pi), 0.0, places=5)
+        self.assertAlmostEqual(MathUtil.sin(3 * math.pi / 2), -1.0, places=5)
+        self.assertAlmostEqual(MathUtil.sin(2 * math.pi), 0.0, places=5)
 
     def test_average_edge_cases(self):
         self.assertRaises(ZeroDivisionError, MathUtil.average)  # No arguments should return 0
