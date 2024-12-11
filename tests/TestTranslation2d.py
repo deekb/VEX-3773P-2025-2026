@@ -1,8 +1,8 @@
 import unittest
 
-from VEXLib.Geometry.Translation1d import Distance
+from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation2d import Translation2d
-import VEXLib.Math.MathUtil as MathUtil
+
 
 class TestTranslation2d(unittest.TestCase):
     def test_addition(self):
@@ -67,6 +67,17 @@ class TestTranslation2d(unittest.TestCase):
         t1 = Translation2d.from_meters(3, 4)
         t2 = Translation2d.from_meters(1, 2)
         self.assertAlmostEqual(t1.distance(t2).to_meters(), 2.828, places=3)
+
+    def test_length(self):
+        t = Translation2d.from_meters(3, 4)
+        self.assertAlmostEqual(t.length().to_meters(), 5.0, places=3)
+
+    def test_rotate_by(self):
+        t = Translation2d.from_meters(1, 0)
+        rotation = Rotation2d.from_degrees(90)
+        rotated = t.rotate_by(rotation)
+        self.assertAlmostEqual(rotated.to_meters()[0], 0.0, places=3)
+        self.assertAlmostEqual(rotated.to_meters()[1], 1.0, places=3)
 
 if __name__ == '__main__':
     unittest.main()
