@@ -26,6 +26,8 @@ class Robot(TickBasedRobot):
             "negative": AutonomousRoutines.negative,
             "positive": AutonomousRoutines.positive,
             "win_point": AutonomousRoutines.win_point,
+            "forwards": AutonomousRoutines.drive_forwards,
+            "positive_WP": AutonomousRoutines.positive_win_point,
         }
 
         self.autonomous = lambda *args: None
@@ -53,7 +55,6 @@ class Robot(TickBasedRobot):
         self.autonomous(self)
 
     def on_enable(self):
-        self.drivetrain.odometry.inertial_sensor.set_rotation(0, DEGREES)
         self.drivetrain.left_drivetrain_PID.reset()
         self.drivetrain.right_drivetrain_PID.reset()
         self.drivetrain.set_speed_percent(0, 0)
@@ -99,15 +100,27 @@ class Robot(TickBasedRobot):
         if color == "skills":
             self.drivetrain.set_angles_inverted(False)
             self.autonomous = AutonomousRoutines.skills
-            return
+            return color
 
         auto = self.get_selection(list(self.autonomous_mappings.keys()))
 
         self.drivetrain.set_angles_inverted(color == "blue")
         self.autonomous = self.autonomous_mappings[auto]
 
+        return color + " " + auto
+
     def on_setup(self):
-        self.select_autonomous_routine()
+        self.drivetrain.inertial.calibrate()
+        while self.drivetrain.inertial.is_calibrating():
+            wait(5, MSEC)
+
+        self.wall_stake_mechanism.calibrate()
+        self.controller.rumble("....")
+
+        autonomous_routine = self.select_autonomous_routine()
+        f = open("logs/autonomous_selection.log", "a")
+        f.write(autonomous_routine + "\n")
+        f.close()
 
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
         self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
@@ -119,8 +132,6 @@ class Robot(TickBasedRobot):
 
         self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
         self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
-
-        self.wall_stake_mechanism.calibrate()
 
     def driver_control_periodic(self):
         scoring_mechanism_speed = 0
