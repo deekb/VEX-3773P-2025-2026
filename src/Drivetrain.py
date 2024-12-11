@@ -8,6 +8,7 @@ from VEXLib.Geometry import GeometryUtil
 from VEXLib.Geometry.Pose2d import Pose2d
 from VEXLib.Geometry.Rotation2d import Rotation2d
 import VEXLib.Units.Units as Units
+from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 import VEXLib.Math.MathUtil as MathUtil
 from VEXLib.Util import ContinuousTimer
@@ -282,6 +283,17 @@ class Drivetrain:
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
 
+    def move_distance_towards_direction_trap_corrected(self, distance, direction, ramp_up=True, ramp_down=True, turn_first=True):
+        delta_target = Translation2d(distance, Translation1d.from_meters(0))
+        delta_target.rotate_by(direction)
+
+        self.target_pose.translation += delta_target
+
+        distance, angle = self.get_distance_and_angle_to_target(self.target_pose.translation)
+        angle = Rotation2d.from_radians(angle)
+
+        self.move_distance_towards_direction_trap(distance, angle.to_degrees(), ramp_up, ramp_down, turn_first)
+
     def get_distance_and_angle_to_target(self, target_translation: Translation2d):
         """
         Calculate the distance and angle from the current position to the target position.
@@ -300,30 +312,11 @@ class Drivetrain:
         distance = current_translation.distance(target_translation)
 
         # Calculate the angle to the target position
-        target_angle = math.atan2(delta_y, delta_x)
+        target_angle = math.atan2(delta_y, delta_x) + (math.pi / 2)
 
         return distance, target_angle
 
     def move_to_position(self, position):
         distance, angle = self.get_distance_and_angle_to_target(position)
-        self.turn_to_gyro(angle + (math.pi / 2))
-        self.move_distance_towards_direction_trap(distance, angle + (math.pi / 2))
-
-    def move_distance_towards_direction(self, distance, direction):
-        self.turn_to_gyro(direction)
-        left_start_position = self.get_left_position().to_inches()
-        right_start_position = self.get_right_position().to_inches()
-
-        self.set_speed_percent(20, 20)
-
-        while True:
-            left_position = self.get_left_position().to_inches() - left_start_position
-            right_position = self.get_right_position().to_inches() - right_start_position
-            distance_traveled = MathUtil.average(left_position, right_position)
-            if distance_traveled > distance:
-                break
-
-        self.set_speed_percent(0, 0)
-        self.set_voltage(0, 0)
-        self.left_drivetrain_PID.reset()
-        self.right_drivetrain_PID.reset()
+        self.turn_to_gyro(angle)
+        self.move_distance_towards_direction_trap(distance, angle)
