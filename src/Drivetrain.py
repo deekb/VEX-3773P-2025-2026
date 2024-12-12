@@ -285,7 +285,7 @@ class Drivetrain:
 
     def move_distance_towards_direction_trap_corrected(self, distance, direction, ramp_up=True, ramp_down=True, turn_first=True):
         delta_target = Translation2d(distance, Translation1d.from_meters(0))
-        delta_target.rotate_by(direction)
+        delta_target.rotate_by(Rotation2d.from_degrees(direction))
 
         self.target_pose.translation += delta_target
 

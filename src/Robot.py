@@ -24,6 +24,7 @@ class Robot(TickBasedRobot):
         self.autonomous_mappings = {
             # "negative_4_rings_and_touch": AutonomousRoutines.negative_4_rings_and_touch,
             "negative": AutonomousRoutines.negative,
+            "square_test": AutonomousRoutines.test_autonomous,
             "positive": AutonomousRoutines.positive,
             "win_point": AutonomousRoutines.win_point,
             "forwards": AutonomousRoutines.drive_forwards,
@@ -90,13 +91,14 @@ class Robot(TickBasedRobot):
                 selection_index = 0
             elif selection_index >= len(options) - 1:
                 selection_index = len(options) - 1
+        while self.controller.buttonA.pressing():
+            wait(5, MSEC)
 
         return options[selection_index]
 
     def select_autonomous_routine(self):
         color = self.get_selection(["red", "blue", "skills"])
-        while self.controller.buttonA.pressing():
-            wait(5, MSEC)
+
         if color == "skills":
             self.drivetrain.set_angles_inverted(False)
             self.autonomous = AutonomousRoutines.skills
@@ -122,6 +124,12 @@ class Robot(TickBasedRobot):
         f.write(autonomous_routine + "\n")
         f.close()
 
+        drive_style = self.get_selection(["arcade", "tank"])
+        if drive_style == "tank":
+            Preferences.ARCADE_CONTROL = False
+        else:
+            Preferences.ARCADE_CONTROL = True
+
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
         self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_in)
@@ -146,21 +154,27 @@ class Robot(TickBasedRobot):
 
         if Preferences.ARCADE_CONTROL:
             forward_speed = self.controller.axis3.position() / 100
-            turn_speed = self.controller.axis4.position() / 100
+            turn_speed = self.controller.axis1.position() / 100
+
+            forward_speed = MathUtil.apply_deadband(forward_speed, 0.05, 1)
+            turn_speed = -MathUtil.apply_deadband(turn_speed, 0.05, 1)
+
             left_speed = forward_speed - turn_speed
             right_speed = forward_speed + turn_speed
         else:
             left_speed = self.controller.axis3.position() / 100
             right_speed = self.controller.axis2.position() / 100
 
-        if Preferences.VOLTAGE_CONTROL:
             left_speed = MathUtil.apply_deadband(left_speed, 0.05, 1)
             right_speed = MathUtil.apply_deadband(right_speed, 0.05, 1)
 
-            left_speed = MathUtil.cubic_filter(left_speed, linearity=0.4)
-            right_speed = MathUtil.cubic_filter(right_speed, linearity=0.4)
 
-            self.drivetrain.set_voltage(left_speed * 12, right_speed * 12)
+        if Preferences.VOLTAGE_CONTROL:
+
+            # left_speed = MathUtil.cubic_filter(left_speed, linearity=0.4)
+            # right_speed = MathUtil.cubic_filter(right_speed, linearity=0.4)
+
+            self.drivetrain.set_voltage(left_speed * 10, right_speed * 10)
         else:
             self.drivetrain.update_motor_voltages()
 
