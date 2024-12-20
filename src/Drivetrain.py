@@ -96,7 +96,6 @@ class Drivetrain:
         self.odometry = TankOdometry(self.inertial)
         self.ANGLE_DIRECTION = 1
 
-        # TODO: Tune PIDs
         self.left_drivetrain_PID = PIDFController(1, 3, 0, 1, 0.01, 12)
         self.right_drivetrain_PID = PIDFController(1, 3, 0, 1, 0.01, 12)
 
@@ -136,7 +135,6 @@ class Drivetrain:
     def update_odometry(self):
         self.odometry.update(self.get_left_position(), self.get_right_position())
 
-    # TODO Ensure this doesn't break things
     def set_voltage(self, left_voltage, right_voltage):
         for motor in self.left_motors:
             motor.spin(FORWARD, left_voltage, VOLT)
