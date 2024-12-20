@@ -3,7 +3,7 @@ import unittest
 import math
 
 
-class TestCalculateOptimalTurn(unittest.TestCase):
+class TestSmallestAngularDifference(unittest.TestCase):
     def setUp(self):
         self.setpoint = 0
 

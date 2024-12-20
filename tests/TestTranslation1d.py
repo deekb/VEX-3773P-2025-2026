@@ -6,13 +6,13 @@ class TestTranslation1d(unittest.TestCase):
         t1 = Translation1d(3)
         t2 = Translation1d(1)
         result = t1 + t2
-        self.assertEqual(result.x, 4)
+        self.assertEqual(result.magnitude, 4)
 
     def test_subtraction(self):
         t1 = Translation1d(3)
         t2 = Translation1d(1)
         result = t1 - t2
-        self.assertEqual(result.x, 2)
+        self.assertEqual(result.magnitude, 2)
 
     def test_equality(self):
         t1 = Translation1d(3)
@@ -28,23 +28,23 @@ class TestTranslation1d(unittest.TestCase):
         t1 = Translation1d(3)
         scalar = 2
         result = t1 * scalar
-        self.assertEqual(result.x, 6)
+        self.assertEqual(result.magnitude, 6)
 
     def test_from_meters(self):
         t1 = Translation1d.from_meters(3)
-        self.assertEqual(t1.x, 3)
+        self.assertEqual(t1.magnitude, 3)
 
     def test_from_centimeters(self):
         t1 = Translation1d.from_centimeters(300)
-        self.assertAlmostEqual(t1.x, 3, places=6)
+        self.assertAlmostEqual(t1.magnitude, 3, places=6)
 
     def test_from_inches(self):
         t1 = Translation1d.from_inches(118.11)
-        self.assertAlmostEqual(t1.x, 3, places=2)
+        self.assertAlmostEqual(t1.magnitude, 3, places=2)
 
     def test_from_feet(self):
         t1 = Translation1d.from_feet(9.84252)
-        self.assertAlmostEqual(t1.x, 3, places=6)
+        self.assertAlmostEqual(t1.magnitude, 3, places=6)
 
     def test_to_meters(self):
         t1 = Translation1d(3)

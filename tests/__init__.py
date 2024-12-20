@@ -8,5 +8,5 @@ from .TestTranslation1d import TestTranslation1d
 from .TestTranslation2d import TestTranslation2d
 from .TestVelocity1d import TestVelocity1d
 from .TestRotationalVelocity import TestRotationalVelocity
-from .TestCalculateOptimalTurn import TestCalculateOptimalTurn
+from .TestSmallestAngularDifference import TestSmallestAngularDifference
 

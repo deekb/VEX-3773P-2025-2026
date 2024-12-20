@@ -6,13 +6,13 @@ class TestVelocity1d(unittest.TestCase):
         v1 = Velocity1d(3)
         v2 = Velocity1d(2)
         result = v1 + v2
-        self.assertEqual(result.x, 5)
+        self.assertEqual(result.magnitude, 5)
 
     def test_subtraction(self):
         v1 = Velocity1d(3)
         v2 = Velocity1d(1)
         result = v1 - v2
-        self.assertEqual(result.x, 2)
+        self.assertEqual(result.magnitude, 2)
 
     def test_equality(self):
         v1 = Velocity1d(3)
@@ -28,23 +28,23 @@ class TestVelocity1d(unittest.TestCase):
         v1 = Velocity1d(3)
         scalar = 2
         result = v1 * scalar
-        self.assertEqual(result.x, 6)
+        self.assertEqual(result.magnitude, 6)
 
     def test_from_meters_per_second(self):
         v = Velocity1d.from_meters_per_second(5)
-        self.assertEqual(v.x, 5)
+        self.assertEqual(v.magnitude, 5)
 
     def test_from_centimeters_per_second(self):
         v = Velocity1d.from_centimeters_per_second(500)
-        self.assertEqual(v.x, 5)
+        self.assertEqual(v.magnitude, 5)
 
     def test_from_inches_per_second(self):
         v = Velocity1d.from_inches_per_second(196.85)  # 5 meters
-        self.assertAlmostEqual(v.x, 5, places=4)
+        self.assertAlmostEqual(v.magnitude, 5, places=4)
 
     def test_from_feet_per_second(self):
         v = Velocity1d.from_feet_per_second(16.4042)  # 5 meters
-        self.assertAlmostEqual(v.x, 5, places=4)
+        self.assertAlmostEqual(v.magnitude, 5, places=4)
 
     def test_to_meters_per_second(self):
         v = Velocity1d(5)
@@ -64,7 +64,7 @@ class TestVelocity1d(unittest.TestCase):
 
     def test_speed_alias(self):
         v = Speed.from_meters_per_second(5)
-        self.assertEqual(v.x, 5)
+        self.assertEqual(v.magnitude, 5)
 
 
 if __name__ == '__main__':
