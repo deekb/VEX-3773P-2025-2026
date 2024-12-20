@@ -9,7 +9,7 @@ from vex import DEGREES, Inertial
 class TankOdometry:
     """
     A class that manages odometry for a tank drive robot. This system calculates
-    the robot's position (pose) on a 2D plane using sensor inputs and geometric calculations.
+    the robot's pose (position and rotation) on a 2D plane using sensor inputs and geometric calculations.
     """
 
     def __init__(self, inertial_sensor: Inertial):
