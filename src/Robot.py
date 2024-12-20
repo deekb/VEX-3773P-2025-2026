@@ -8,6 +8,13 @@ from Constants import Preferences
 import VEXLib.Math.MathUtil as MathUtil
 import AutonomousRoutines
 from vex import *
+import json
+
+
+class Logger:
+    def __init__(self, log_name):
+        index = open("index.json", "rw")
+        json.loads(index.read())
 
 
 class Robot(TickBasedRobot):
