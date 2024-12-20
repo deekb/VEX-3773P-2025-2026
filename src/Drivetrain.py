@@ -100,8 +100,8 @@ class Drivetrain:
         self.right_drivetrain_PID = PIDFController(1, 3, 0, 1, 0.01, 12)
 
         # Set up the PIDs to control the position and heading of the robot
-        self.position_PID = PIDController(10, 1, 0, 0.01, 10)
-        self.rotation_PID = PIDController(0.7, 0, 0.1, 0.01, 0)
+        self.position_PID = PIDController(7, 0.1, 0.2, 0.01, 10)
+        self.rotation_PID = PIDController(0.8, 0, 0.1, 0.01, 0)
         # self.rotation_PID.enable_continuous_input(-math.pi, math.pi)
 
         # Speed smoothing
@@ -254,7 +254,7 @@ class Drivetrain:
         total_time = self.trapezoidal_profile.total_time()
         elapsed_time = ContinuousTimer.time() - start_time
 
-        while elapsed_time < total_time + 0.5:
+        while elapsed_time < total_time + 0.25:
             elapsed_time = ContinuousTimer.time() - start_time
             target_distance_traveled = self.trapezoidal_profile.calculate(elapsed_time, initial_state, goal_state)
             print("TIME: " + str(ContinuousTimer.time() - start_time))

@@ -36,10 +36,11 @@ class Robot(TickBasedRobot):
             "win_point": AutonomousRoutines.win_point,
             "forwards": AutonomousRoutines.drive_forwards,
             "positive_WP": AutonomousRoutines.positive_win_point,
+            "positive_2_mobile_goal": AutonomousRoutines.positive_2_mobile_goal,
         }
 
         self.autonomous = lambda *args: None
-        self.animation_thread = Thread(self.animation)
+        # self.animation_thread = Thread(self.animation)
 
     def animation(self):
         i = 1
@@ -104,11 +105,14 @@ class Robot(TickBasedRobot):
         return options[selection_index]
 
     def select_autonomous_routine(self):
-        color = self.get_selection(["red", "blue", "skills"])
+        color = self.get_selection(["red", "blue", "skills", "skills_alliance_stake"])
 
-        if color == "skills":
+        if "skills" in color:
             self.drivetrain.set_angles_inverted(False)
-            self.autonomous = AutonomousRoutines.skills
+            if color == "skills":
+                self.autonomous = AutonomousRoutines.skills
+            elif color == "skills_alliance_stake":
+                self.autonomous = AutonomousRoutines.skills_alliance_stake
             return color
 
         auto = self.get_selection(list(self.autonomous_mappings.keys()))
@@ -137,13 +141,25 @@ class Robot(TickBasedRobot):
         else:
             Preferences.ARCADE_CONTROL = True
 
+        # self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
+        # self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
+        # self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_in)
+        # self.controller.buttonR1.released(self.wall_stake_mechanism.stop)
+        #
+        # self.controller.buttonL1.pressed(self.wall_stake_mechanism.move_out)
+        # self.controller.buttonL1.released(self.wall_stake_mechanism.stop)
+        #
+        # self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
+        # self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
+
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
         self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
-        self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_in)
-        self.controller.buttonR1.released(self.wall_stake_mechanism.stop)
 
-        self.controller.buttonL1.pressed(self.wall_stake_mechanism.move_out)
-        self.controller.buttonL1.released(self.wall_stake_mechanism.stop)
+        self.controller.buttonR2.pressed(self.wall_stake_mechanism.move_in)
+        self.controller.buttonR2.released(self.wall_stake_mechanism.stop)
+
+        self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_out)
+        self.controller.buttonR1.released(self.wall_stake_mechanism.stop)
 
         self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
         self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
@@ -154,7 +170,7 @@ class Robot(TickBasedRobot):
         # if self.controller.buttonUp.pressing():
         #     self.on_autonomous()
 
-        if self.controller.buttonR2.pressing():
+        if self.controller.buttonL1.pressing():
             scoring_mechanism_speed = 100
         elif self.controller.buttonL2.pressing():
             scoring_mechanism_speed = -100
