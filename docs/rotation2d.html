@@ -1,0 +1,58 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html lang="en-US" data-preset="contrast" data-primary-color="#307FFF"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="UTF-8"><meta name="built-on" content="2024-12-21T12:35:43.258387823"><title>Rotation2d Class | VEXLib</title><script type="application/json" id="virtual-toc-data">[{"id":"features","level":0,"title":"Features","anchor":"#features"},{"id":"explanation-of-normalization","level":0,"title":"Explanation of Normalization","anchor":"#explanation-of-normalization"}]</script><script type="application/json" id="topic-shortcuts"></script><link href="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b419/app.css" rel="stylesheet"><meta name="msapplication-TileColor" content="#000000"><link rel="apple-touch-icon" sizes="180x180" href="https://jetbrains.com/apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="https://jetbrains.com/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="https://jetbrains.com/favicon-16x16.png"><meta name="msapplication-TileImage" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-144x144.png"><meta name="msapplication-square70x70logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-70x70.png"><meta name="msapplication-square150x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-150x150.png"><meta name="msapplication-wide310x150logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x150.png"><meta name="msapplication-square310x310logo" content="https://resources.jetbrains.com/storage/ui/favicons/mstile-310x310.png"><meta name="image" content=""><!-- Open Graph --><meta property="og:title" content="Rotation2d Class | VEXLib"><meta property="og:description" content=""><meta property="og:image" content=""><meta property="og:site_name" content="VEXLib Help"><meta property="og:type" content="website"><meta property="og:locale" content="en_US"><meta property="og:url" content="writerside-documentation/rotation2d.html"><!-- End Open Graph --><!-- Twitter Card --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content=""><meta name="twitter:title" content="Rotation2d Class | VEXLib"><meta name="twitter:description" content=""><meta name="twitter:creator" content=""><meta name="twitter:image:src" content=""><!-- End Twitter Card --><!-- Schema.org WebPage --><script type="application/ld+json">{
+    "@context": "http://schema.org",
+    "@type": "WebPage",
+    "@id": "writerside-documentation/rotation2d.html#webpage",
+    "url": "writerside-documentation/rotation2d.html",
+    "name": "Rotation2d Class | VEXLib",
+    "description": "",
+    "image": "",
+    "inLanguage":"en-US"
+}</script><!-- End Schema.org --><!-- Schema.org WebSite --><script type="application/ld+json">{
+    "@type": "WebSite",
+    "@id": "writerside-documentation/#website",
+    "url": "writerside-documentation/",
+    "name": "VEXLib Help"
+}</script><!-- End Schema.org --></head><body data-id="Rotation2d" data-main-title="Rotation2d Class" data-article-props="{&quot;seeAlsoStyle&quot;:&quot;links&quot;}" data-template="article" data-breadcrumbs="Geometry.md|Geometry"><div class="wrapper"><main class="panel _main"><header class="panel__header"><div class="container"><h3>VEXLib  Help</h3><div class="panel-trigger"></div></div></header><section class="panel__content"><div class="container"><article class="article" data-shortcut-switcher="inactive"><h1 data-toc="Rotation2d" id="Rotation2d.md">Rotation2d Class</h1><p id="-myhqjt_3">Represents a 2D rotation.</p><section class="chapter"><h2 id="features" data-toc="features">Features</h2><ul class="list _bullet" id="-myhqjt_6"><li class="list__item" id="-myhqjt_9"><p><span class="control" id="-myhqjt_18">Create</span> a <code class="code" id="-myhqjt_19">Rotation2d</code> object from radians, degrees, or revolutions using the <code class="code" id="-myhqjt_20">from_&lt;unit&gt;</code> class methods. This is the most explicit and least error-prone way to use the class.</p></li><li class="list__item" id="-myhqjt_10"><p><span class="control" id="-myhqjt_21">Add</span> or <span class="control" id="-myhqjt_22">subtract</span> two <code class="code" id="-myhqjt_23">Rotation2d</code> objects.</p></li><li class="list__item" id="-myhqjt_11"><p><span class="control" id="-myhqjt_24">Multiply</span> or <span class="control" id="-myhqjt_25">divide</span> a <code class="code" id="-myhqjt_26">Rotation2d</code> object by a scalar.</p></li><li class="list__item" id="-myhqjt_12"><p><span class="control" id="-myhqjt_27">Check equality</span> between two <code class="code" id="-myhqjt_28">Rotation2d</code> objects.</p></li><li class="list__item" id="-myhqjt_13"><p><span class="control" id="-myhqjt_29">Convert</span> the angle to radians, degrees, or revolutions.</p></li><li class="list__item" id="-myhqjt_14"><p><span class="control" id="-myhqjt_30">Calculate the sine, cosine, tangent, and their hyperbolic counterparts</span> of the angle.</p></li><li class="list__item" id="-myhqjt_15"><p><span class="control" id="-myhqjt_31">Calculate the inverse</span> of a <code class="code" id="-myhqjt_32">Rotation2d</code> object.</p></li><li class="list__item" id="-myhqjt_16"><p><span class="control" id="-myhqjt_33">Normalize</span> the rotation angle to the range -&pi; to &pi; radians.</p></li><li class="list__item" id="-myhqjt_17"><p><span class="control" id="-myhqjt_34">Interpolate</span> between two <code class="code" id="-myhqjt_35">Rotation2d</code> objects.</p></li></ul><section class="chapter"><h3 id="imports" data-toc="imports">Imports</h3><div class="code-block" data-lang="python">
+from VEXLib.Geometry.Rotation2d import Rotation2d
+</div></section><section class="chapter"><h3 id="usage-examples" data-toc="usage-examples">Usage Examples</h3><section class="chapter"><h4 id="create-a-rotation2d-object-from-different-units" data-toc="create-a-rotation2d-object-from-different-units">Create a Rotation2d object from different units</h4><div class="code-block" data-lang="python">
+rotation_radians = Rotation2d.from_radians(1.57)
+print(rotation_radians)  # Output: 1.57 radians
+
+rotation_degrees = Rotation2d.from_degrees(90)
+print(rotation_degrees)  # Output: 1.5707963267948966 radians
+
+rotation_revolutions = Rotation2d.from_revolutions(0.25)
+print(rotation_revolutions)  # Output: 1.5707963267948966 radians
+</div></section><section class="chapter"><h4 id="add-two-rotation2d-objects" data-toc="add-two-rotation2d-objects">Add two Rotation2d objects</h4><div class="code-block" data-lang="python">
+sum_rotation = rotation_radians + rotation_degrees
+print(sum_rotation)  # Output: 3.1407963267948966 radians
+</div></section><section class="chapter"><h4 id="subtract-two-rotation2d-objects" data-toc="subtract-two-rotation2d-objects">Subtract two Rotation2d objects</h4><div class="code-block" data-lang="python">
+difference_rotation = rotation_radians - rotation_degrees
+print(difference_rotation)  # Output: 0.0 radians
+</div></section><section class="chapter"><h4 id="multiply-a-rotation2d-object-by-a-scalar" data-toc="multiply-a-rotation2d-object-by-a-scalar">Multiply a Rotation2d object by a scalar</h4><div class="code-block" data-lang="python">
+scaled_rotation = rotation_radians * 2
+print(scaled_rotation)  # Output: 3.14 radians
+</div></section><section class="chapter"><h4 id="divide-a-rotation2d-object-by-a-scalar" data-toc="divide-a-rotation2d-object-by-a-scalar">Divide a Rotation2d object by a scalar</h4><div class="code-block" data-lang="python">
+divided_rotation = rotation_radians / 2
+print(divided_rotation)  # Output: 0.785 radians
+</div></section><section class="chapter"><h4 id="check-equality-between-two-rotation2d-objects" data-toc="check-equality-between-two-rotation2d-objects">Check equality between two Rotation2d objects</h4><div class="code-block" data-lang="python">
+are_equal = rotation_radians == rotation_degrees
+print(are_equal)  # Output: True
+</div></section><section class="chapter"><h4 id="convert-the-angle-to-different-units" data-toc="convert-the-angle-to-different-units">Convert the angle to different units</h4><div class="code-block" data-lang="python">
+print(rotation_radians.to_degrees())     # Output: 90.0
+print(rotation_radians.to_revolutions()) # Output: 0.25
+</div></section><section class="chapter"><h4 id="calculate-the-sine-cosine-and-tangent-of-the-angle" data-toc="calculate-the-sine-cosine-and-tangent-of-the-angle">Calculate the sine, cosine, and tangent of the angle</h4><div class="code-block" data-lang="python">
+print(rotation_radians.sin())  # Output: 1.0
+print(rotation_radians.cos())  # Output: 0.0
+print(rotation_radians.tan())  # Output: 16331239353195370.0
+</div></section><section class="chapter"><h4 id="calculate-the-inverse-of-a-rotation2d-object" data-toc="calculate-the-inverse-of-a-rotation2d-object">Calculate the inverse of a Rotation2d object</h4><div class="code-block" data-lang="python">
+inverse_rotation = rotation_radians.inverse()
+print(inverse_rotation)  # Output: -1.57 radians
+</div></section><section class="chapter"><h4 id="normalize-the-rotation-angle" data-toc="normalize-the-rotation-angle">Normalize the rotation angle</h4><div class="code-block" data-lang="python">
+normalized_rotation = rotation_radians.normalize()
+print(normalized_rotation)  # Output: 1.57 radians
+</div></section><section class="chapter"><h4 id="interpolate-between-two-rotation2d-objects" data-toc="interpolate-between-two-rotation2d-objects">Interpolate between two Rotation2d objects</h4><div class="code-block" data-lang="python">
+interpolated_rotation = rotation_radians.interpolate(rotation_degrees, 0.5)
+print(interpolated_rotation)  # Output: 1.57 radians
+</div></section></section></section><section class="chapter"><h2 id="explanation-of-normalization" data-toc="explanation-of-normalization">Explanation of Normalization</h2><p id="-myhqjt_59">The normalization process for a <code class="code" id="-myhqjt_60">Rotation2d</code> object involves adjusting the rotation angle to ensure it falls within the range of -&pi; to &pi; radians. This is useful for maintaining consistency and avoiding issues with angles that exceed a full circle 2&pi; radians). <code class="code" id="-myhqjt_61">Rotation2d</code> object will have an angle that is easy to work with and avoids complications from angles that are too large or too small.</p></section><div class="last-modified">Last modified: 21 December 2024</div><div data-feedback-placeholder="true"></div><div class="navigation-links _bottom"><a href="translation2d.html" class="navigation-links__prev">Translation2d Class</a><a href="pose2d.html" class="navigation-links__next">Pose2d Class</a></div></article><div id="disqus_thread"></div></div></section></main></div><script src="https://resources.jetbrains.com/writerside/apidoc/6.10.0-b419/app.js"></script></body></html>
