@@ -7,4 +7,11 @@
                  start-page="starter-topic.md">
 
     <toc-element topic="starter-topic.md"/>
+    <toc-element topic="Geometry.md">
+        <toc-element topic="Translation1d.md"/>
+        <toc-element topic="Translation2d.md"/>
+        <toc-element topic="Rotation2d.md"/>
+        <toc-element topic="Pose2d.md"/>
+        <toc-element topic="GeometryUtil.md"/>
+    </toc-element>
 </instance-profile>
