@@ -2,8 +2,15 @@ from VEXLib.Algorithms.TrapezoidProfile import TrapezoidProfile, Constraints
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d, Distance
 from VEXLib.Util import time
-from vex import PERCENT, DEGREES
+from vex import PERCENT, DEGREES, wait, Thread
 
+
+def schedule_function(delay, callback):
+    def function():
+        time.sleep(delay)
+        callback()
+
+    Thread(function)
 
 def negative(robot):
     robot.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
