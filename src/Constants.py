@@ -4,8 +4,12 @@ from VEXLib.Geometry.RotationalVelocity import RotationalVelocity
 from VEXLib.Geometry.Translation1d import Distance
 from vex import Ports, GearSetting, Brain
 
+CONTROL_STYLE_DEREK = 1
+CONTROL_STYLE_DIRK = 2
+
 class Preferences:
     """Preferences about how the robot should function"""
+    CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DIRK
     ARCADE_CONTROL = False
     VOLTAGE_CONTROL = True
     PRINT_POSE = False

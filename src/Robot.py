@@ -4,7 +4,7 @@ from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
 from WallStakeMechanism import WallStakeMechanism
 from CornerMechanism import CornerMechanism
-from Constants import Preferences
+from Constants import Preferences, CONTROL_STYLE_DIRK, CONTROL_STYLE_DEREK
 import VEXLib.Math.MathUtil as MathUtil
 import AutonomousRoutines
 from vex import *
@@ -135,46 +135,54 @@ class Robot(TickBasedRobot):
         f.write(autonomous_routine + "\n")
         f.close()
 
-        drive_style = self.get_selection(["arcade", "tank"])
-        if drive_style == "tank":
+        drive_style = self.get_selection(["Dirk", "Derek"])
+        if drive_style == "Dirk":
             Preferences.ARCADE_CONTROL = False
+            Preferences.CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DIRK
         else:
             Preferences.ARCADE_CONTROL = True
+            Preferences.CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DEREK
 
-        # self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
-        # self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
-        # self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_in)
-        # self.controller.buttonR1.released(self.wall_stake_mechanism.stop)
-        #
-        # self.controller.buttonL1.pressed(self.wall_stake_mechanism.move_out)
-        # self.controller.buttonL1.released(self.wall_stake_mechanism.stop)
-        #
-        # self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
-        # self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
+        if Preferences.CONTROLLER_BINDINGS_STYLE == CONTROL_STYLE_DIRK:
+            self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
+            self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
 
-        self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
-        self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
+            self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_in)
+            self.controller.buttonR1.released(self.wall_stake_mechanism.stop)
 
-        self.controller.buttonR2.pressed(self.wall_stake_mechanism.move_in)
-        self.controller.buttonR2.released(self.wall_stake_mechanism.stop)
+            self.controller.buttonL1.pressed(self.wall_stake_mechanism.move_out)
+            self.controller.buttonL1.released(self.wall_stake_mechanism.stop)
 
-        self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_out)
-        self.controller.buttonR1.released(self.wall_stake_mechanism.stop)
+            self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
+            self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
 
-        self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
-        self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
+            self.controller.buttonR2.pressed(self.scoring_mechanism.intake)
+            self.controller.buttonR2.released(self.scoring_mechanism.stop_motor)
+
+            self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
+            self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
+
+        elif Preferences.CONTROLLER_BINDINGS_STYLE == CONTROL_STYLE_DEREK:
+
+            self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
+            self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
+
+            self.controller.buttonL1.pressed(self.scoring_mechanism.intake)
+            self.controller.buttonL1.released(self.scoring_mechanism.stop_motor)
+
+            self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
+            self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
+
+            self.controller.buttonR2.pressed(self.wall_stake_mechanism.move_in)
+            self.controller.buttonR2.released(self.wall_stake_mechanism.stop)
+
+            self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_out)
+            self.controller.buttonR1.released(self.wall_stake_mechanism.stop)
+
+            self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
+            self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
 
     def driver_control_periodic(self):
-        scoring_mechanism_speed = 0
-
-        # if self.controller.buttonUp.pressing():
-        #     self.on_autonomous()
-
-        if self.controller.buttonL1.pressing():
-            scoring_mechanism_speed = 100
-        elif self.controller.buttonL2.pressing():
-            scoring_mechanism_speed = -100
-
         if Preferences.ARCADE_CONTROL:
             forward_speed = self.controller.axis3.position() / 100
             turn_speed = self.controller.axis1.position() / 100
@@ -206,4 +214,3 @@ class Robot(TickBasedRobot):
 
         self.drivetrain.update_odometry()
         self.wall_stake_mechanism.tick()
-        self.scoring_mechanism.spin_motor_at_speed(scoring_mechanism_speed)
