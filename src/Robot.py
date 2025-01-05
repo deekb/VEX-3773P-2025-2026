@@ -11,6 +11,16 @@ from vex import *
 import json
 
 
+class DirkPreferences(Preferences):
+    CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DEREK
+    ARCADE_CONTROL = True
+
+
+class DerekPreferences(Preferences):
+    CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DEREK
+    ARCADE_CONTROL = True
+
+
 class Logger:
     def __init__(self, log_name):
         index = open("index.json", "rw")
@@ -198,7 +208,6 @@ class Robot(TickBasedRobot):
 
             left_speed = MathUtil.apply_deadband(left_speed, 0.05, 1)
             right_speed = MathUtil.apply_deadband(right_speed, 0.05, 1)
-
 
         if Preferences.VOLTAGE_CONTROL:
 

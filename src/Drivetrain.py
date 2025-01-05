@@ -64,7 +64,6 @@ from vex import Motor, GearSetting, FORWARD, VOLT, Inertial, Rotation, Ports, TU
 #     def
 
 
-
 class Drivetrain:
     """
         A drivetrain controller for a tank drive base
@@ -77,7 +76,8 @@ class Drivetrain:
         self.rear_left_motor = Motor(Constants.SmartPorts.REAR_LEFT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, True)
 
         self.front_right_motor = Motor(Constants.SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
-        self.middle_right_motor = Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
+        self.middle_right_motor = Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1,
+                                        False)
         self.rear_left_motor = Motor(Constants.SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
 
         # Make lists containing the left and right sets of motors
@@ -125,7 +125,8 @@ class Drivetrain:
         self.wheel_circumference = Constants.DrivetrainProperties.WHEEL_CIRCUMFERENCE
 
         # Initialize a TrapezoidProfile object to define the speed and acceleration profiles of the drivetrain
-        self.trapezoidal_profile = TrapezoidProfile(Constraints(30 * self.motor_to_wheel_gear_ratio, 50 * self.motor_to_wheel_gear_ratio))
+        self.trapezoidal_profile = TrapezoidProfile(
+            Constraints(30 * self.motor_to_wheel_gear_ratio, 50 * self.motor_to_wheel_gear_ratio))
 
         self.target_pose = Pose2d()
 
@@ -155,8 +156,10 @@ class Drivetrain:
             # current_left_position = self.left_rotation_sensor.position(TURNS) / self.encoder_to_wheel_gear_ratio
             # current_right_position = self.right_rotation_sensor.position(TURNS) / self.encoder_to_wheel_gear_ratio
 
-            current_left_position = MathUtil.average_iterable([motor.position(TURNS) for motor in self.left_motors]) * self.motor_to_wheel_gear_ratio
-            current_right_position = MathUtil.average_iterable([motor.position(TURNS) for motor in self.right_motors]) * self.motor_to_wheel_gear_ratio
+            current_left_position = MathUtil.average_iterable(
+                [motor.position(TURNS) for motor in self.left_motors]) * self.motor_to_wheel_gear_ratio
+            current_right_position = MathUtil.average_iterable(
+                [motor.position(TURNS) for motor in self.right_motors]) * self.motor_to_wheel_gear_ratio
 
             left_dy = (current_left_position - self.last_left_drivetrain_position)
             right_dy = (current_right_position - self.last_right_drivetrain_position)
@@ -185,7 +188,7 @@ class Drivetrain:
         position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.left_motors])
 
         left_position = Rotation2d.from_degrees(
-             position * self.motor_to_wheel_gear_ratio)
+            position * self.motor_to_wheel_gear_ratio)
         return GeometryUtil.arc_length_from_rotation(self.wheel_circumference, left_position)
 
     def get_right_position(self):
@@ -281,7 +284,8 @@ class Drivetrain:
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
 
-    def move_distance_towards_direction_trap_corrected(self, distance, direction, ramp_up=True, ramp_down=True, turn_first=True):
+    def move_distance_towards_direction_trap_corrected(self, distance, direction, ramp_up=True, ramp_down=True,
+                                                       turn_first=True):
         delta_target = Translation2d(distance, Translation1d.from_meters(0))
         delta_target.rotate_by(Rotation2d.from_degrees(direction))
 
