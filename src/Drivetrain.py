@@ -12,7 +12,7 @@ from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 import VEXLib.Math.MathUtil as MathUtil
 from VEXLib.Util import ContinuousTimer
-from vex import Motor, GearSetting, FORWARD, VOLT, Inertial, Rotation, Ports, TURNS, DEGREES, Thread
+from vex import Motor, GearSetting, FORWARD, VOLT, Inertial, Rotation, Ports, TURNS, DEGREES
 
 
 # class FixedMotor(Motor):
