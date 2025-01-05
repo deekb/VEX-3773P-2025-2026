@@ -1,5 +1,4 @@
-import math
-
+from VEXLib.Geometry.GeometryUtil import circle_circumference
 from VEXLib.Geometry.RotationalVelocity import RotationalVelocity
 from VEXLib.Geometry.Translation1d import Distance
 from vex import Ports, GearSetting, Brain
@@ -7,8 +6,9 @@ from vex import Ports, GearSetting, Brain
 CONTROL_STYLE_DEREK = 1
 CONTROL_STYLE_DIRK = 2
 
+
 class Preferences:
-    """Preferences about how the robot should function"""
+    """Base preferences about how the robot should function"""
     CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DIRK
     ARCADE_CONTROL = False
     VOLTAGE_CONTROL = True
@@ -51,7 +51,7 @@ class DrivetrainProperties:
     ENCODER_TO_WHEEL_GEAR_RATIO = (12 / 60)
     TRACK_WIDTH = Distance.from_inches(13.5)
     WHEEL_DIAMETER = Distance.from_inches(3.235)
-    WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * math.pi
+    WHEEL_CIRCUMFERENCE = circle_circumference(WHEEL_DIAMETER / 2)
 
 
 class ScoringMechanismProperties:

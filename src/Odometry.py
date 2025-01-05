@@ -6,6 +6,7 @@ import VEXLib.Math.MathUtil as MathUtil
 from VEXLib.Util import time
 from vex import DEGREES, Inertial
 
+
 class TankOdometry:
     """
     A class that manages odometry for a tank drive robot. This system calculates

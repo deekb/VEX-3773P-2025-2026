@@ -41,8 +41,10 @@ def split_int_to_bytes(bytes_, length=16):
         bytes_ >>= 8
     return output_bytes
 
+
 def hex_format(bytes_):
     return bytes_.hex().upper()
+
 
 class Frame:
     def __init__(self, frame_header=None,

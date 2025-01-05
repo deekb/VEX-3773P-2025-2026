@@ -1,8 +1,16 @@
 from VEXLib.Algorithms.TrapezoidProfile import TrapezoidProfile, Constraints
 from VEXLib.Geometry.Rotation2d import Rotation2d
-from VEXLib.Geometry.Translation1d import Translation1d, Distance
+from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Util import time
-from vex import PERCENT, DEGREES
+from vex import PERCENT, DEGREES, Thread
+
+
+def schedule_function(delay, callback):
+    def function():
+        time.sleep(delay)
+        callback()
+
+    Thread(function)
 
 
 def bonk(robot):
@@ -57,6 +65,7 @@ def drive_forwards(robot):
     robot.mobile_goal_clamp.release_mobile_goal()
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(12), 0)
 
+
 def skills(robot):
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(40, 30))
 
@@ -93,6 +102,7 @@ def skills(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(220), -105)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(80), -145)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(130), -25)
+
 
 def skills_alliance_stake(robot):
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(40, 30))
@@ -177,6 +187,7 @@ def win_point(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), -165, ramp_up=False,
                                                           ramp_down=False)
 
+
 def positive_win_point(robot):
     robot.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
     robot.mobile_goal_clamp.release_mobile_goal()
@@ -197,6 +208,7 @@ def positive_win_point(robot):
     time.sleep(1)
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(30, 70))
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(30), 160)
+
 
 def println(robot, message):
     robot.brain.screen.print(message)
@@ -236,6 +248,7 @@ def negative_4_rings_and_touch(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(5), 0)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-100), 0)
 
+
 def positive_2_mobile_goal(robot):
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(70, 100))
     robot.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(0)
@@ -262,6 +275,7 @@ def positive_2_mobile_goal(robot):
     robot.mobile_goal_clamp.clamp_mobile_goal()
     robot.scoring_mechanism.spin_motor_at_speed(100)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(40), 50)
+
 
 def test_autonomous(robot):
     robot.drivetrain.move_distance_towards_direction_trap_corrected(Translation1d.from_centimeters(100), 0)

@@ -64,7 +64,7 @@ class Drivetrain:
             Constants.drivetrain_turn_Kd,
         )
 
-        self._rotation_PID_output = 0
+        self._rotation_pid_output = 0
 
         self._current_target_direction = 0
         self._current_target_x_cm = 0
@@ -105,7 +105,7 @@ class Drivetrain:
         """
 
         # Ensure the drivetrain doesn't jerk when we start the move
-        self.clear_direction_PID_output()
+        self.clear_direction_pid_output()
         self.stop()
 
         # Set the target_x and target_y from the target position
@@ -133,7 +133,7 @@ class Drivetrain:
             )
 
             # Update the rotation PID to keep us facing the same direction throughout the move
-            self.update_direction_PID()
+            self.update_direction_pid()
             self.move_headless(direction_rad, speed, 0)
         self.stop()
 
@@ -205,7 +205,7 @@ class Drivetrain:
         return front_left, front_right, back_left, back_right
 
     def move(self, direction, speed, spin):
-        spin += self._rotation_PID_output
+        spin += self._rotation_pid_output
 
         speed = clamp(speed, 0, 1)  # This will ensure that speed is between 0 and 1
         spin = clamp(spin, -1, 1)  # This will ensure that spin is between -1 and 1
@@ -283,7 +283,7 @@ class Drivetrain:
                 abs(self._odometry.rotation_rad - self.rotation_PID.setpoint)
                 > Constants.drivetrain_allowed_directional_error_rad
             ):
-                self.update_direction_PID()
+                self.update_direction_pid()
                 self.stop()  # In order to not move but continue turning
                 wait(5, MSEC)
 
@@ -293,11 +293,11 @@ class Drivetrain:
     def stop(self):
         self.move(0, 0, 0)
 
-    def update_direction_PID(self):
-        self._rotation_PID_output = self.rotation_PID.update(self.current_direction_rad)
+    def update_direction_pid(self):
+        self._rotation_pid_output = self.rotation_PID.update(self.current_direction_rad)
 
-    def clear_direction_PID_output(self):
-        self._rotation_PID_output = 0
+    def clear_direction_pid_output(self):
+        self._rotation_pid_output = 0
 
     def reset(self):
         """
@@ -313,7 +313,7 @@ class Drivetrain:
         self._rear_right_motor.spin(FORWARD)
         if self._inertial:
             self._inertial.set_heading(0, DEGREES)
-        self._rotation_PID_output = 0
+        self._rotation_pid_output = 0
         self.rotation_PID.setpoint = 0
         self._current_target_direction = 0
         self._current_target_x_cm = 0

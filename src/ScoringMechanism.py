@@ -22,6 +22,5 @@ class ScoringMechanism:
     def intake(self):
         self.spin_motor_at_speed(100)
 
-
     def outtake(self):
         self.spin_motor_at_speed(-100)

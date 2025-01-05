@@ -4,14 +4,15 @@ START_BYTE = 0xEB90
 # Define the length of each element of the frame in a dictionary
 FRAME_ELEMENT_LENGTHS = {
     'start_byte': 2,  # 16 bits = 2 bytes
-    'frame_id': 4,    # 32 bits = 4 bytes
-    'length': 4,      # 32 bits = 4 bytes
+    'frame_id': 4,  # 32 bits = 4 bytes
+    'length': 4,  # 32 bits = 4 bytes
     'frame_type': 1,  # 8 bits = 1 byte
     'data_type_length': 1,  # 8 bits = 1 byte (length of data_type)
     'data_type': None,  # Variable length, determined by data_type
-    'data': None,      # Variable length, determined by the data length
-    'crc': 2           # 16 bits = 2 bytes
+    'data': None,  # Variable length, determined by the data length
+    'crc': 2  # 16 bits = 2 bytes
 }
+
 
 class FrameType(object):
     """Class representing frame types."""
@@ -32,6 +33,7 @@ class FrameType(object):
     RESERVED_8 = 0xE
     INVALID_2 = 0xF
 
+
 def crc_xmodem(data: bytes) -> int:
     """Calculate the CRC XMODEM checksum (16-bit)."""
     crc = 0x0000
@@ -44,6 +46,7 @@ def crc_xmodem(data: bytes) -> int:
                 crc <<= 1
             crc &= 0xFFFF  # Keep CRC as a 16-bit value
     return crc
+
 
 class SerialFrame:
     def __init__(self, frame_id: int, frame_type: int, data_type: str, data: bytes):
@@ -88,7 +91,8 @@ class SerialFrame:
         crc_length = FRAME_ELEMENT_LENGTHS['crc']
 
         # Minimum frame size check before proceeding with parsing
-        min_frame_size = (start_byte_length + frame_id_length + length_length + frame_type_length + 1)  # Add 1 byte for data_type_length field
+        min_frame_size = (
+                    start_byte_length + frame_id_length + length_length + frame_type_length + 1)  # Add 1 byte for data_type_length field
         if len(byte_data) < min_frame_size:
             raise ValueError("Incomplete frame: Expected at least %d bytes, got %d" % (min_frame_size, len(byte_data)))
 
@@ -97,10 +101,13 @@ class SerialFrame:
             raise ValueError("Start byte not found in the data. Data: %s..." % str(byte_data[:30]))
 
         # Extract frame_id (4 bytes)
-        frame_id = int.from_bytes(byte_data[start_index + start_byte_length:start_index + start_byte_length + frame_id_length], 'big')
+        frame_id = int.from_bytes(
+            byte_data[start_index + start_byte_length:start_index + start_byte_length + frame_id_length], 'big')
 
         # Extract length (4 bytes)
-        length = int.from_bytes(byte_data[start_index + start_byte_length + frame_id_length:start_index + start_byte_length + frame_id_length + length_length], 'big')
+        length = int.from_bytes(byte_data[
+                                start_index + start_byte_length + frame_id_length:start_index + start_byte_length + frame_id_length + length_length],
+                                'big')
 
         # Check if there's enough data for the full frame including the payload and CRC
         full_frame_size = (min_frame_size + length + crc_length)  # Total size of frame
@@ -111,7 +118,8 @@ class SerialFrame:
         frame_type = byte_data[start_index + start_byte_length + frame_id_length + length_length]
 
         # Extract data_type_length (1 byte) and the data_type itself
-        data_type_length = byte_data[start_index + start_byte_length + frame_id_length + length_length + frame_type_length]
+        data_type_length = byte_data[
+            start_index + start_byte_length + frame_id_length + length_length + frame_type_length]
         data_type_start = start_index + start_byte_length + frame_id_length + length_length + frame_type_length + 1
         data_type_end = data_type_start + data_type_length
         data_type = byte_data[data_type_start:data_type_end].decode('utf-8')
@@ -133,7 +141,6 @@ class SerialFrame:
 
         # If checksums match, create and return the SerialFrame object
         return cls(frame_id=frame_id, frame_type=frame_type, data_type=data_type, data=data)
-
 
     def __str__(self) -> str:
         """Return a string representation of the frame."""
