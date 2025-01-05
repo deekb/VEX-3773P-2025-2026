@@ -2,6 +2,7 @@ from VEXLib.Robot.NewTickBasedRobot import TickBasedRobot
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
+from VEXLib.Util import time
 from WallStakeMechanism import WallStakeMechanism
 from CornerMechanism import CornerMechanism
 from Constants import Preferences, CONTROL_STYLE_DIRK, CONTROL_STYLE_DEREK
@@ -57,7 +58,7 @@ class Robot(TickBasedRobot):
 
         while True:
             self.brain.screen.draw_image_from_file("/deploy/logo_vertical_frame_" + str(i) + ".png", 0, 0)
-            wait(10, MSEC)
+            time.sleep_ms(10)
             i += 1
             if i > 10:
                 i = 1
@@ -92,7 +93,7 @@ class Robot(TickBasedRobot):
             self.controller.screen.print(options[selection_index])
             while not (
                     self.controller.buttonRight.pressing() or self.controller.buttonLeft.pressing() or self.controller.buttonA.pressing()):
-                wait(5, MSEC)
+                time.sleep_ms(5)
 
             if self.controller.buttonA.pressing():
                 break
@@ -103,14 +104,14 @@ class Robot(TickBasedRobot):
                 selection_index -= 1
 
             while self.controller.buttonRight.pressing() or self.controller.buttonLeft.pressing():
-                wait(5, MSEC)
+                time.sleep_ms(5)
 
             if selection_index < 0:
                 selection_index = 0
             elif selection_index >= len(options) - 1:
                 selection_index = len(options) - 1
         while self.controller.buttonA.pressing():
-            wait(5, MSEC)
+            time.sleep_ms(5)
 
         return options[selection_index]
 
@@ -135,7 +136,7 @@ class Robot(TickBasedRobot):
     def on_setup(self):
         self.drivetrain.inertial.calibrate()
         while self.drivetrain.inertial.is_calibrating():
-            wait(5, MSEC)
+            time.sleep_ms(5)
 
         self.wall_stake_mechanism.calibrate()
         self.controller.rumble("....")
