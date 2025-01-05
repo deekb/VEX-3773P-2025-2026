@@ -29,7 +29,7 @@ class Robot(TickBasedRobot):
         self.wall_stake_mechanism = WallStakeMechanism()
         self.doinker = CornerMechanism()
         self.autonomous_mappings = {
-            # "negative_4_rings_and_touch": AutonomousRoutines.negative_4_rings_and_touch,
+            "negative_4_rings_and_touch": AutonomousRoutines.negative_4_rings_and_touch,
             "negative": AutonomousRoutines.negative,
             "square_test": AutonomousRoutines.test_autonomous,
             "positive": AutonomousRoutines.positive,
