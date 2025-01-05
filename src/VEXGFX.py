@@ -106,7 +106,7 @@ class Graphics:
 
     def draw_buttons(self):
         for button in self.buttons:
-            button.draw()  # Will only draw if needs_redraw is True
+            button.draw()  # Will only draw if "needs_redraw" is True
 
 
 class Robot(TickBasedRobot):
