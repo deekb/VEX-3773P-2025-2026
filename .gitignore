@@ -1,3 +1,9 @@
 # Project exclude paths
 /.idea/workspace.xml
 /src/autocomplete/
+/venv/
+!/venv/lib/python3.12/site-packages/deploy
+!/venv/lib/python3.12/site-packages/deploy_wireless
+!/venv/lib/python3.12/site-packages/vex
+!/venv/lib/python3.12/site-packages/VEXLib
+!/venv/lib/python3.12/site-packages/VEXBoard

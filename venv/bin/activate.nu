@@ -32,7 +32,7 @@ export-env {
       }
     }
 
-    let virtual_env = '/home/derek/vex_venv'
+    let virtual_env = '/home/derek/PycharmProjects/VEXlib/venv'
     let bin = 'bin'
 
     let is_windows = ($nu.os-info.family) == 'windows'
