@@ -30,23 +30,7 @@ class PIDFController(PIDController):
         # Call the constructor of the base class (PIDController)
         super().__init__(kp, ki, kd, t, integral_limit)
         # Additional initialization for feedforward term
-        self._kf = kf
-
-    @property
-    def kf(self) -> float:
-        """
-        Getter for the Kf value of the PIDF controller.
-        :return: The Kf value.
-        """
-        return self._kf
-
-    @kf.setter
-    def kf(self, value: float):
-        """
-        Setter for the Kf value of the PIDF controller.
-        :param value: The new Kf value.
-        """
-        self._kf = value
+        self.kf = kf
 
     def update(self, current_value: float) -> float:
         """
@@ -61,7 +45,7 @@ class PIDFController(PIDController):
         # Call the update method of the base class (PIDController)
         pid_output = super().update(current_value)
         # Calculate the feedforward component
-        feedforward_output = self._kf * self._target_value
+        feedforward_output = self.kf * self.setpoint
         # Combine PID and feedforward outputs
         total_output = pid_output + feedforward_output
         return total_output

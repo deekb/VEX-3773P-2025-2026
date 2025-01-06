@@ -62,10 +62,6 @@ class PIDMotorController:
         return Units.rotations_per_minute_to_rotations_per_second(self.get_velocity_rotations_per_minute())
 
 
-class PIDMotorGroupController:
-    pass
-
-
 class PIDController:
     def __init__(self, kp: float = 1.0, ki: float = 0.0, kd: float = 0.0, t: float = 0.05, integral_limit: float = 1.0):
         """
@@ -78,13 +74,13 @@ class PIDController:
             t: Minimum time between update calls. All calls made before this amount of time has passed since the last calculation will be ignored.
             integral_limit: The maximum absolute value for the integral term to prevent windup.
         """
-        self._kp = kp
-        self._ki = ki
-        self._kd = kd
-        self._time_step = t
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+        self.time_step = t
         self._previous_time = time.time()
         self._current_value = 0.0
-        self._target_value = 0.0
+        self.setpoint = 0.0
         self._error_integral = 0.0
         self._integral_limit = integral_limit
         self._previous_error = 0.0
@@ -151,7 +147,7 @@ class PIDController:
         current_time = time.time()
         delta_time = current_time - self._previous_time
 
-        if delta_time < self._time_step:
+        if delta_time < self.time_step:
             # If the elapsed time since the last calculation is less than the time step, then
             # return the last output without recalculating
             return self._control_output
@@ -164,89 +160,18 @@ class PIDController:
         # current_error = self._calculate_continuous_error(current_error)
 
         self._error_integral += current_error * delta_time
-        if self._ki != 0:
+        if self.ki != 0:
             self._error_integral = MathUtil.clamp(self._error_integral, -self._integral_limit, self._integral_limit)
-        if self._kd != 0:
+        if self.kd != 0:
             error_derivative = (current_error - self._previous_error) / delta_time
         else:
             error_derivative = 0.0
 
         self._control_output = (
-                self._kp * current_error + self._ki * self._error_integral + self._kd * error_derivative
+                self.kp * current_error + self.ki * self._error_integral + self.kd * error_derivative
         )
         self._previous_error = current_error
         return self._control_output
-
-    @property
-    def kp(self) -> float:
-        """
-        Getter for the Kp value of the PID.
-        :return: The Kp value.
-        """
-
-        return self._kp
-
-    @kp.setter
-    def kp(self, value: float):
-        """
-        Setter for the Kp value of the PID.
-        :param value: The new Kp value.
-        """
-
-        self._kp = value
-
-    @property
-    def ki(self) -> float:
-        """
-        Getter for the Ki value of the PID.
-        :return: The Ki value.
-        """
-
-        return self._ki
-
-    @ki.setter
-    def ki(self, value: float):
-        """
-        Setter for the Ki value of the PID.
-        :param value: The new Ki value.
-        """
-
-        self._ki = value
-
-    @property
-    def kd(self) -> float:
-        """
-        Getter for the Kd value of the PID.
-        :return: The Kd value.
-        """
-
-        return self._kd
-
-    @kd.setter
-    def kd(self, value: float):
-        """
-        Setter for the Kd value of the PID.
-        :param value: The new Kd value.
-        """
-
-        self._kd = value
-
-    @property
-    def setpoint(self) -> float:
-        """
-        Getter for the target value of the PID.
-        :return: The target value.
-        """
-
-        return self._target_value
-
-    @setpoint.setter
-    def setpoint(self, value: float):
-        """
-        Setter for the target value of the PID.
-        :param value: The new target value.
-        """
-        self._target_value = value
 
     def at_setpoint(self, threshold=0.05):
         return abs(self._previous_error) <= threshold
@@ -254,4 +179,4 @@ class PIDController:
     def reset(self):
         self._error_integral = 0
         self._control_output = 0
-        self._previous_error = self._target_value - self._current_value
+        self._previous_error = self.setpoint - self._current_value
