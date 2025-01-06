@@ -18,6 +18,7 @@ def time():
         - Standard Python: The current time in seconds since the epoch.
     """
     if IS_MICROPYTHON:
+        # noinspection PyUnresolvedReferences
         return Units.milliseconds_to_seconds(time_module.ticks_ms())
     else:
         return time_module.time()
@@ -31,6 +32,7 @@ def time_ms():
         - Standard Python: The current time in milliseconds since the epoch.
     """
     if IS_MICROPYTHON:
+        # noinspection PyUnresolvedReferences
         return time_module.ticks_ms()
     else:
         return Units.seconds_to_milliseconds(time_module.time())
