@@ -41,7 +41,7 @@ class InputProcessor:
             intermediate_outputs.append(current_values)
 
         # Plot the transformations
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(10, 10))
         for i, outputs in enumerate(intermediate_outputs):
             plt.plot(input_values, outputs, label=f"Step {i}" if i > 0 else "Input")
 
@@ -50,6 +50,7 @@ class InputProcessor:
         plt.title("Pipeline Visualization")
         plt.legend()
         plt.grid(True)
+        plt.gca().set_aspect('equal', adjustable='box')  # Force square aspect ratio
         plt.show()
 
 
@@ -76,9 +77,6 @@ class SlewRateLimiter:
         self.previous_value += delta
         return self.previous_value
 
-
-slew_limiter = SlewRateLimiter(max_slew_rate=0.2)
-processor.add_step(slew_limiter.limit)
 
 # Generate a range of input values (-1.0 to 1.0)
 input_values = [x / 100 for x in range(-100, 101)]
