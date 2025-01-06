@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from VEXLib.Math import apply_deadband
+from VEXLib.Math import apply_deadband, cubic_filter
 
 
 class InputProcessor:
@@ -41,7 +41,7 @@ class InputProcessor:
             intermediate_outputs.append(current_values)
 
         # Plot the transformations
-        plt.figure(figsize=(10, 10))
+        plt.figure(figsize=(7, 7))
         for i, outputs in enumerate(intermediate_outputs):
             plt.plot(input_values, outputs, label=f"Step {i}" if i > 0 else "Input")
 
@@ -58,10 +58,10 @@ class InputProcessor:
 processor = InputProcessor()
 
 # Add Deadbanding
-processor.add_step(lambda x: apply_deadband(x, 0.1, 1))
+processor.add_step(lambda x: apply_deadband(x, 0.05, 1))
 
 # Add Cubic Filtering
-processor.add_step(lambda x: x ** 3)
+processor.add_step(lambda x: cubic_filter(x, 0.5))
 
 
 # Add Slew Rate Limiting
