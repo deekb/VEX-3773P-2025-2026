@@ -1,5 +1,6 @@
 # Project exclude paths
 /.idea/workspace.xml
 /.idea/misc.xml
+/.idea/VEXlib.iml
 /src/autocomplete/
 /venv/
