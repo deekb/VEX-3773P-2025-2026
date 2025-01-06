@@ -1,7 +1,7 @@
-from VEXLib.Robot.TickBasedRobot import TickBasedRobot
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
+from VEXLib.Robot.TimedRobot import TimedRobot
 from VEXLib.Util import time
 from WallStakeMechanism import WallStakeMechanism
 from CornerMechanism import CornerMechanism
@@ -28,7 +28,7 @@ class Logger:
         json.loads(index.read())
 
 
-class Robot(TickBasedRobot):
+class Robot(TimedRobot):
     def __init__(self, brain):
         super().__init__(brain)
         self.controller = Controller(PRIMARY)
