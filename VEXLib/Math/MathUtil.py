@@ -1,14 +1,30 @@
+
+"""
+MathUtil Module
+Provides a set of utility functions to perform various mathematical operations such as interpolation, wrapping values,
+calculating angular differences, and applying filters. These functions are designed to assist in mathematical calculations
+relevant to robotics, geometry, and numerical computation.
+"""
 import math
 from VEXLib.Geometry.GeometryUtil import hypotenuse
 
 
-def sign(x):
+def sign(x: float) -> float:
+    """
+    Determine the sign of a number.
+
+    Args:
+        x (float): The input number.
+
+    Returns:
+        float: 1 for positive or zero, -1 for negative.
+    """
     if x == 0:
         return 1
     return x / abs(x)
 
 
-def average(*args) -> float:
+def average(*args: float) -> float:
     """
     Calculates the average of the input arguments.
 
@@ -31,7 +47,7 @@ def average(*args) -> float:
     return average_iterable(args)
 
 
-def average_iterable(iterable) -> float:
+def average_iterable(iterable: list[float]) -> float:
     """
     Calculates the average of the input iterable.
 
@@ -45,7 +61,7 @@ def average_iterable(iterable) -> float:
     return sum(iterable) / len(iterable)
 
 
-def clamp(value: float, lower_limit: float = None, upper_limit: float = None) -> float:
+def clamp(value: float, lower_limit: float | None = None, upper_limit: float | None = None) -> float:
     """
     Restricts a value within a specified range.
 
@@ -72,7 +88,7 @@ def clamp(value: float, lower_limit: float = None, upper_limit: float = None) ->
     return value
 
 
-def apply_deadband(value, deadband, max_magnitude):
+def apply_deadband(value: float, deadband: float, max_magnitude: float) -> float:
     """
     Returns 0.0 if the given value is within the specified range around zero. The remaining range
     between the deadband and the maximum magnitude is scaled from 0.0 to the maximum magnitude.
@@ -101,7 +117,7 @@ def apply_deadband(value, deadband, max_magnitude):
     return value - sign * deadband
 
 
-def input_modulus(input_, minimum_input, maximum_input):
+def input_modulus(input_: float, minimum_input: float, maximum_input: float) -> float:
     """
     Wraps an input value into a specified range.
 
@@ -120,7 +136,7 @@ def input_modulus(input_, minimum_input, maximum_input):
     return (input_ - minimum_input) % modulus + minimum_input
 
 
-def angle_modulus(angle_radians):
+def angle_modulus(angle_radians: float) -> float:
     """
     Wraps an angle to the range > -pi and <= pi radians.
 
@@ -136,14 +152,14 @@ def angle_modulus(angle_radians):
     return angle
 
 
-def interpolate(start_value, end_value, t, allow_extrapolation=True):
+def interpolate(start_value: float, end_value: float, t: float, allow_extrapolation: bool = True) -> float:
     """
     Perform linear interpolation between two values.
 
     Args:
         start_value: The value to start at.
         end_value: The value to end at.
-        t: How far between the two values to interpolate. With zero corresponding to start_value and 1 corresponding to end_value unless the allow_extrapolation flag is set This is clamped to the range [0, 1].
+        t: How far between the two values to interpolate. With zero corresponding to start_value and 1 corresponding to end_value. Unless the allow_extrapolation flag is set This is clamped to the range [0, 1].
         allow_extrapolation: Whether to allow the output value to go beyond the bounds of start_value and end_value
 
     Returns:
@@ -156,7 +172,7 @@ def interpolate(start_value, end_value, t, allow_extrapolation=True):
     return start_value + (end_value - start_value) * t
 
 
-def interpolate_2d(x1: float, x2: float, y1: float, y2: float, x: float, allow_extrapolation=True) -> float:
+def interpolate_2d(x1: float, x2: float, y1: float, y2: float, x: float, allow_extrapolation: bool = True) -> float:
     """
     Perform linear interpolation for x between (x1,y1) and (x2,y2)
 
@@ -181,7 +197,7 @@ def interpolate_2d(x1: float, x2: float, y1: float, y2: float, x: float, allow_e
     return ((y2 - y1) * x + x2 * y1 - x1 * y2) / (x2 - x1)
 
 
-def inverse_interpolate(start_value, end_value, q, allow_extrapolation=True):
+def inverse_interpolate(start_value: float, end_value: float, q: float, allow_extrapolation: bool = True) -> float:
     """
     Return where within interpolation range [0, 1] q is between start_value and end_value.
 
@@ -254,7 +270,7 @@ def is_near_continuous(expected, actual, tolerance, minimum, maximum):
     """
 
     if tolerance < 0:
-        raise ValueError("Tolerance must be a non-negative number!")
+        raise ValueError("Tolerance must be non-negative!")
 
     # Max error is exactly halfway between the min and max
     error_bound = (maximum - minimum) / 2.0

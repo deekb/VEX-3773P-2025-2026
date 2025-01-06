@@ -1,8 +1,24 @@
-"""
-Geometry Utility Module.
 
-This module provides various functions for calculating distances, areas, centroids,
-and other geometric properties. It also includes functions for handling lines and polygons.
+"""
+Geometry Utility Module
+
+This module provides utility functions to perform various geometric calculations efficiently.
+
+It includes algorithms for:
+- Basic distance calculations between points.
+- Computation of areas (triangles, rectangles, circles, polygons).
+- Finding centroids of polygons and closest points on lines.
+- Line segment and polygon-based operations such as intersection checks.
+- Calculating arc-lengths for circular rotations.
+
+This module aims to simplify geometric computations while programming VEX robots
+
+Module Contents:
+- Distance utility functions
+- Area calculations (circles, polygons, triangles, rectangles)
+- Line and polygon intersection checks.
+- Centroid and geometric property calculations.
+- Circle-related properties like circumference and arc lengths.
 """
 
 import math
@@ -12,42 +28,45 @@ from VEXLib.Geometry.Translation1d import Distance, Translation1d
 
 def hypotenuse(x: float, y: float) -> float:
     """
-    Get the hypotenuse length of a right triangle with sides x and y
+    Compute the hypotenuse of a right triangle given its two side lengths.
 
     Args:
-        x: The length of one leg of the triangle
-        y: The length of the other leg of the triangle
+        x (float): The length of one leg of the triangle.
+        y (float): The length of the other leg of the triangle.
 
     Returns:
-        The hypotenuse length of a right triangle with side lengths x and y
+        float: The length of the hypotenuse (longest side of the triangle).
     """
 
     return math.sqrt(pow(x, 2) + pow(y, 2))
 
 
-def distance(point1, point2):
-    """Get the Euclidean distance between two points.
+def distance(point1: tuple[float, float], point2: tuple[float, float]) -> float:
+    """
+    Compute the Euclidean distance between two points in a 2D plane.
 
     Args:
-        point1 (tuple): Coordinates of the first point (x1, y1).
-        point2 (tuple): Coordinates of the second point (x2, y2).
+        point1 (tuple[float, float]): Coordinates of the first point as (x1, y1).
+        point2 (tuple[float, float]): Coordinates of the second point as (x2, y2).
 
     Returns:
-        float: The Euclidean distance between the two points.
+        float: The straight-line distance between the two points.
     """
     return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
 
-def area_triangle(point1, point2, point3):
-    """Calculate the area of a triangle formed by three points using Heron's formula.
+def area_triangle(point1: tuple[float, float], point2: tuple[float, float],
+                  point3: tuple[float, float]) -> float:
+    """
+    Compute the area of a triangle defined by three points using Heron's formula.
 
     Args:
-        point1 (tuple): Coordinates of the first point (x1, y1).
-        point2 (tuple): Coordinates of the second point (x2, y2).
-        point3 (tuple): Coordinates of the third point (x3, y3).
+        point1 (tuple[float, float]): Coordinates of the first vertex of the triangle.
+        point2 (tuple[float, float]): Coordinates of the second vertex of the triangle.
+        point3 (tuple[float, float]): Coordinates of the third vertex of the triangle.
 
     Returns:
-        float: The area of the triangle.
+        float: The area enclosed by the triangle.
     """
     a = distance(point1, point2)
     b = distance(point2, point3)
@@ -56,14 +75,15 @@ def area_triangle(point1, point2, point3):
     return math.sqrt(s * (s - a) * (s - b) * (s - c))
 
 
-def centroid(points):
-    """Calculate the centroid (center of mass) of a list of points.
+def centroid(points: list[tuple[float, float]]) -> tuple[float, float]:
+    """
+    Calculate the centroid (center of mass) of a closed 2D polygon.
 
     Args:
-        points (list): List of point coordinates [(x1, y1), (x2, y2), ...].
+        points (list[tuple[float, float]]): List of polygon vertices defined as [(x1, y1), (x2, y2), ...].
 
     Returns:
-        tuple[float, float]: Coordinates of the centroid (x, y).
+        tuple[float, float]: Coordinates of the centroid (x, y), the center of mass.
     """
     total_area = 0
     centroid_x = 0
@@ -83,8 +103,10 @@ def centroid(points):
     return centroid_x, centroid_y
 
 
-def intersection_point(line1_start, line1_end, line2_start, line2_end):
-    """Calculate the intersection point of two lines defined by their endpoints.
+def intersection_point(line1_start: tuple[float, float], line1_end: tuple[float, float],
+                        line2_start: tuple[float, float], line2_end: tuple[float, float]) -> tuple[float, float] | None:
+    """
+    Determine the intersection point of two line segments, if it exists.
 
     Args:
         line1_start (tuple): Starting point of the first line (x1, y1).
@@ -117,7 +139,8 @@ def intersection_point(line1_start, line1_end, line2_start, line2_end):
 
 
 def is_point_inside_polygon(point, polygon):
-    """Check if a point is inside a polygon.
+    """
+    Determine if a given point lies within a closed polygon in 2D space.
 
     Args:
         point (tuple): Coordinates of the point (x, y).
@@ -126,8 +149,8 @@ def is_point_inside_polygon(point, polygon):
     Returns:
         bool: True if the point is inside the polygon, False otherwise.
     """
-    num_vertices = len(polygon)
-    intersection_count = 0
+    num_vertices = len(polygon)  # Total number of vertices in the polygon.
+    intersection_count = 0       # Count of ray-polygon edge intersections.
 
     for i in range(num_vertices):
         j = (i + 1) % num_vertices
