@@ -1,3 +1,6 @@
+import math
+
+
 def format_time(seconds):
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)

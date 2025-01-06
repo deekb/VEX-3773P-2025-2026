@@ -1,8 +1,5 @@
-from VEXLib.Algorithms.PID import PIDController
-from VEXLib.Math import MathUtil
-
 import Constants
-from vex import Motor, GearSetting, PERCENT, Thread, VOLT, FORWARD
+from vex import Motor, GearSetting, VOLT, FORWARD
 
 
 class ScoringMechanism:

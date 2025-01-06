@@ -1,9 +1,6 @@
 from VEXLib.Math import clamp, MathUtil
-
 import Constants
-from VEXLib.Util import time
-from vex import Motor, GearSetting, FORWARD, PERCENT, DEGREES, HOLD, Thread, BRAKE, REVERSE, VOLT, DigitalIn, \
-    wait, MSEC, Limit
+from vex import Motor, GearSetting, FORWARD, PERCENT, DEGREES, HOLD, BRAKE, VOLT, wait, MSEC, Limit
 
 
 class WallStakeMechanism:
