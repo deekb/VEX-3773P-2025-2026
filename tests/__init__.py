@@ -11,3 +11,4 @@ from .TestRotationalVelocity import TestRotationalVelocity
 from .TestSmallestAngularDifference import TestSmallestAngularDifference
 from .TestTickBasedRobot import TestNewTickBasedRobot
 from .TestTankOdometry import TestTankOdometry
+from .TestSlewRateLimiter import TestSlewRateLimiter
