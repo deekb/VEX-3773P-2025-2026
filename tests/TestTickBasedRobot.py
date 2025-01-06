@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock
 
 import vex
-from VEXLib.Robot.NewTickBasedRobot import TickBasedRobot, DRIVER_CONTROL_ENABLED, AUTONOMOUS_CONTROL_ENABLED
+from VEXLib.Robot.TickBasedRobot import TickBasedRobot, DRIVER_CONTROL_ENABLED, AUTONOMOUS_CONTROL_ENABLED
 
 
 class TestNewTickBasedRobot(unittest.TestCase):

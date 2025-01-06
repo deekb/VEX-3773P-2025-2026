@@ -1,4 +1,4 @@
-from VEXLib.Robot.NewTickBasedRobot import TickBasedRobot
+from VEXLib.Robot.TickBasedRobot import TickBasedRobot
 from VEXLib.Util.ContinuousTimer import time
 from SerialFrame import SerialFrame, FrameType
 from vex import Thread

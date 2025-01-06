@@ -1,5 +1,5 @@
 from vex import Color
-from VEXLib.Robot.NewTickBasedRobot import TickBasedRobot
+from VEXLib.Robot.TickBasedRobot import TickBasedRobot
 
 
 class Button:

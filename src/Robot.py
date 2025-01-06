@@ -1,4 +1,4 @@
-from VEXLib.Robot.NewTickBasedRobot import TickBasedRobot
+from VEXLib.Robot.TickBasedRobot import TickBasedRobot
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
@@ -8,7 +8,7 @@ from CornerMechanism import CornerMechanism
 from Constants import Preferences, CONTROL_STYLE_DIRK, CONTROL_STYLE_DEREK
 import VEXLib.Math.MathUtil as MathUtil
 import AutonomousRoutines
-# from vex import *
+from vex import *
 import json
 
 
