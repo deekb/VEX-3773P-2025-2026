@@ -8,7 +8,7 @@ from CornerMechanism import CornerMechanism
 from Constants import Preferences, CONTROL_STYLE_DIRK, CONTROL_STYLE_DEREK
 import VEXLib.Math.MathUtil as MathUtil
 import AutonomousRoutines
-from vex import *
+# from vex import *
 import json
 
 
@@ -33,8 +33,6 @@ class Robot(TickBasedRobot):
         super().__init__(brain)
         self.controller = Controller(PRIMARY)
         self.drivetrain = Drivetrain()
-        self.left_distance_sensor = Distance(Ports.PORT5)
-        self.right_distance_sensor = Distance(Ports.PORT4)
         self.mobile_goal_clamp = MobileGoalClamp()
         self.scoring_mechanism = ScoringMechanism()
         self.wall_stake_mechanism = WallStakeMechanism()

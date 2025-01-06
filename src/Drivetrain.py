@@ -257,7 +257,7 @@ class Drivetrain:
         total_time = self.trapezoidal_profile.total_time()
         elapsed_time = ContinuousTimer.time() - start_time
 
-        while elapsed_time < total_time + 0.25:
+        while elapsed_time < total_time:
             elapsed_time = ContinuousTimer.time() - start_time
             target_distance_traveled = self.trapezoidal_profile.calculate(elapsed_time, initial_state, goal_state)
             print("TIME: " + str(ContinuousTimer.time() - start_time))
