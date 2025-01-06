@@ -1,4 +1,6 @@
 from deploy import main
 
-
-main()
+try:
+    main()
+except KeyboardInterrupt:
+    print("Canceled")
