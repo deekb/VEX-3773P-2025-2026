@@ -7,7 +7,7 @@ import time
 
 from rich.console import Console
 
-from utils import get_removable_disks, get_available_modules, get_checksum, detect_dependencies, unmount_drive, \
+from .utils import get_removable_disks, get_available_modules, get_checksum, detect_dependencies, unmount_drive, \
     convert_size
 
 import argparse

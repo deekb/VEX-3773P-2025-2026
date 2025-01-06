@@ -1,4 +1,4 @@
-from  import main
+from deploy import main
 
 
 main()
