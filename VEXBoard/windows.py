@@ -1,12 +1,14 @@
+from abc import ABC
+
 import pyglet
 from .config import *
 from .network_handler import NetworkHandler
 from pyglet.gui import PushButton
 
 
-class RobotStatusWindow(pyglet.window.Window):
+class RobotStatusWindow(pyglet.window.Window, ABC):
     def __init__(self, width, height, network_handler: NetworkHandler, **kwargs):
-        super().__init__(width, height, "Robot Status", kwargs)
+        super().__init__(width, height, "Robot Status", **kwargs)
         self.network_handler = network_handler
 
         self.background_image = pyglet.image.SolidColorImagePattern((30, 43, 54, 255)).create_image(self.width,
@@ -82,7 +84,7 @@ class RobotStatusWindow(pyglet.window.Window):
 
 class RobotLogWindow(pyglet.window.Window):
     def __init__(self, width, height, **kwargs):
-        super().__init__(width, height, "VexLog", kwargs)
+        super().__init__(width, height, "VexLog", **kwargs)
 
         self.background_image = pyglet.image.SolidColorImagePattern((30, 43, 54, 255)).create_image(self.width,
                                                                                                     self.height)
@@ -112,7 +114,7 @@ class RobotLogWindow(pyglet.window.Window):
 
 class RobotActionsWindow(pyglet.window.Window):
     def __init__(self, width, height, network_handler: NetworkHandler, **kwargs):
-        super().__init__(width, height, "Robot Actions", kwargs)
+        super().__init__(width, height, "Robot Actions", **kwargs)
         self.network_handler = network_handler
 
         self.background_image = pyglet.image.SolidColorImagePattern((30, 43, 54, 255)).create_image(self.width,
