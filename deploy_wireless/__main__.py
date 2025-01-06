@@ -1,4 +1,0 @@
-import assets
-
-
-assets.main()
