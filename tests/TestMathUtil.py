@@ -87,16 +87,6 @@ class TestMathUtil(unittest.TestCase):
         self.assertFalse(MathUtil.is_near_continuous(2, 350, 5, 0, 360))
         self.assertRaises(ValueError, MathUtil.is_near_continuous, 2, 359, -5, 0, 360)
 
-    def test_hypotenuse(self):
-        self.assertAlmostEqual(MathUtil.hypotenuse(3, 4), 5.0)
-        self.assertAlmostEqual(MathUtil.hypotenuse(5, 12), 13.0)
-        self.assertAlmostEqual(MathUtil.hypotenuse(8, 15), 17.0)
-
-    def test_distance(self):
-        self.assertAlmostEqual(MathUtil.distance((0, 0), (3, 4)), 5.0)
-        self.assertAlmostEqual(MathUtil.distance((1, 2), (4, 6)), 5.0)
-        self.assertAlmostEqual(MathUtil.distance((3, 4), (0, 0)), 5.0)
-
     def test_cubic_filter(self):
         self.assertAlmostEqual(MathUtil.cubic_filter(0.5, 0), 0.125)
         self.assertAlmostEqual(MathUtil.cubic_filter(0.5, 1), 0.5)

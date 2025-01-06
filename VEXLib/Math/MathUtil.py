@@ -1,4 +1,5 @@
 import math
+from VEXLib.Geometry.GeometryUtil import hypotenuse
 
 
 def sign(x):
@@ -259,36 +260,6 @@ def is_near_continuous(expected, actual, tolerance, minimum, maximum):
     error_bound = (maximum - minimum) / 2.0
     error = input_modulus(expected - actual, -error_bound, error_bound)
     return abs(error) < tolerance
-
-
-def hypotenuse(x: float, y: float) -> float:
-    """
-    Get the hypotenuse length of a right triangle with sides x and y
-
-    Args:
-        x: The length of one leg of the triangle
-        y: The length of the other leg of the triangle
-
-    Returns:
-        The hypotenuse length of a right triangle with side lengths x and y
-    """
-
-    return math.sqrt(pow(x, 2) + pow(y, 2))
-
-
-def distance(point1, point2) -> float:
-    """
-    Get the distance between point_1 and point_2
-
-    Args:
-        point1: One of the points
-        point2: The other point
-
-    Returns:
-        The distance between point_1 and point_2
-    """
-
-    return hypotenuse(point1[0] - point2[0], point1[1] - point2[1])
 
 
 def cubic_filter(value, linearity=0) -> float:

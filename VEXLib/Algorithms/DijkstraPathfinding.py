@@ -2,7 +2,7 @@ import gc
 import heapq
 
 import sys
-from VEXLib.Math.MathUtil import *
+from VEXLib.Geometry.GeometryUtil import distance, hypotenuse
 from VEXLib.Util.PathfindingEnvironment import PathfindingEnvironment
 
 

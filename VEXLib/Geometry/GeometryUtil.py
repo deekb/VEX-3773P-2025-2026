@@ -10,6 +10,21 @@ import math
 from VEXLib.Geometry.Translation1d import Distance, Translation1d
 
 
+def hypotenuse(x: float, y: float) -> float:
+    """
+    Get the hypotenuse length of a right triangle with sides x and y
+
+    Args:
+        x: The length of one leg of the triangle
+        y: The length of the other leg of the triangle
+
+    Returns:
+        The hypotenuse length of a right triangle with side lengths x and y
+    """
+
+    return math.sqrt(pow(x, 2) + pow(y, 2))
+
+
 def distance(point1, point2):
     """Get the Euclidean distance between two points.
 

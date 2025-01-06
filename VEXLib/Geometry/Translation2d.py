@@ -1,6 +1,6 @@
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d, Distance
-import VEXLib.Math.MathUtil as MathUtil
+import VEXLib.Geometry.GeometryUtil as GeometryUtil
 
 
 class Translation2d:
@@ -181,7 +181,7 @@ class Translation2d:
         Returns:
             Distance: The distance between the two translation.
         """
-        return Distance.from_meters(MathUtil.distance(self.to_meters(), other.to_meters()))
+        return Distance.from_meters(GeometryUtil.distance(self.to_meters(), other.to_meters()))
 
     def length(self):
         """Calculate the cartesian distance between this translation and the origin.
@@ -189,7 +189,7 @@ class Translation2d:
         Returns:
             Length: The distance from the origin to the translation.
         """
-        return Distance.from_meters(MathUtil.distance(self.to_meters(), (0, 0)))
+        return Distance.from_meters(GeometryUtil.distance(self.to_meters(), (0, 0)))
 
     def rotate_by(self, rotation2d):
         sin_other = rotation2d.sin()
