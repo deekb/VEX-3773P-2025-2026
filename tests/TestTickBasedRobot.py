@@ -14,7 +14,6 @@ class TestNewTickBasedRobot(unittest.TestCase):
         driver_callback = Mock()
         auto_callback = Mock()
 
-
         robot._tick()
 
         # Assign mock callbacks to robot enable callbacks

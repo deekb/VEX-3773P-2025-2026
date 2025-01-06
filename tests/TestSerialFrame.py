@@ -1,7 +1,6 @@
 from src.SerialFrame import SerialFrame, FrameType
 
 
-
 def test_serial_frame():
     # Create a SerialFrame instance with sample data
     original_data = b"Hello, World!"

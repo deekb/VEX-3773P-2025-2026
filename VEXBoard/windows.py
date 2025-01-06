@@ -6,7 +6,7 @@ from .network_handler import NetworkHandler
 from pyglet.gui import PushButton
 
 
-class RobotStatusWindow(pyglet.window.Window, ABC):
+class RobotStatusWindow(pyglet.window.Window):
     def __init__(self, width, height, network_handler: NetworkHandler, **kwargs):
         super().__init__(width, height, "Robot Status", **kwargs)
         self.network_handler = network_handler

@@ -4,6 +4,7 @@ from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Pose2d import Pose2d
 
+
 class TestPose2d(unittest.TestCase):
     def test_addition(self):
         p1 = Pose2d(Translation2d.from_meters(1, 2), Rotation2d(math.pi / 2))

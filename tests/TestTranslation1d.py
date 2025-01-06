@@ -1,6 +1,7 @@
 import unittest
 from VEXLib.Geometry.Translation1d import Translation1d, Distance
 
+
 class TestTranslation1d(unittest.TestCase):
     def test_addition(self):
         t1 = Translation1d(3)

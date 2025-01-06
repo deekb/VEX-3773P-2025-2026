@@ -1,6 +1,7 @@
 import unittest
 from VEXLib.Geometry.RotationalVelocity import RotationalVelocity, RotSpeed
 
+
 class TestRotationalVelocity(unittest.TestCase):
     def test_addition(self):
         v1 = RotationalVelocity.from_radians_per_second(3)

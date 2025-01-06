@@ -1,6 +1,7 @@
 import unittest
 from VEXLib.Geometry.Velocity1d import Velocity1d, Speed
 
+
 class TestVelocity1d(unittest.TestCase):
     def test_addition(self):
         v1 = Velocity1d(3)

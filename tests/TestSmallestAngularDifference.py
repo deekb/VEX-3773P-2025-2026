@@ -31,5 +31,6 @@ class TestSmallestAngularDifference(unittest.TestCase):
         self.setpoint = math.pi
         self.assertAlmostEqual(smallest_angular_difference(self.setpoint, 0), -math.pi)
 
+
 if __name__ == '__main__':
     unittest.main()
