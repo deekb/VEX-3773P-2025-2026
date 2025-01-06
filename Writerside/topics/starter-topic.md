@@ -9,7 +9,7 @@ The `Translation1d` class represents a one-dimensional translation, allowing for
 To use the `Translation1d` class, you need to import the required module from the VEXLib library:
 
 ```python
-from VEXLib.Units import Units
+from VEXLib.Geometry.Translation1d import Translation1d
 ```
 
 ## Key Functionalities
