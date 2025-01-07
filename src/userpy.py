@@ -23,4 +23,4 @@ while True:
         wait(1000, MSEC)
         continue
 
-main.main(brain)  # Pass the brain to the main function to save GC some work
+main.main(brain, 1)  # Pass the brain to the main function to save GC some work

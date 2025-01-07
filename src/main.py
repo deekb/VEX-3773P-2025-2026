@@ -1,4 +1,4 @@
-def main(brain):
+def main(brain, robot_id):
     while True:
         from vex import Thread, wait, MSEC
         if not brain.sdcard.is_inserted():
