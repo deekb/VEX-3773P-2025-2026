@@ -1,5 +1,8 @@
 import math
+
 import Constants
+import VEXLib.Math.MathUtil as MathUtil
+import VEXLib.Units.Units as Units
 from Odometry import TankOdometry
 from VEXLib.Algorithms.PID import PIDController
 from VEXLib.Algorithms.PIDF import PIDFController
@@ -7,61 +10,10 @@ from VEXLib.Algorithms.TrapezoidProfile import *
 from VEXLib.Geometry import GeometryUtil
 from VEXLib.Geometry.Pose2d import Pose2d
 from VEXLib.Geometry.Rotation2d import Rotation2d
-import VEXLib.Units.Units as Units
 from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
-import VEXLib.Math.MathUtil as MathUtil
 from VEXLib.Util import ContinuousTimer
 from vex import Motor, GearSetting, FORWARD, VOLT, Inertial, Rotation, Ports, TURNS, DEGREES
-
-
-# class FixedMotor(Motor):
-#     def __init__(self, port, gear_ration, reversed_, speed_smoothing_window=5):
-#         super().__init__(port, gear_ration, reversed_)
-#         self.last_position = 0
-#         self.speed_smoothing_window = speed_smoothing_window
-#
-#         self.thread = Thread(self._mainloop)
-#
-#     def mainloop(self):
-#         while True:
-#             self._tick()
-#
-#     def _tick(self):
-#         x = x
-#
-#
-#     def update_drivetrain_velocities(self):
-#         current_time = ContinuousTimer.time()
-#         dx = (current_time - self.previous_speed_sample_time)
-#         if dx >= Units.milliseconds_to_seconds(self.SPEED_SAMPLE_TIME_MS):
-#             current_left_position = self.left_rotation_sensor.position(TURNS)
-#             current_right_position = self.right_rotation_sensor.position(TURNS)
-#
-#             left_dy = (current_left_position - self.last_left_drivetrain_position)
-#             right_dy = (current_right_position - self.last_right_drivetrain_position)
-#
-#             left_output = left_dy / dx
-#             right_output = right_dy / dx
-#
-#             self.previous_left_speeds.append(left_output)
-#             self.previous_right_speeds.append(right_output)
-#             self.previous_left_speeds = self.previous_left_speeds[-self.SPEED_SMOOTHING_WINDOW:]
-#             self.previous_right_speeds = self.previous_right_speeds[-self.SPEED_SMOOTHING_WINDOW:]
-#             self.last_left_drivetrain_position = current_left_position
-#             self.last_right_drivetrain_position = current_right_position
-#             self.previous_speed_sample_time = current_time
-#
-#         left_average_speed = sum(self.previous_left_speeds) / len(self.previous_left_speeds)
-#         right_average_speed = sum(self.previous_right_speeds) / len(self.previous_right_speeds)
-#
-#         return left_average_speed, right_average_speed
-#
-#
-#     def velocity(self, *args):
-#         return 0
-#
-#     def
 
 
 class Drivetrain:
@@ -76,8 +28,7 @@ class Drivetrain:
         self.rear_left_motor = Motor(Constants.SmartPorts.REAR_LEFT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, True)
 
         self.front_right_motor = Motor(Constants.SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
-        self.middle_right_motor = Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1,
-                                        False)
+        self.middle_right_motor = Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
         self.rear_left_motor = Motor(Constants.SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
 
         # Make lists containing the left and right sets of motors
