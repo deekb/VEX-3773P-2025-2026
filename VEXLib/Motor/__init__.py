@@ -82,3 +82,53 @@ class Motor:
 
     def get_velocity_radians_per_second(self):
         return math.radians(self.get_velocity_degrees_per_second())
+
+
+
+# class FixedMotor(Motor):
+#     def __init__(self, port, gear_ration, reversed_, speed_smoothing_window=5):
+#         super().__init__(port, gear_ration, reversed_)
+#         self.last_position = 0
+#         self.speed_smoothing_window = speed_smoothing_window
+#
+#         self.thread = Thread(self._mainloop)
+#
+#     def mainloop(self):
+#         while True:
+#             self._tick()
+#
+#     def _tick(self):
+#         x = x
+#
+#
+#     def update_drivetrain_velocities(self):
+#         current_time = ContinuousTimer.time()
+#         dx = (current_time - self.previous_speed_sample_time)
+#         if dx >= Units.milliseconds_to_seconds(self.SPEED_SAMPLE_TIME_MS):
+#             current_left_position = self.left_rotation_sensor.position(TURNS)
+#             current_right_position = self.right_rotation_sensor.position(TURNS)
+#
+#             left_dy = (current_left_position - self.last_left_drivetrain_position)
+#             right_dy = (current_right_position - self.last_right_drivetrain_position)
+#
+#             left_output = left_dy / dx
+#             right_output = right_dy / dx
+#
+#             self.previous_left_speeds.append(left_output)
+#             self.previous_right_speeds.append(right_output)
+#             self.previous_left_speeds = self.previous_left_speeds[-self.SPEED_SMOOTHING_WINDOW:]
+#             self.previous_right_speeds = self.previous_right_speeds[-self.SPEED_SMOOTHING_WINDOW:]
+#             self.last_left_drivetrain_position = current_left_position
+#             self.last_right_drivetrain_position = current_right_position
+#             self.previous_speed_sample_time = current_time
+#
+#         left_average_speed = sum(self.previous_left_speeds) / len(self.previous_left_speeds)
+#         right_average_speed = sum(self.previous_right_speeds) / len(self.previous_right_speeds)
+#
+#         return left_average_speed, right_average_speed
+#
+#
+#     def velocity(self, *args):
+#         return 0
+#
+#     def
