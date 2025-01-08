@@ -1,15 +1,17 @@
+import json
+import sys
+
+import AutonomousRoutines
+import VEXLib.Math.MathUtil as MathUtil
+from Constants import Preferences, CONTROL_STYLE_DIRK, CONTROL_STYLE_DEREK
+from CornerMechanism import CornerMechanism
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
 from VEXLib.Robot.TimedRobot import TimedRobot
 from VEXLib.Util import time
 from WallStakeMechanism import WallStakeMechanism
-from CornerMechanism import CornerMechanism
-from Constants import Preferences, CONTROL_STYLE_DIRK, CONTROL_STYLE_DEREK
-import VEXLib.Math.MathUtil as MathUtil
-import AutonomousRoutines
 from vex import *
-import json
 
 
 class DirkPreferences(Preferences):
@@ -23,9 +25,86 @@ class DerekPreferences(Preferences):
 
 
 class Logger:
-    def __init__(self, log_name):
-        index = open("index.json", "rw")
-        json.loads(index.read())
+    def __init__(self, sd_card, log_name_prefix):
+        """
+        Initializes the logger by creating or reading an 'index.json' file to manage log file numbering.
+        Opens a single log file for writing during the program lifecycle.
+
+        :param log_name_prefix: Prefix for the log file names.
+        """
+        self.sd_card = sd_card
+        self.log_name_prefix = log_name_prefix
+        self.index_file = "logs/index.json"
+        self.current_index = self._get_current_index()
+        self.log_file_path = "logs/" + str(self.log_name_prefix) + "-" + str(self.current_index) + ".log"
+        self.log_file = None
+
+        # Increment the index for the next usage and save it back to the 'index.json'
+        self._increment_index()
+
+        # Open the log file once for the entire program run
+        self._open_log_file()
+
+    def _get_current_index(self):
+        """
+        Retrieves the current logging index from 'index.json'. If the file doesn't exist, it initializes the index at 1.
+        :return: Current index for the log file.
+        """
+        print()
+
+        if self.sd_card.filesize(self.index_file):
+            with open(self.index_file, "r") as file:
+                try:
+                    data = json.load(file)
+                    return data.get("index", 1)
+                except json.JSONDecodeError:
+                    # Handle case where JSON file is corrupted
+                    return 1
+        else:
+            return 1
+
+    def _increment_index(self):
+        """
+        Increments the log file index and saves it back to 'index.json'.
+        """
+        with open(self.index_file, "w") as file:
+            json.dump({"index": self.current_index + 1}, file)
+
+    def _open_log_file(self):
+        """
+        Opens the log file in append mode for writing.
+        """
+        self.log_file = open(self.log_file_path, "a")
+
+    def log(self, message):
+        """
+        Logs a message to the log file. Writes the message into the open file.
+
+        :param message: Message to be logged.
+        """
+        self.log_file.write(message + "\n")
+        self.log_file.flush()  # Ensure logs are written to the file immediately
+
+    def close(self):
+        """
+        Closes the log file when the logger is no longer needed.
+        """
+        if self.log_file:
+            self.log_file.close()
+
+    def __del__(self):
+        """
+        Ensures the log file is closed automatically when the logger is deleted.
+        """
+        self.close()
+
+
+logger = Logger(Brain().sdcard, "autonomous")
+logger.log("This is autonomous")
+logger.log("Testing")
+logger.log("hello...")
+logger.close()
+print("Logging test done")
 
 
 class Robot(TimedRobot):
@@ -47,6 +126,7 @@ class Robot(TimedRobot):
             "positive_WP": AutonomousRoutines.positive_win_point,
             "positive_2_mobile_goal": AutonomousRoutines.positive_2_mobile_goal,
         }
+
 
         self.autonomous = lambda *args: None
         # self.animation_thread = Thread(self.animation)
