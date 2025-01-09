@@ -88,7 +88,7 @@ def clamp(value: float, lower_limit: float | None = None, upper_limit: float | N
     return value
 
 
-def apply_deadband(value: float, deadband: float, max_magnitude: float) -> float:
+def apply_deadband(value: float, deadband: float = 0.05, max_magnitude: float = 1.0) -> float:
     """
     Returns 0.0 if the given value is within the specified range around zero. The remaining range
     between the deadband and the maximum magnitude is scaled from 0.0 to the maximum magnitude.
