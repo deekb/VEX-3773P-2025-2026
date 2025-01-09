@@ -1,5 +1,4 @@
 import json
-import sys
 
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
@@ -9,8 +8,11 @@ from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
 from VEXLib.Robot.TimedRobot import TimedRobot
+import VEXLib.Sensors.Controller
 from VEXLib.Util import time
 from WallStakeMechanism import WallStakeMechanism
+from src import Constants
+from src.Constants import GearRatios
 from vex import *
 
 
@@ -110,8 +112,17 @@ print("Logging test done")
 class Robot(TimedRobot):
     def __init__(self, brain):
         super().__init__(brain)
-        self.controller = Controller(PRIMARY)
-        self.drivetrain = Drivetrain()
+        self.controller = VEXLib.Sensors.Controller.Controller(PRIMARY)
+        self.drivetrain = Drivetrain(
+            [Motor(Constants.SmartPorts.FRONT_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
+             Motor(Constants.SmartPorts.MIDDLE_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
+             Motor(Constants.SmartPorts.REAR_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)],
+
+            [Motor(Constants.SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
+             Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
+             Motor(Constants.SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)],
+        )
+
         self.mobile_goal_clamp = MobileGoalClamp()
         self.scoring_mechanism = ScoringMechanism()
         self.wall_stake_mechanism = WallStakeMechanism()
@@ -126,7 +137,6 @@ class Robot(TimedRobot):
             "positive_WP": AutonomousRoutines.positive_win_point,
             "positive_2_mobile_goal": AutonomousRoutines.positive_2_mobile_goal,
         }
-
 
         self.autonomous = lambda *args: None
         # self.animation_thread = Thread(self.animation)
@@ -273,32 +283,27 @@ class Robot(TimedRobot):
 
     def driver_control_periodic(self):
         if Preferences.ARCADE_CONTROL:
-            forward_speed = self.controller.axis3.position() / 100
-            turn_speed = self.controller.axis1.position() / 100
+            forward_speed = self.controller.left_stick_y()
+            turn_speed = self.controller.right_stick_x()
 
-            forward_speed = MathUtil.apply_deadband(forward_speed, 0.05, 1)
-            turn_speed = -MathUtil.apply_deadband(turn_speed, 0.05, 1)
+            forward_speed = MathUtil.apply_deadband(forward_speed)
+            turn_speed = -MathUtil.apply_deadband(turn_speed)
 
             left_speed = forward_speed - turn_speed
             right_speed = forward_speed + turn_speed
         else:
-            left_speed = self.controller.axis3.position() / 100
-            right_speed = self.controller.axis2.position() / 100
+            left_speed = self.controller.left_stick_y()
+            right_speed = self.controller.right_stick_y()
 
-            left_speed = MathUtil.apply_deadband(left_speed, 0.05, 1)
-            right_speed = MathUtil.apply_deadband(right_speed, 0.05, 1)
-
-        if Preferences.VOLTAGE_CONTROL:
+            left_speed = MathUtil.apply_deadband(left_speed)
+            right_speed = MathUtil.apply_deadband(right_speed)
 
             # left_speed = MathUtil.cubic_filter(left_speed, linearity=0.4)
             # right_speed = MathUtil.cubic_filter(right_speed, linearity=0.4)
 
             self.drivetrain.set_voltage(left_speed * 10, right_speed * 10)
-        else:
-            self.drivetrain.update_motor_voltages()
 
-        if Preferences.PRINT_POSE:
-            print(self.drivetrain.odometry.get_pose())
+        print(self.drivetrain.odometry.get_pose())
 
         self.drivetrain.update_odometry()
         self.wall_stake_mechanism.tick()
