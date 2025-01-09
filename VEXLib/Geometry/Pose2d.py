@@ -41,7 +41,7 @@ class Pose2d:
     @classmethod
     def from_zero(cls):
         """Create a Pose2d object with zero translation and rotation."""
-        return cls(Translation2d.from_meters(0, 0), Rotation2d(0))
+        return cls(Translation2d(), Rotation2d(0))
 
     @classmethod
     def from_translation2d(cls, translation2d):
@@ -51,4 +51,4 @@ class Pose2d:
     @classmethod
     def from_rotation2d(cls, rotation2d):
         """Create a Pose2d object from a Rotation2d object assuming the translation is (0, 0) meters by default."""
-        return cls(Translation2d.from_meters(0, 0), rotation2d)
+        return cls(Translation2d(), rotation2d)

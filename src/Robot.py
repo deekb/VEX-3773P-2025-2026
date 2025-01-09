@@ -10,6 +10,7 @@ from ScoringMechanism import ScoringMechanism
 from VEXLib.Robot.TimedRobot import TimedRobot
 import VEXLib.Sensors.Controller
 from VEXLib.Util import time
+from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism
 from src import Constants
 from src.Constants import GearRatios
@@ -26,87 +27,40 @@ class DerekPreferences(Preferences):
     ARCADE_CONTROL = True
 
 
-class Logger:
-    def __init__(self, sd_card, log_name_prefix):
+class ScrollBufferedScreen:
+    def __init__(self, max_lines=12):
         """
-        Initializes the logger by creating or reading an 'index.json' file to manage log file numbering.
-        Opens a single log file for writing during the program lifecycle.
+        Initialize the ScrollBufferedScreen with a specified maximum number of lines.
 
-        :param log_name_prefix: Prefix for the log file names.
+        :param max_lines: The maximum number of lines to keep in the buffer (default is 12).
         """
-        self.sd_card = sd_card
-        self.log_name_prefix = log_name_prefix
-        self.index_file = "logs/index.json"
-        self.current_index = self._get_current_index()
-        self.log_file_path = "logs/" + str(self.log_name_prefix) + "-" + str(self.current_index) + ".log"
-        self.log_file = None
+        self.max_lines = max_lines
+        self.buffer = []
 
-        # Increment the index for the next usage and save it back to the 'index.json'
-        self._increment_index()
+    def add_line(self, line):
+        """
+        Add a new line of text to the screen. Oldest lines are discarded once the limit is reached.
 
-        # Open the log file once for the entire program run
-        self._open_log_file()
+        :param line: The new line to add (string).
+        """
+        self.buffer.append(line)
+        # Keep only the most recent `max_lines` lines
+        if len(self.buffer) > self.max_lines:
+            self.buffer.pop(0)
 
-    def _get_current_index(self):
+    def get_screen_content(self):
         """
-        Retrieves the current logging index from 'index.json'. If the file doesn't exist, it initializes the index at 1.
-        :return: Current index for the log file.
-        """
-        print()
+        Retrieve the current screen content as a list of lines.
 
-        if self.sd_card.filesize(self.index_file):
-            with open(self.index_file, "r") as file:
-                try:
-                    data = json.load(file)
-                    return data.get("index", 1)
-                except json.JSONDecodeError:
-                    # Handle case where JSON file is corrupted
-                    return 1
-        else:
-            return 1
+        :return: A list of strings representing the current content of the screen buffer.
+        """
+        return self.buffer
 
-    def _increment_index(self):
+    def clear_screen(self):
         """
-        Increments the log file index and saves it back to 'index.json'.
+        Clear all lines from the screen buffer.
         """
-        with open(self.index_file, "w") as file:
-            json.dump({"index": self.current_index + 1}, file)
-
-    def _open_log_file(self):
-        """
-        Opens the log file in append mode for writing.
-        """
-        self.log_file = open(self.log_file_path, "a")
-
-    def log(self, message):
-        """
-        Logs a message to the log file. Writes the message into the open file.
-
-        :param message: Message to be logged.
-        """
-        self.log_file.write(message + "\n")
-        self.log_file.flush()  # Ensure logs are written to the file immediately
-
-    def close(self):
-        """
-        Closes the log file when the logger is no longer needed.
-        """
-        if self.log_file:
-            self.log_file.close()
-
-    def __del__(self):
-        """
-        Ensures the log file is closed automatically when the logger is deleted.
-        """
-        self.close()
-
-
-logger = Logger(Brain().sdcard, "autonomous")
-logger.log("This is autonomous")
-logger.log("Testing")
-logger.log("hello...")
-logger.close()
-print("Logging test done")
+        self.buffer = []
 
 
 class Robot(TimedRobot):
@@ -123,10 +77,22 @@ class Robot(TimedRobot):
              Motor(Constants.SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)],
         )
 
+        self.screen = ScrollBufferedScreen()
+        self.main_log = Logger(self.brain.sdcard, "main")
+        self.print_log = Logger(self.brain.sdcard, "print")
+        self.odometry_log = Logger(self.brain.sdcard, "odometry")
+        self.competition_state_log = Logger(self.brain.sdcard, "competition_state")
+
+        for log in [self.main_log, self.print_log, self.odometry_log, self.competition_state_log]:
+            log.log("Robot Starting Up")
+
+        self.controller = Controller(PRIMARY)
+        self.drivetrain = Drivetrain()
         self.mobile_goal_clamp = MobileGoalClamp()
         self.scoring_mechanism = ScoringMechanism()
         self.wall_stake_mechanism = WallStakeMechanism()
         self.doinker = CornerMechanism()
+        self.animation_frame = 1
         self.autonomous_mappings = {
             "negative_4_rings_and_touch": AutonomousRoutines.negative_4_rings_and_touch,
             "negative": AutonomousRoutines.negative,
@@ -139,17 +105,17 @@ class Robot(TimedRobot):
         }
 
         self.autonomous = lambda *args: None
-        # self.animation_thread = Thread(self.animation)
 
-    def animation(self):
-        i = 1
-
-        while True:
-            self.brain.screen.draw_image_from_file("/deploy/logo_vertical_frame_" + str(i) + ".png", 0, 0)
-            time.sleep_ms(10)
-            i += 1
-            if i > 10:
-                i = 1
+    def log_and_print(self, *parts):
+        message = " ".join(map(str, parts))
+        self.screen.add_line(message)
+        self.brain.screen.clear_screen()
+        self.brain.screen.set_cursor(1, 1)
+        for line in self.screen.get_screen_content():
+            self.brain.screen.print(line)
+            self.brain.screen.next_row()
+        self.print_log.log(message)
+        print(message)
 
     def debug_wait(self):
         while not self.controller.buttonA.pressing():
@@ -158,8 +124,7 @@ class Robot(TimedRobot):
             pass
 
     def on_autonomous(self):
-        self.brain.screen.print("Autonomous: ")
-        self.brain.screen.print(self.autonomous)
+        self.log_and_print("Executing Autonomous Routine:", str(self.autonomous))
         self.autonomous(self)
 
     def on_enable(self):
@@ -221,7 +186,13 @@ class Robot(TimedRobot):
 
         return color + " " + auto
 
+    @staticmethod
+    def zpad_left(x, n):
+        return "0" * (n - len(str(x))) + str(x)
+
     def on_setup(self):
+        while True:
+            self.driver_control_periodic()
         self.drivetrain.inertial.calibrate()
         while self.drivetrain.inertial.is_calibrating():
             time.sleep_ms(5)
@@ -303,7 +274,13 @@ class Robot(TimedRobot):
 
             self.drivetrain.set_voltage(left_speed * 10, right_speed * 10)
 
-        print(self.drivetrain.odometry.get_pose())
+        self.odometry_log.log(self.drivetrain.odometry.get_pose())
 
         self.drivetrain.update_odometry()
         self.wall_stake_mechanism.tick()
+
+        self.brain.screen.draw_image_from_file("/deploy/movie/output_frame_" + self.zpad_left(self.animation_frame, 6) + ".png", 0, 0)
+        # self.brain.screen.draw_image_from_file("/deploy/logo_vertical_frame_" + str(self.animation_frame) + ".png", 0, 0)
+        self.animation_frame += 1
+        # if self.animation_frame > 10:
+        #     self.animation_frame = 1

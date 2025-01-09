@@ -1,4 +1,3 @@
-
 """
 Geometry Utility Module
 
@@ -55,8 +54,7 @@ def distance(point1: tuple[float, float], point2: tuple[float, float]) -> float:
     return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
 
-def area_triangle(point1: tuple[float, float], point2: tuple[float, float],
-                  point3: tuple[float, float]) -> float:
+def area_triangle(point1: tuple[float, float], point2: tuple[float, float], point3: tuple[float, float]) -> float:
     """
     Compute the area of a triangle defined by three points using Heron's formula.
 
@@ -104,7 +102,7 @@ def centroid(points: list[tuple[float, float]]) -> tuple[float, float]:
 
 
 def intersection_point(line1_start: tuple[float, float], line1_end: tuple[float, float],
-                        line2_start: tuple[float, float], line2_end: tuple[float, float]) -> tuple[float, float] | None:
+                       line2_start: tuple[float, float], line2_end: tuple[float, float]) -> tuple[float, float] | None:
     """
     Determine the intersection point of two line segments, if it exists.
 
@@ -138,38 +136,38 @@ def intersection_point(line1_start: tuple[float, float], line1_end: tuple[float,
     return None
 
 
-def is_point_inside_polygon(point, polygon):
+def is_point_inside_polygon(point: tuple[float, float], polygon: list[tuple[float, float]]) -> bool:
     """
-    Determine if a given point lies within a closed polygon in 2D space.
+    Determines if a given point lies within a closed 2D polygon using the ray-casting algorithm.
 
     Args:
-        point (tuple): Coordinates of the point (x, y).
-        polygon (list): List of polygon vertices [(x1, y1), (x2, y2), ...].
+        point (tuple[float, float]): The coordinates of the point as (x, y).
+        polygon (list[tuple[float, float]]): A list of vertices defining the polygon, each represented as (x, y).
 
     Returns:
-        bool: True if the point is inside the polygon, False otherwise.
+        bool: True if the point is inside the polygon; otherwise, False.
     """
     num_vertices = len(polygon)  # Total number of vertices in the polygon.
-    intersection_count = 0       # Count of ray-polygon edge intersections.
+    intersection_count = 0  # Count of ray-polygon edge intersections.
 
     for i in range(num_vertices):
         j = (i + 1) % num_vertices
-        if ((polygon[i][1] > point[1]) != (polygon[j][1] > point[1]) and
-                point[0] < (polygon[j][0] - polygon[i][0]) * (point[1] - polygon[i][1]) /
-                (polygon[j][1] - polygon[i][1]) + polygon[i][0]):
+        if ((polygon[i][1] > point[1]) != (polygon[j][1] > point[1]) and point[0] < (polygon[j][0] - polygon[i][0]) * (
+                point[1] - polygon[i][1]) / (polygon[j][1] - polygon[i][1]) + polygon[i][0]):
             intersection_count += 1
 
     return intersection_count % 2 == 1
 
 
-def polygon_area(polygon):
-    """Calculate the area of a polygon defined by its vertices using the shoelace formula.
+def polygon_area(polygon: list[tuple[float, float]]) -> float:
+    """
+    Calculates the area of a polygon using the Shoelace formula.
 
     Args:
-        polygon (list): List of polygon vertices [(x1, y1), (x2, y2), ...].
+        polygon (list[tuple[float, float]]): List of ordered vertices defining the polygon, each represented as (x, y).
 
     Returns:
-        float: The area of the polygon.
+        float: The computed area of the polygon.
     """
     num_vertices = len(polygon)
     area = 0
@@ -181,67 +179,72 @@ def polygon_area(polygon):
     return abs(area) / 2
 
 
-def circle_area(radius):
-    """Calculate the area of a circle given its radius.
+def circle_area(radius: float) -> float:
+    """
+    Calculates the area of a circle given its radius.
 
     Args:
         radius (float): The radius of the circle.
 
     Returns:
-        float: The area of the circle.
+        float: The area of the circle, calculated as π × radius².
     """
     return math.pi * radius ** 2
 
 
-def circle_circumference(radius):
-    """Calculate the circumference of a circle given its radius.
+def circle_circumference(radius: float | Distance) -> float | Distance:
+    """
+    Calculates the circumference of a circle given its radius.
 
     Args:
-        radius (float | Distance): The radius of the circle.
+        radius (float | Distance): The radius of the circle, which can be a scalar (float) or a Distance object.
 
     Returns:
-        float | Distance: The circumference of the circle.
+        float | Distance: The circumference, calculated as 2 × π × radius.
     """
-    return 2 * math.pi * radius
+    return radius * 2 * math.pi
 
 
-def rectangle_area(width, height):
-    """Calculate the area of a rectangle given its width and height.
+def rectangle_area(width: float, height: float) -> float:
+    """
+    Calculates the area of a rectangle given its width and height.
 
     Args:
         width (float): The width of the rectangle.
         height (float): The height of the rectangle.
 
     Returns:
-        float: The area of the rectangle.
+        float: The computed area of the rectangle (width × height).
     """
     return width * height
 
 
-def rectangle_perimeter(width, height):
-    """Calculate the perimeter of a rectangle given its width and height.
+def rectangle_perimeter(width: float, height: float) -> float:
+    """
+    Calculates the perimeter of a rectangle based on its width and height.
 
     Args:
         width (float): The width of the rectangle.
         height (float): The height of the rectangle.
 
     Returns:
-        float: The perimeter of the rectangle.
+        float: The perimeter of the rectangle, calculated as 2 × (width + height).
     """
     return 2 * (width + height)
 
 
-def closest_point_on_line(point, line_start, line_end):
+def closest_point_on_line(point: tuple[float, float], line_start: tuple[float, float], line_end: tuple[float, float]) -> \
+        tuple[float, float]:
     """
-    Find the closest point on a line to a given point.
+    Finds the closest point on a line segment to a given point in 2D space.
 
     Args:
-        point (tuple): Coordinates of the point (x, y).
-        line_start (tuple): Starting point of the line (x1, y1).
-        line_end (tuple): Ending point of the line (x2, y2).
+        point (tuple[float, float]): The point's coordinates (x, y).
+        line_start (tuple[float, float]): The starting coordinates (x1, y1) of the line segment.
+        line_end (tuple[float, float]): The ending coordinates (x2, y2) of the line segment.
 
     Returns:
-        tuple: Coordinates of the closest point on the line (x, y).
+        tuple[float, float]: The coordinates of the closest point on the line segment.
     """
     x1, y1 = line_start
     x2, y2 = line_end
@@ -260,15 +263,15 @@ def closest_point_on_line(point, line_start, line_end):
     return x_closest, y_closest
 
 
-def arc_length_from_rotation(circle_circumference: Distance, rotation) -> Translation1d:
+def arc_length_from_rotation(circle_circumference: Translation1d, rotation) -> Translation1d:
     """
     Calculate the arc length traveled by a circle given its circumference and a rotation value.
 
     Args:
-        circle_circumference (Distance): The circumference of the circle.
+        circle_circumference (Translation1d): The circumference of the circle.
         rotation: The rotation value (in revolutions).
 
     Returns:
-        float: The arc length traveled by the circle.
+        Translation1d: The arc length traveled by the circle.
     """
     return circle_circumference * rotation.to_revolutions()
