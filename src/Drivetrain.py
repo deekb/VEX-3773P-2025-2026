@@ -13,7 +13,7 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Util import ContinuousTimer
-from vex import Motor, GearSetting, FORWARD, VOLT, Inertial, Rotation, Ports, TURNS, DEGREES
+from vex import FORWARD, VOLT, Inertial, TURNS, DEGREES
 
 
 class Drivetrain:
@@ -21,25 +21,10 @@ class Drivetrain:
         A drivetrain controller for a tank drive base
     """
 
-    def __init__(self, speed_sample_time_ms=5, speed_smoothing_window=5):
-        # Initialize drivetrain motors
-        self.front_left_motor = Motor(Constants.SmartPorts.FRONT_LEFT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, True)
-        self.middle_left_motor = Motor(Constants.SmartPorts.MIDDLE_LEFT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, True)
-        self.rear_left_motor = Motor(Constants.SmartPorts.REAR_LEFT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, True)
-
-        self.front_right_motor = Motor(Constants.SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
-        self.middle_right_motor = Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
-        self.rear_left_motor = Motor(Constants.SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearSetting.RATIO_6_1, False)
-
+    def __init__(self, left_motors, right_motors, speed_sample_time_ms=5, speed_smoothing_window=5):
         # Make lists containing the left and right sets of motors
-        self.left_motors = [self.front_left_motor, self.middle_left_motor, self.rear_left_motor]
-        self.right_motors = [self.front_right_motor, self.middle_right_motor, self.rear_left_motor]
-
-        self.left_rotation_sensor = Rotation(Ports.PORT7, True)
-        self.right_rotation_sensor = Rotation(Ports.PORT14, False)
-
-        self.left_rotation_sensor.reset_position()
-        self.right_rotation_sensor.reset_position()
+        self.left_motors = left_motors
+        self.right_motors = right_motors
 
         # Initialize the inertial sensor
         self.inertial = Inertial(Constants.SmartPorts.INERTIAL_SENSOR)
@@ -53,7 +38,6 @@ class Drivetrain:
         # Set up the PIDs to control the position and heading of the robot
         self.position_PID = PIDController(7, 0.1, 0.2, 0.01, 10)
         self.rotation_PID = PIDController(0.8, 0, 0.1, 0.01, 0)
-        # self.rotation_PID.enable_continuous_input(-math.pi, math.pi)
 
         # Speed smoothing
         self.SPEED_SAMPLE_TIME_MS = speed_sample_time_ms
