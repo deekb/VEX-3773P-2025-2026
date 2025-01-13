@@ -1,6 +1,8 @@
+import json
+
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
-from Constants import *
+from ConstantsV1 import *
 from CornerMechanism import CornerMechanism
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
