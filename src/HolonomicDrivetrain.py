@@ -182,14 +182,10 @@ class Drivetrain:
 
         self.move_towards_direction_for_distance(movement_direction, distance_cm, speed)
 
+
     @staticmethod
-    def desaturate_wheel_speeds(front_left, front_right, back_left, back_right):
-        maximum_power = max(
-            front_left,
-            front_right,
-            back_left,
-            back_right,
-        )
+    def desaturate_wheel_speeds(speeds):
+        maximum_power = max(*speeds)
 
         if maximum_power > 1:
             # At least one of the motor velocities are over the maximum possible velocity
@@ -198,11 +194,8 @@ class Drivetrain:
             # To solve this issue we can detect if any motor velocities exceed the maximum possible velocity and
             # Use the inverse of the maximum motor power as a scalar by dividing by it.
             # This will always output all values in a range from 0-1
-            front_left /= maximum_power
-            front_right /= maximum_power
-            back_left /= maximum_power
-            back_right /= maximum_power
-        return front_left, front_right, back_left, back_right
+            speeds = [speed / maximum_power for speed in speeds]
+        return speeds
 
     def move(self, direction, speed, spin):
         spin += self._rotation_pid_output
