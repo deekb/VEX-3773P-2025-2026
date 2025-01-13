@@ -1,12 +1,11 @@
-import json
-
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
-from Constants import Preferences, CONTROL_STYLE_DIRK, CONTROL_STYLE_DEREK
+from Constants import *
 from CornerMechanism import CornerMechanism
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
+from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Robot.TimedRobot import TimedRobot
 import VEXLib.Sensors.Controller
 from VEXLib.Util import time
@@ -15,64 +14,18 @@ from WallStakeMechanism import WallStakeMechanism
 from vex import *
 
 
-class DirkPreferences(Preferences):
-    CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DEREK
-    ARCADE_CONTROL = True
-
-
-class DerekPreferences(Preferences):
-    CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DEREK
-    ARCADE_CONTROL = True
-
-
-class ScrollBufferedScreen:
-    def __init__(self, max_lines=12):
-        """
-        Initialize the ScrollBufferedScreen with a specified maximum number of lines.
-
-        :param max_lines: The maximum number of lines to keep in the buffer (default is 12).
-        """
-        self.max_lines = max_lines
-        self.buffer = []
-
-    def add_line(self, line):
-        """
-        Add a new line of text to the screen. Oldest lines are discarded once the limit is reached.
-
-        :param line: The new line to add (string).
-        """
-        self.buffer.append(line)
-        # Keep only the most recent `max_lines` lines
-        if len(self.buffer) > self.max_lines:
-            self.buffer.pop(0)
-
-    def get_screen_content(self):
-        """
-        Retrieve the current screen content as a list of lines.
-
-        :return: A list of strings representing the current content of the screen buffer.
-        """
-        return self.buffer
-
-    def clear_screen(self):
-        """
-        Clear all lines from the screen buffer.
-        """
-        self.buffer = []
-
-
 class Robot(TimedRobot):
     def __init__(self, brain):
         super().__init__(brain)
         self.controller = VEXLib.Sensors.Controller.Controller(PRIMARY)
         self.drivetrain = Drivetrain(
-            [Motor(Constants.SmartPorts.FRONT_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
-             Motor(Constants.SmartPorts.MIDDLE_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
-             Motor(Constants.SmartPorts.REAR_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)],
+            [Motor(SmartPorts.FRONT_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
+             Motor(SmartPorts.MIDDLE_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
+             Motor(SmartPorts.REAR_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)],
 
-            [Motor(Constants.SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
-             Motor(Constants.SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
-             Motor(Constants.SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)],
+            [Motor(SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
+             Motor(SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
+             Motor(SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)],
         )
 
         self.screen = ScrollBufferedScreen()
@@ -84,6 +37,7 @@ class Robot(TimedRobot):
         for log in [self.main_log, self.print_log, self.odometry_log, self.competition_state_log]:
             log.log("Robot Starting Up")
 
+        self.user_preferences = DefaultPreferences
         self.mobile_goal_clamp = MobileGoalClamp()
         self.scoring_mechanism = ScoringMechanism()
         self.wall_stake_mechanism = WallStakeMechanism()
@@ -201,13 +155,11 @@ class Robot(TimedRobot):
 
         drive_style = self.get_selection(["Dirk", "Derek"])
         if drive_style == "Dirk":
-            Preferences.ARCADE_CONTROL = False
-            Preferences.CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DIRK
+            self.user_preferences = DirkPreferences
         else:
-            Preferences.ARCADE_CONTROL = True
-            Preferences.CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DEREK
+            self.user_preferences = DerekPreferences
 
-        if Preferences.CONTROLLER_BINDINGS_STYLE == CONTROL_STYLE_DIRK:
+        if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.TANK:
             self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
             self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
 
@@ -226,8 +178,7 @@ class Robot(TimedRobot):
             self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
             self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
 
-        elif Preferences.CONTROLLER_BINDINGS_STYLE == CONTROL_STYLE_DEREK:
-
+        elif self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.SPLIT_ARCADE:
             self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
             self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
 
@@ -247,9 +198,19 @@ class Robot(TimedRobot):
             self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
 
     def driver_control_periodic(self):
-        if Preferences.ARCADE_CONTROL:
-            forward_speed = self.controller.left_stick_y()
-            turn_speed = self.controller.right_stick_x()
+        left_speed = right_speed = 0
+        if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.TANK:
+            left_speed = self.controller.axis3.position() / 100
+            right_speed = self.controller.axis2.position() / 100
+
+        elif self.user_preferences.CONTROLLER_BINDINGS_STYLE in [ControlStyles.ARCADE, ControlStyles.SPLIT_ARCADE]:
+            forward_speed = turn_speed = 0
+            if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.ARCADE:
+                forward_speed = self.controller.axis3.position() / 100
+                turn_speed = self.controller.axis1.position() / 100
+            elif self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.SPLIT_ARCADE:
+                forward_speed = self.controller.axis3.position() / 100
+                turn_speed = self.controller.axis1.position() / 100
 
             forward_speed = MathUtil.apply_deadband(forward_speed)
             turn_speed = -MathUtil.apply_deadband(turn_speed)
@@ -260,13 +221,13 @@ class Robot(TimedRobot):
             left_speed = self.controller.left_stick_y()
             right_speed = self.controller.right_stick_y()
 
-            left_speed = MathUtil.apply_deadband(left_speed)
-            right_speed = MathUtil.apply_deadband(right_speed)
+        left_speed = MathUtil.apply_deadband(left_speed)
+        right_speed = MathUtil.apply_deadband(right_speed)
 
-            # left_speed = MathUtil.cubic_filter(left_speed, linearity=0.4)
-            # right_speed = MathUtil.cubic_filter(right_speed, linearity=0.4)
+        left_speed = MathUtil.cubic_filter(left_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
+        right_speed = MathUtil.cubic_filter(right_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
 
-            self.drivetrain.set_voltage(left_speed * 10, right_speed * 10)
+        self.drivetrain.set_voltage(left_speed * self.user_preferences.MAX_MOTOR_VOLTAGE, right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
 
         self.odometry_log.log(self.drivetrain.odometry.get_pose())
 
@@ -274,7 +235,4 @@ class Robot(TimedRobot):
         self.wall_stake_mechanism.tick()
 
         self.brain.screen.draw_image_from_file("/deploy/movie/output_frame_" + self.zpad_left(self.animation_frame, 6) + ".png", 0, 0)
-        # self.brain.screen.draw_image_from_file("/deploy/logo_vertical_frame_" + str(self.animation_frame) + ".png", 0, 0)
         self.animation_frame += 1
-        # if self.animation_frame > 10:
-        #     self.animation_frame = 1
