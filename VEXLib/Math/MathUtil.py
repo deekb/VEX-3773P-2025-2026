@@ -1,4 +1,3 @@
-
 """
 MathUtil Module
 Provides a set of utility functions to perform various mathematical operations such as interpolation, wrapping values,
