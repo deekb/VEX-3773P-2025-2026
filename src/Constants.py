@@ -2,17 +2,39 @@ from VEXLib.Geometry.GeometryUtil import circle_circumference
 from VEXLib.Geometry.RotationalVelocity import RotationalVelocity
 from VEXLib.Geometry.Translation1d import Distance
 from vex import Ports, GearSetting, Brain
-
-CONTROL_STYLE_DEREK = 1
-CONTROL_STYLE_DIRK = 2
+from collections import namedtuple
 
 
-class Preferences:
-    """Base preferences about how the robot should function"""
-    CONTROLLER_BINDINGS_STYLE = CONTROL_STYLE_DIRK
-    ARCADE_CONTROL = False
-    VOLTAGE_CONTROL = True
-    PRINT_POSE = False
+class ControlStyles:
+    TANK = 1
+    ARCADE = 2
+    SPLIT_ARCADE = 3
+
+
+class DefaultPreferences:
+    CONTROLLER_BINDINGS_STYLE = ControlStyles.TANK
+    CUBIC_FILTER_LINEARITY = 1
+    MAX_MOTOR_VOLTAGE = 12
+
+
+class DirkPreferences(DefaultPreferences):
+    controller_bindings_style = ControlStyles.TANK,
+    cubic_filter_linearity = 1,
+
+
+class DerekPreferences(DefaultPreferences):
+    controller_bindings_style = ControlStyles.SPLIT_ARCADE,
+    cubic_filter_linearity = 1
+
+
+class AllisonPreferences(DefaultPreferences):
+    controller_bindings_style = ControlStyles.SPLIT_ARCADE,
+    cubic_filter_linearity = 1
+
+
+class CarterPreferences(DefaultPreferences):
+    controller_bindings_style = ControlStyles.TANK,
+    cubic_filter_linearity = 1
 
 
 class SmartPorts:
