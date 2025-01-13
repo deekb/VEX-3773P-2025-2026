@@ -1,6 +1,6 @@
 from VEXLib.Geometry.Pose2d import Pose2d
 from VEXLib.Geometry.Rotation2d import Rotation2d
-from VEXLib.Geometry.Translation1d import Distance
+from VEXLib.Geometry.Translation1d import Distance, Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 import VEXLib.Math.MathUtil as MathUtil
 from VEXLib.Util import time
@@ -36,23 +36,23 @@ class TankOdometry:
         # Rotation offset to align the inertial sensor's initial orientation with the robot's coordinate system
         self.starting_offset = Rotation2d()
 
-    def update(self, left_position: Distance, right_position: Distance):
+    def update(self, left_rotation: Translation1d, right_rotation: Translation1d):
         """
         Updates the robot's odometry based on new left and right wheel positions.
 
         Args:
-            left_position (Distance): The current position of the left wheel.
-            right_position (Distance): The current position of the right wheel.
+            left_rotation (Distance): The current rotation of the left wheel.
+            right_rotation (Distance): The current rotation of the right wheel.
         """
         # Calculate distance traveled by each wheel since the last update
-        left_distance = left_position - self.last_left_position
-        right_distance = right_position - self.last_right_position
+        left_distance = left_rotation - self.last_left_position
+        right_distance = right_rotation - self.last_right_position
 
         # Update last wheel positions to current positions
-        self.last_left_position = left_position
-        self.last_right_position = right_position
+        self.last_left_position = left_rotation
+        self.last_right_position = right_rotation
 
-        # Calculate the average forward distance traveled by the robot
+        # Calculate the average forward distance traveled by the two sides of the robot
         forward_distance = Distance.from_meters(
             MathUtil.average(left_distance.to_meters(), right_distance.to_meters())
         )

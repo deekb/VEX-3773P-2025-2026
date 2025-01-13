@@ -12,8 +12,6 @@ import VEXLib.Sensors.Controller
 from VEXLib.Util import time
 from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism
-from src import Constants
-from src.Constants import GearRatios
 from vex import *
 
 
@@ -86,8 +84,6 @@ class Robot(TimedRobot):
         for log in [self.main_log, self.print_log, self.odometry_log, self.competition_state_log]:
             log.log("Robot Starting Up")
 
-        self.controller = Controller(PRIMARY)
-        self.drivetrain = Drivetrain()
         self.mobile_goal_clamp = MobileGoalClamp()
         self.scoring_mechanism = ScoringMechanism()
         self.wall_stake_mechanism = WallStakeMechanism()
@@ -191,14 +187,12 @@ class Robot(TimedRobot):
         return "0" * (n - len(str(x))) + str(x)
 
     def on_setup(self):
-        while True:
-            self.driver_control_periodic()
         self.drivetrain.inertial.calibrate()
         while self.drivetrain.inertial.is_calibrating():
             time.sleep_ms(5)
 
         self.wall_stake_mechanism.calibrate()
-        self.controller.rumble("....")
+        self.controller.rumble("..")
 
         autonomous_routine = self.select_autonomous_routine()
         f = open("logs/autonomous_selection.log", "a")
