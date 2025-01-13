@@ -1,10 +1,9 @@
-import Constants
 from vex import DigitalOut
 
 
 class MobileGoalClamp:
-    def __init__(self):
-        self.mobile_goal_clamp_piston = DigitalOut(Constants.ThreeWirePorts.MOBILE_GOAL_CLAMP_PISTON)
+    def __init__(self, piston_port):
+        self.mobile_goal_clamp_piston = DigitalOut(piston_port)
         self.mobile_goal_clamp_state = False
 
     def _update_state(self):

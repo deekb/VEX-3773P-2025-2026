@@ -2,7 +2,11 @@ from VEXLib.Geometry.GeometryUtil import circle_circumference
 from VEXLib.Geometry.RotationalVelocity import RotationalVelocity
 from VEXLib.Geometry.Translation1d import Distance
 from vex import Ports, GearSetting, Brain
-from collections import namedtuple
+
+MAIN_LOG_FILENAME = "main"
+PRINT_LOG_FILENAME = "print"
+ODOMETRY_LOG_FILENAME = "odometry"
+COMPETITION_LOG_FILENAME = "competition_state"
 
 
 class ControlStyles:
