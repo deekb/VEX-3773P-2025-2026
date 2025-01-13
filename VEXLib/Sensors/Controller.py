@@ -27,7 +27,7 @@ class InputProcessor:
         return input_value
 
 
-class Controller:
+class Controller(vex.Controller):
     def __init__(self, controllerType=vex.ControllerType.PRIMARY):
         """
         Wrapper for the VEX Controller object.
