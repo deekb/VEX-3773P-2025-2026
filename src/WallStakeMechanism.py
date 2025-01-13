@@ -28,10 +28,10 @@ class WallStakeMechanism:
         self.motor = Motor(Constants.SmartPorts.WALL_STAKE_MOTOR, GearSetting.RATIO_36_1, True)
         self.motor.spin(FORWARD)
         self.motor.set_velocity(0)
-        self.target_velocity = 0
+        self.target_velocity = Constants.ScoringMechanismProperties.STARTUP_POSITION
 
-        self.DOCKING_POSITION = 10
-        self.SCORING_POSITION = 645+20
+        self.DOCKING_POSITION = Constants.ScoringMechanismProperties.DOCKED_POSITION
+        self.SCORING_POSITION = Constants.ScoringMechanismProperties.MAX_POSITION
 
     def calibrate(self):
         while not self.limit_switch.pressing():
@@ -66,12 +66,12 @@ class WallStakeMechanism:
 
     def dock(self):
         self.manual_control = False
-        self.motor.set_velocity(75, PERCENT)
+        self.motor.set_velocity(Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
         self.motor.spin_to_position(self.DOCKING_POSITION, DEGREES, wait=False)
 
     def score(self):
         self.manual_control = False
-        self.motor.set_velocity(75, PERCENT)
+        self.motor.set_velocity(Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
         self.motor.spin_to_position(self.SCORING_POSITION, DEGREES, wait=False)
 
     def stop(self):
@@ -102,7 +102,7 @@ class WallStakeMechanism:
             if self.limit_switch.pressing():
                 self.target_velocity = MathUtil.clamp(self.target_velocity, 0, None)
 
-            if self.motor.position(DEGREES) > 645+20:
+            if self.motor.position(DEGREES) > Constants.ScoringMechanismProperties.MAX_POSITION:
                 self.target_velocity = clamp(self.target_velocity, None, 0)
 
             self.motor.spin(FORWARD)
