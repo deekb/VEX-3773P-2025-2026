@@ -1,15 +1,14 @@
-import json
-
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
+import VEXLib.Sensors.Controller
 from ConstantsV1 import *
 from CornerMechanism import CornerMechanism
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
+from VEXLib.Kinematics import desaturate_wheel_speeds
 from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Robot.TimedRobot import TimedRobot
-import VEXLib.Sensors.Controller
 from VEXLib.Util import time
 from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism
@@ -161,7 +160,7 @@ class Robot(TimedRobot):
         else:
             self.user_preferences = DerekPreferences
 
-        if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.TANK:
+        if self.user_preferences == DirkPreferences:
             self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
             self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
 
@@ -180,7 +179,7 @@ class Robot(TimedRobot):
             self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
             self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
 
-        elif self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.SPLIT_ARCADE:
+        elif self.user_preferences == DerekPreferences:
             self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
             self.controller.buttonY.pressed(self.doinker.toggle_corner_mechanism)
 
@@ -202,29 +201,31 @@ class Robot(TimedRobot):
     def driver_control_periodic(self):
         left_speed = right_speed = 0
         if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.TANK:
-            left_speed = self.controller.axis3.position() / 100
-            right_speed = self.controller.axis2.position() / 100
-
+            left_speed = self.controller.left_stick_y()
+            right_speed = self.controller.right_stick_y()
         elif self.user_preferences.CONTROLLER_BINDINGS_STYLE in [ControlStyles.ARCADE, ControlStyles.SPLIT_ARCADE]:
             forward_speed = turn_speed = 0
             if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.ARCADE:
-                forward_speed = self.controller.axis3.position() / 100
-                turn_speed = self.controller.axis1.position() / 100
+                forward_speed = self.controller.left_stick_y()
+                turn_speed = self.controller.left_stick_x()
             elif self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.SPLIT_ARCADE:
-                forward_speed = self.controller.axis3.position() / 100
-                turn_speed = self.controller.axis1.position() / 100
+                forward_speed = self.controller.left_stick_y()
+                turn_speed = self.controller.right_stick_x()
 
             forward_speed = MathUtil.apply_deadband(forward_speed)
             turn_speed = -MathUtil.apply_deadband(turn_speed)
 
             left_speed = forward_speed - turn_speed
             right_speed = forward_speed + turn_speed
+
         else:
             left_speed = self.controller.left_stick_y()
             right_speed = self.controller.right_stick_y()
 
         left_speed = MathUtil.apply_deadband(left_speed)
         right_speed = MathUtil.apply_deadband(right_speed)
+
+        left_speed, right_speed = desaturate_wheel_speeds([left_speed, right_speed])
 
         left_speed = MathUtil.cubic_filter(left_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
         right_speed = MathUtil.cubic_filter(right_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
