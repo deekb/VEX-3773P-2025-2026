@@ -38,6 +38,7 @@ class RealTimeGaussianSmoother:
 
         return smoothed_value
 
+
 import matplotlib.pyplot as plt
 import random
 
@@ -45,7 +46,7 @@ import random
 smoother = RealTimeGaussianSmoother(sigma=5, kernel_size=15)
 
 # Generate random data to simulate input
-raw_data = [math.sin(i/20) + random.uniform(-0.2, 0.2) for i in range(1000)]
+raw_data = [math.sin(i / 20) + random.uniform(-0.2, 0.2) for i in range(1000)]
 smoothed_data = []
 
 # Smooth the data using the smoother

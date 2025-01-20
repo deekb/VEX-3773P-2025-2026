@@ -57,11 +57,9 @@ class InputProcessor:
 # Initialize an InputProcessor
 processor = InputProcessor()
 
-# Add Deadbanding
+# Add processing steps
+processor.add_step(lambda x: cubic_filter(x, 0))
 processor.add_step(lambda x: apply_deadband(x, 0.05, 1))
-
-# Add Cubic Filtering
-processor.add_step(lambda x: cubic_filter(x, 0.5))
 
 
 # Add Slew Rate Limiting

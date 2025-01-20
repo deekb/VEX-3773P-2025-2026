@@ -65,7 +65,8 @@ class Logger:
         """
         Logs a message to the log file. Writes the message into the open file.
 
-        :param message: Message to be logged.
+        :param parts: The parts of the message to be logged, will be joined with spaces
+        :param end: The string to terminate the message with.
         """
         message = " ".join(map(str, parts)) + end
         self.sd_card.appendfile(self.log_file_path, bytearray(message))
@@ -80,9 +81,9 @@ def format_time(seconds):
     """
     millis = int((seconds % 1) * 1000)
     seconds = int(seconds)
-    mins, secs = divmod(seconds, 60)
-    hours, mins = divmod(mins, 60)
-    return "{:02}:{:02}:{:02}.{:03}".format(hours, mins, secs, millis)
+    minutes, secs = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return "{:02}:{:02}:{:02}.{:03}".format(hours, minutes, secs, millis)
 
 
 def logged(func, logger: Logger = print):
@@ -114,11 +115,3 @@ def logged(func, logger: Logger = print):
         return output
 
     return wrapper
-
-
-# @logged
-# def hello(name):
-#     print(f"Hello {name}")
-#
-#
-# hello("Derek")

@@ -6,7 +6,7 @@ from .Constants import *
 
 
 class Motor:
-    def __init__(self, port, gear_ratio=18,  direction=FORWARD, run_mode=NONE):
+    def __init__(self, port, gear_ratio=18, direction=FORWARD, run_mode=NONE):
         # We are running all motors at 18:1 gear ratio and compensating for it in the get_position and get_velocity methods
         self.port = port
         self._motor = vexMotor(port, GearSetting.RATIO_18_1, FORWARD)
@@ -82,8 +82,6 @@ class Motor:
 
     def get_velocity_radians_per_second(self):
         return math.radians(self.get_velocity_degrees_per_second())
-
-
 
 # class FixedMotor(Motor):
 #     def __init__(self, port, gear_ration, reversed_, speed_smoothing_window=5):
