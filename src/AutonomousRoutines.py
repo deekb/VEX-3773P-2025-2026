@@ -97,7 +97,7 @@ class AutonomousRoutines:
         time.sleep(1)
         robot.mobile_goal_clamp.release_mobile_goal()
         robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(27),
-                                                              -60)  # TODO: THIS IS THE DIAGONAL MOVE
+                                                              -60)
         robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-190), 180)
         robot.mobile_goal_clamp.clamp_mobile_goal()
         robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(60), -90)
@@ -145,7 +145,7 @@ class AutonomousRoutines:
         robot.mobile_goal_clamp.release_mobile_goal()
         robot.scoring_mechanism.spin_motor_at_speed(0)
         robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(27),
-                                                              -55)  # TODO: THIS IS THE DIAGONAL MOVE
+                                                              -55)
         robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-190), 180)
         robot.mobile_goal_clamp.clamp_mobile_goal()
         robot.scoring_mechanism.spin_motor_at_speed(100)
