@@ -6,12 +6,13 @@ from CornerMechanism import CornerMechanism
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
+from WallStakeMechanism import WallStakeMechanism
 from VEXLib.Kinematics import desaturate_wheel_speeds
 from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Robot.TimedRobot import TimedRobot
+from VEXLib.Threading.BinarySemaphore import BinarySemaphore
 from VEXLib.Util import time, pass_function
 from VEXLib.Util.Logging import Logger
-from WallStakeMechanism import WallStakeMechanism
 from vex import *
 
 
@@ -28,6 +29,7 @@ class Robot(TimedRobot):
                                       Motor(SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)], )
 
         self.screen = ScrollBufferedScreen()
+        self.render_lock = BinarySemaphore()
 
         self.main_log = Logger(self.brain.sdcard, MAIN_LOG_FILENAME)
 
@@ -60,12 +62,14 @@ class Robot(TimedRobot):
     def log_and_print(self, *parts):
         message = " ".join(map(str, parts))
         self.screen.add_line(message)
+        self.render_lock.acquire()
         self.brain.screen.clear_screen()
         self.brain.screen.set_cursor(1, 1)
         for line in self.screen.get_screen_content():
             self.brain.screen.print(line)
             self.brain.screen.next_row()
-        self.print_log.log(message)
+        self.render_lock.release()
+        self.main_log.log(message)
         print(message)
 
     def debug_wait(self):
@@ -173,6 +177,11 @@ class Robot(TimedRobot):
             self.setup_dirk_preferences()
         elif isinstance(self.user_preferences, DerekPreferences):
             self.setup_derek_preferences()
+
+    def periodic(self):
+        self.render_lock.acquire()
+        self.brain.screen.render()
+        self.render_lock.release()
 
     def driver_control_periodic(self):
         left_speed = right_speed = 0
