@@ -1,6 +1,6 @@
 import math
 
-import Constants
+import ConstantsV1
 import VEXLib.Math.MathUtil as MathUtil
 import VEXLib.Units.Units as Units
 from Odometry import TankOdometry
@@ -27,7 +27,7 @@ class Drivetrain:
         self.right_motors = right_motors
 
         # Initialize the inertial sensor
-        self.inertial = Inertial(Constants.SmartPorts.INERTIAL_SENSOR)
+        self.inertial = Inertial(ConstantsV1.SmartPorts.INERTIAL_SENSOR)
 
         self.odometry = TankOdometry(self.inertial)
         self.ANGLE_DIRECTION = 1
@@ -52,16 +52,21 @@ class Drivetrain:
         self.previous_right_speeds = [0 for _ in range(5)]
 
         # Set the physical properties of the drivetrain
-        self.max_achievable_speed = Constants.DrivetrainProperties.MAX_ACHIEVABLE_SPEED
-        self.motor_to_wheel_gear_ratio = Constants.DrivetrainProperties.MOTOR_TO_WHEEL_GEAR_RATIO
-        self.encoder_to_wheel_gear_ratio = Constants.DrivetrainProperties.ENCODER_TO_WHEEL_GEAR_RATIO
-        self.track_width = Constants.DrivetrainProperties.TRACK_WIDTH
-        self.wheel_diameter = Constants.DrivetrainProperties.WHEEL_DIAMETER
-        self.wheel_circumference = Constants.DrivetrainProperties.WHEEL_CIRCUMFERENCE
+        self.max_achievable_speed = ConstantsV1.DrivetrainProperties.MAX_ACHIEVABLE_SPEED
+        self.motor_to_wheel_gear_ratio = ConstantsV1.DrivetrainProperties.MOTOR_TO_WHEEL_GEAR_RATIO
+        self.encoder_to_wheel_gear_ratio = ConstantsV1.DrivetrainProperties.ENCODER_TO_WHEEL_GEAR_RATIO
+        self.track_width = ConstantsV1.DrivetrainProperties.TRACK_WIDTH
+        self.wheel_diameter = ConstantsV1.DrivetrainProperties.WHEEL_DIAMETER
+        self.wheel_circumference = ConstantsV1.DrivetrainProperties.WHEEL_CIRCUMFERENCE
 
         # Initialize a TrapezoidProfile object to define the speed and acceleration profiles of the drivetrain
-        self.trapezoidal_profile = TrapezoidProfile(
-            Constraints(30 * self.motor_to_wheel_gear_ratio, 50 * self.motor_to_wheel_gear_ratio))
+        self.trapezoidal_profile = TrapezoidProfile(Constraints(30 * self.motor_to_wheel_gear_ratio, 50 * self.motor_to_wheel_gear_ratio))
+
+        # We had to change this:
+        self.trapezoidal_profile = TrapezoidProfile(Constraints(30, 50))
+
+        # To this:
+        self.trapezoidal_profile = TrapezoidProfile(Constraints(50, 100))
 
         self.target_pose = Pose2d()
 
@@ -88,8 +93,6 @@ class Drivetrain:
         current_time = ContinuousTimer.time()
         dx = (current_time - self.previous_speed_sample_time)
         if dx >= Units.milliseconds_to_seconds(self.SPEED_SAMPLE_TIME_MS):
-            # current_left_position = self.left_rotation_sensor.position(TURNS) / self.encoder_to_wheel_gear_ratio
-            # current_right_position = self.right_rotation_sensor.position(TURNS) / self.encoder_to_wheel_gear_ratio
 
             current_left_position = MathUtil.average_iterable(
                 [motor.position(TURNS) for motor in self.left_motors]) * self.motor_to_wheel_gear_ratio
@@ -116,10 +119,6 @@ class Drivetrain:
         return left_average_speed, right_average_speed
 
     def get_left_position(self):
-        # left_position = Rotation2d.from_degrees(
-        #     self.left_rotation_sensor.position(DEGREES) * self.encoder_to_wheel_gear_ratio)
-        # return GeometryUtil.arc_length_from_rotation(self.wheel_circumference, left_position)
-
         position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.left_motors])
 
         left_position = Rotation2d.from_degrees(
@@ -127,10 +126,6 @@ class Drivetrain:
         return GeometryUtil.arc_length_from_rotation(self.wheel_circumference, left_position)
 
     def get_right_position(self):
-        # right_position = Rotation2d.from_degrees(
-        #     self.right_rotation_sensor.position(DEGREES) * self.encoder_to_wheel_gear_ratio)
-        # return GeometryUtil.arc_length_from_rotation(self.wheel_circumference, right_position)
-
         position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.right_motors])
 
         right_position = Rotation2d.from_degrees(
@@ -238,18 +233,15 @@ class Drivetrain:
         :param target_translation: The target Translation2d to calculate the distance and angle to.
         :return: A tuple containing the distance and angle (in radians).
         """
-        # Get the current pose from odometry
-        current_translation = self.odometry.get_translation()
 
         # Calculate the difference in position
-        delta_x = target_translation.x_component.to_inches() - current_translation.x_component.to_inches()
-        delta_y = target_translation.y_component.to_inches() - current_translation.y_component.to_inches()
+        delta_translation = target_translation - self.odometry.get_translation()
 
         # Calculate the distance to the target position
-        distance = current_translation.distance(target_translation)
+        distance = self.odometry.get_translation().distance(target_translation)
 
         # Calculate the angle to the target position
-        target_angle = math.atan2(delta_y, delta_x) + (math.pi / 2)
+        target_angle = math.atan2(delta_translation.y_component.to_meters(), delta_translation.x_component.to_meters()) + (math.pi / 2)
 
         return distance, target_angle
 
