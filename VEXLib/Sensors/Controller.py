@@ -1,5 +1,5 @@
 import vex
-from VEXLib.Math import apply_deadband
+from VEXLib.Math import apply_deadband, cubic_filter
 
 
 class InputProcessor:
@@ -28,19 +28,26 @@ class InputProcessor:
 
 
 class Controller(vex.Controller):
-    def __init__(self, controllerType=vex.ControllerType.PRIMARY):
+    def __init__(self, controller_type=vex.ControllerType.PRIMARY):
         """
         Wrapper for the VEX Controller object.
-        :param controllerType: ControllerType.PRIMARY or ControllerType.PARTNER
+        :param controller_type: ControllerType.PRIMARY or ControllerType.PARTNER
         """
-        self.controller = vex.Controller(controllerType)
-        self.deadband = 0.0
+        self.controller = vex.Controller(controller_type)
+
+        self.input_processor = InputProcessor()
+
+    def add_deadband_step(self, deadband):
+        self.input_processor.add_step(lambda x: apply_deadband(x, deadband, 1))
+
+    def add_cubic_step(self, linearity):
+        self.input_processor.add_step(lambda x: cubic_filter(x, linearity))
 
     def _get_axis_value_internal(self, axis):
         """
-        Get the deadbanded value of a controller axis.
+        Get the processed value of a controller axis.
         """
-        return apply_deadband(axis.position() / 100, self.deadband, 1)
+        return self.input_processor.process(axis.position() / 100)
 
     # ----- Stick (Joystick) Methods -----
     def left_stick_x(self):
