@@ -9,3 +9,7 @@ def pass_function(*args, **kwargs):
     Returns: None
     """
     pass
+
+
+def zpad_left(x, n):
+    return "0" * (n - len(str(x))) + str(x)
