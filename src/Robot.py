@@ -170,11 +170,10 @@ class Robot(TimedRobot):
             right_speed = self.controller.right_stick_y()
         elif self.user_preferences.CONTROLLER_BINDINGS_STYLE in [ControlStyles.ARCADE, ControlStyles.SPLIT_ARCADE]:
             forward_speed = turn_speed = 0
+            forward_speed = self.controller.left_stick_y()
             if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.ARCADE:
-                forward_speed = self.controller.left_stick_y()
                 turn_speed = self.controller.left_stick_x()
             elif self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.SPLIT_ARCADE:
-                forward_speed = self.controller.left_stick_y()
                 turn_speed = self.controller.right_stick_x()
 
             forward_speed = MathUtil.apply_deadband(forward_speed)
