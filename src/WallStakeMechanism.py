@@ -1,5 +1,5 @@
 from VEXLib.Math import clamp, MathUtil
-import Constants
+import ConstantsV1
 from vex import Motor, GearSetting, FORWARD, PERCENT, DEGREES, HOLD, BRAKE, VOLT, wait, MSEC, Limit
 
 
@@ -10,7 +10,7 @@ class WallStakeMechanism:
     and managing motor velocity and position.
     """
 
-    def __init__(self):
+    def __init__(self, motor, limit_switch):
         """
         Initializes the WallStakeMechanism object.
 
@@ -24,14 +24,14 @@ class WallStakeMechanism:
         """
         self.manual_control = True
 
-        self.limit_switch = Limit(Constants.ThreeWirePorts.WALL_STAKE_CALIBRATION_LIMIT_SWITCH)
-        self.motor = Motor(Constants.SmartPorts.WALL_STAKE_MOTOR, GearSetting.RATIO_36_1, True)
+        self.limit_switch = limit_switch
+        self.motor = motor
         self.motor.spin(FORWARD)
         self.motor.set_velocity(0)
-        self.target_velocity = Constants.ScoringMechanismProperties.STARTUP_POSITION
+        self.target_velocity = ConstantsV1.ScoringMechanismProperties.STARTUP_POSITION
 
-        self.DOCKING_POSITION = Constants.ScoringMechanismProperties.DOCKED_POSITION
-        self.SCORING_POSITION = Constants.ScoringMechanismProperties.MAX_POSITION
+        self.DOCKING_POSITION = ConstantsV1.ScoringMechanismProperties.DOCKED_POSITION
+        self.SCORING_POSITION = ConstantsV1.ScoringMechanismProperties.MAX_POSITION
 
     def calibrate(self):
         while not self.limit_switch.pressing():
@@ -53,7 +53,7 @@ class WallStakeMechanism:
         The motor is set to move backward at a defined speed to dock the mechanism.
         """
         self.manual_control = True
-        self.target_velocity = -Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT
+        self.target_velocity = -ConstantsV1.ScoringMechanismProperties.SCORING_SPEED_PERCENT
 
     def move_in(self):
         """
@@ -62,16 +62,16 @@ class WallStakeMechanism:
         The motor is set to move forward at a defined speed to extend the mechanism.
         """
         self.manual_control = True
-        self.target_velocity = Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT
+        self.target_velocity = ConstantsV1.ScoringMechanismProperties.SCORING_SPEED_PERCENT
 
     def dock(self):
         self.manual_control = False
-        self.motor.set_velocity(Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
+        self.motor.set_velocity(ConstantsV1.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
         self.motor.spin_to_position(self.DOCKING_POSITION, DEGREES, wait=False)
 
     def score(self):
         self.manual_control = False
-        self.motor.set_velocity(Constants.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
+        self.motor.set_velocity(ConstantsV1.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
         self.motor.spin_to_position(self.SCORING_POSITION, DEGREES, wait=False)
 
     def stop(self):
@@ -102,7 +102,7 @@ class WallStakeMechanism:
             if self.limit_switch.pressing():
                 self.target_velocity = MathUtil.clamp(self.target_velocity, 0, None)
 
-            if self.motor.position(DEGREES) > Constants.ScoringMechanismProperties.MAX_POSITION:
+            if self.motor.position(DEGREES) > ConstantsV1.ScoringMechanismProperties.MAX_POSITION:
                 self.target_velocity = clamp(self.target_velocity, None, 0)
 
             self.motor.spin(FORWARD)
