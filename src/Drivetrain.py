@@ -257,3 +257,9 @@ class Drivetrain:
         distance, angle = self.get_distance_and_angle_to_target(position)
         self.turn_to_gyro(angle)
         self.move_distance_towards_direction_trap(distance, angle)
+
+    def reset(self):
+        self.left_drivetrain_PID.reset()
+        self.right_drivetrain_PID.reset()
+        self.odometry.pose = Pose2d()
+        self.odometry.inertial_sensor.reset_rotation()
