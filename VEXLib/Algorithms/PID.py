@@ -63,7 +63,11 @@ class PIDMotorController:
 
 
 class PIDController:
-    def __init__(self, kp: float = 1.0, ki: float = 0.0, kd: float = 0.0, t: float = 0.05, integral_limit: float = 1.0):
+    def __init__(self, kp: float = 1.0,
+                 ki: float = 0.0,
+                 kd: float = 0.0,
+                 t: float = 0.05,
+                 integral_limit: float = 1.0):
         """
         Initializes a PIDController instance.
 
@@ -85,54 +89,6 @@ class PIDController:
         self._integral_limit = integral_limit
         self._previous_error = 0.0
         self._control_output = 0.0
-
-        # Continuous input attributes
-        self._continuous_input_enabled = False
-        self._minimum_input = float("-inf")
-        self._maximum_input = float("inf")
-    #
-    # def enable_continuous_input(self, minimum_input: float, maximum_input: float) -> None:
-    #     """
-    #     Enable continuous input mode, specifying the minimum and maximum values of the input range.
-    #
-    #     Args:
-    #         minimum_input: The minimum input value.
-    #         maximum_input: The maximum input value.
-    #     """
-    #     self._continuous_input_enabled = True
-    #     self._minimum_input = minimum_input
-    #     self._maximum_input = maximum_input
-    #
-    # def disable_continuous_input(self) -> None:
-    #     """
-    #     Disable continuous input mode.
-    #     """
-    #     self._continuous_input_enabled = False
-    #
-    # def _calculate_continuous_error(self, error: float) -> float:
-    #     """
-    #     Calculate the shortest path for the error if continuous input is enabled.
-    #
-    #     Args:
-    #         error: The raw error value.
-    #
-    #     Returns:
-    #         The shortest path error.
-    #     """
-    #     if not self._continuous_input_enabled:
-    #         return error
-    #
-    #     input_range = self._maximum_input - self._minimum_input
-    #     # Normalize the error within the range
-    #     error = ((error - self._minimum_input) % input_range) + self._minimum_input
-    #
-    #     # Adjust if the error exceeds half the range in either direction
-    #     if error > input_range / 2.0:
-    #         error -= input_range
-    #     elif error < -input_range / 2.0:
-    #         error += input_range
-    #
-    #     return error
 
     def update(self, current_value: float) -> float:
         """
