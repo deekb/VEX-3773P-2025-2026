@@ -3,7 +3,6 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance, Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 import VEXLib.Math.MathUtil as MathUtil
-from VEXLib.Util import time
 from vex import DEGREES, Inertial
 
 
@@ -26,9 +25,6 @@ class TankOdometry:
         # Tracks the last recorded left and right wheel positions
         self.last_left_position = Distance()
         self.last_right_position = Distance()
-
-        # Tracks the last time the odometry was updated
-        self.last_time = time.time()
 
         # Stores the current pose of the robot (position and orientation)
         self.pose = Pose2d()
