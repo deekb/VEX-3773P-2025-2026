@@ -1,10 +1,6 @@
-import Constants
-from vex import DigitalOut
-
-
 class CornerMechanism:
-    def __init__(self):
-        self.corner_mechanism_piston = DigitalOut(Constants.ThreeWirePorts.DOINKER_PISTON)
+    def __init__(self, piston_port):
+        self.corner_mechanism_piston = piston_port
         self.corner_mechanism_state = False
 
     def _update_state(self):
