@@ -12,15 +12,15 @@ from .utils import get_removable_disks, get_available_modules, get_checksum, det
 
 import argparse
 
-os.chdir("/home/derek/PycharmProjects/VEXlib")
+BASENAME = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASENAME)
+
+os.chdir(PROJECT_ROOT)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-a", "--remote-address", help="The address of the remote device connected to the brain and running the RemoteDeploy.py script from the util folder", type=str)
 parser.add_argument("-p", "--remote-port", help="The port of the remote device connected to the brain and running the RemoteDeploy.py script from the util folder", type=int, default=5000)
 parser.parse_args()
-
-basename = os.path.dirname(os.path.abspath(__file__))
-
 
 # Load constants from config
 config = configparser.ConfigParser()
