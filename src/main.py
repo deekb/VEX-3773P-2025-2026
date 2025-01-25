@@ -9,10 +9,10 @@ def main(brain, robot_id):
             wait(1000, MSEC)  # Make sure that the SD card is well-situated
             brain.screen.clear_screen()
             brain.screen.set_cursor(1, 1)
-        from Robot import Robot
-        # from TickBasedRobotTest import Robot
-        # from VEXGFX import Robot
-        # from WirelessUploadRobot import Robot
+        if robot_id == 1:
+            from Robot import Robot
+        elif robot_id == 2:
+            from Robot2 import Robot
         from VEXLib.Util import time as time
         import sys
 

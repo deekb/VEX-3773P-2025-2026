@@ -1,9 +1,9 @@
+import ast
+import hashlib
 import math
 import os
-import hashlib
-import ast
-from glob import glob
 import subprocess
+from glob import glob
 
 
 def get_checksum(file_path) -> str:
@@ -45,7 +45,7 @@ def get_removable_disks(posix_mount_point_dir) -> list[RemovableDisk]:
         disks = psutil.disk_partitions()
         for disk in disks:
             if disk.fstype:
-                removable_drives.append(RemovableDisk(win32api.GetVolumeInformation(disk.device)[0],disk.mountpoint))
+                removable_drives.append(RemovableDisk(win32api.GetVolumeInformation(disk.device)[0], disk.mountpoint))
 
     elif os.name == "posix":
         mount_points = os.listdir(posix_mount_point_dir)
@@ -109,6 +109,7 @@ def detect_dependencies(src_directory, file_path, available_libraries, ignored_i
 
 def unmount_drive(drive_path):
     if os.name == "nt":
+        # This is really sketchy and doesn't work half the time, but im not sure how to do it better
         eject_command = f"powershell $driveEject = New-Object -comObject Shell.Application;" \
                         f"$driveEject.Namespace(17).ParseName('''{drive_path}''').InvokeVerb('''Eject''')"
     else:

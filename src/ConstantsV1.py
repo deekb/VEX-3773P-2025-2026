@@ -55,7 +55,7 @@ class SmartPorts:
     SCORING_FIVE_POINT_FIVE_WATT_MOTOR = Ports.PORT3
     WALL_STAKE_MOTOR = Ports.PORT8
 
-    INERTIAL_SENSOR = Ports.PORT12
+    INERTIAL_SENSOR = Ports.PORT11
 
 
 class ThreeWirePorts:

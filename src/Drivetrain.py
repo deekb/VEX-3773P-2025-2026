@@ -1,5 +1,5 @@
 import math
-
+import json
 import ConstantsV1
 import VEXLib.Math.MathUtil as MathUtil
 import VEXLib.Units.Units as Units
@@ -13,7 +13,7 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Util import ContinuousTimer
-from vex import FORWARD, VOLT, Inertial, TURNS, DEGREES
+from vex import FORWARD, VOLT, Inertial, TURNS, DEGREES, Motor, PERCENT, PowerUnits, TorqueUnits
 
 
 class Drivetrain:
@@ -21,7 +21,7 @@ class Drivetrain:
         A drivetrain controller for a tank drive base
     """
 
-    def __init__(self, left_motors, right_motors, speed_sample_time_ms=5, speed_smoothing_window=5):
+    def __init__(self, left_motors: list[Motor], right_motors: list[Motor], speed_sample_time_ms=5, speed_smoothing_window=5):
         # Make lists containing the left and right sets of motors
         self.left_motors = left_motors
         self.right_motors = right_motors
@@ -255,3 +255,61 @@ class Drivetrain:
         self.right_drivetrain_PID.reset()
         self.odometry.pose = Pose2d()
         self.odometry.inertial_sensor.reset_rotation()
+
+    import json
+
+    def ramp_voltage_and_collect_data(self, motor_group, step_delay=0.25, voltage_step=0.1, max_voltage=12):
+        """
+        Ramp the voltage from 0 to the maximum voltage and collect torque, power, and efficiency data.
+
+        :param step_delay: Time (in seconds) to wait between each voltage step.
+        :param voltage_step: Incremental voltage step (in volts).
+        :param max_voltage: Maximum allowable voltage (in volts).
+        :return: A JSON string with torque-voltage, power-voltage, and efficiency-voltage data.
+        """
+        data = {
+            "voltage": [],
+            "torque": [],
+            "speed": [],
+            "power": [],
+            "efficiency": []
+        }
+
+        print("Starting voltage ramp and data collection...")
+
+        for voltage in [i * voltage_step for i in range(int(max_voltage / voltage_step) + 1)]:
+            # Apply the current voltage to the motors
+            [motor.spin(FORWARD, voltage, VOLT) for motor in motor_group]
+            total_torque = total_speed = total_power = total_efficiency = 0
+            # Wait for the drivetrain to respond
+            ContinuousTimer.sleep(step_delay)
+            for _ in range(10):
+                total_torque += sum([motor.torque(TorqueUnits.NM) for motor in motor_group])
+                total_speed += sum([motor.velocity(PERCENT) for motor in motor_group])  # in radians/sec
+                total_power += sum([motor.power(PowerUnits.WATT) for motor in motor_group])
+                total_efficiency += sum([motor.efficiency(PERCENT) for motor in motor_group])
+                ContinuousTimer.sleep(0.1)
+
+            average_torque = total_torque / (10 * len(motor_group))
+            average_speed = total_speed / (10 * len(motor_group))
+            average_power = total_power / (10 * len(motor_group))
+            average_efficiency = total_efficiency / (10 * len(motor_group))
+
+            # Append data to the lists
+            data["voltage"].append(voltage)
+            data["torque"].append(average_torque)
+            data["speed"].append(total_speed / (10 * len(motor_group)))
+            data["power"].append(total_power / (10 * len(motor_group)))
+            data["efficiency"].append(total_efficiency / (10 * len(motor_group)))
+
+            print("Voltage: {:.2f}V, Speed: {:.2f}%, Torque: {:.2f}Nm, Power: {:.2f}W, Efficiency: {:.2f}".format(
+                voltage, total_speed / (10 * len(motor_group)), total_torque / (10 * len(motor_group)), total_power / (10 * len(motor_group)), total_efficiency / (10 * len(motor_group))))
+
+        # Stop the drivetrain
+        [motor.spin(FORWARD, 0, VOLT) for motor in motor_group]
+
+        # Convert the data to JSON format
+        json_data = json.dumps(data)
+        return json_data
+
+
