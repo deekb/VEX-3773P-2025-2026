@@ -266,6 +266,9 @@ class Robot(RobotBase):
 
         self.drivetrain.update_odometry()
         self.wall_stake_mechanism.tick()
+
+        # if self.controller.buttonX.pressing():
+        #     self.on_autonomous()
         # self.scoring_mechanism.tick(self.alliance_color)
 
     def setup_dirk_preferences(self):
