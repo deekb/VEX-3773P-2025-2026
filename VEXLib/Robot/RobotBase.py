@@ -6,6 +6,9 @@ class RobotBase:
     def __init__(self, brain):
         self.brain = brain
 
+    def tick_handler(self):
+        self.periodic()
+
     """Instant callbacks"""
 
     def on_setup(self):

@@ -21,8 +21,11 @@ class TickBasedRobot(RobotBase):
     def __init__(self, brain: Brain):
         super().__init__(brain)
 
+        # self.autonomous_thread = Thread(pass_function)
+        # self.driver_control_thread = Thread(pass_function)
+
         # Create a new competition object
-        self._competition = Competition(pass_function, self.on_autonomous)
+        self._competition = Competition(self.on_driver_control, self.on_autonomous)
 
         self.state = DRIVER_CONTROL_DISABLED  # Initial state
         self.transitions = {DRIVER_CONTROL_DISABLED: self._from_driver_control_disabled,
@@ -42,6 +45,12 @@ class TickBasedRobot(RobotBase):
 
         self._current_time = ContinuousTimer.time_ms()
         self._last_tick_time = ContinuousTimer.time_ms()
+
+    def _on_autonomous_internal(self):
+        self.autonomous_thread = Thread(self.on_autonomous)
+
+    def _on_driver_control_internal(self):
+        self.driver_control_thread = Thread(self.on_driver_control)
 
     def control_loop(self):
         self._handle_periodic_callbacks_internal()
@@ -64,40 +73,56 @@ class TickBasedRobot(RobotBase):
         return GameState(mode, enabled)
 
     def _tick(self):
+        print("GS")
         new_state = self._update_state()
 
+        print("CS")
         if new_state != self.state:
             print("New state != Current state")
             print("Transitioning from " + str(self.state) + " to " + str(new_state))
             self.transition_to(new_state)
 
+        print("HP")
         self._handle_periodic_callbacks()
 
     def _mainloop(self):
         while True:
+            print("TICK")
             self._tick()
 
     def _handle_periodic_callbacks(self):
+        print("TW")
         while True:
             now = ContinuousTimer.time_ms()
+            print("NOW:" + str(now))
+            print("NEXT:" + str(self.next_tick_time))
             if now >= self.next_tick_time:
                 break
+        print("CL")
         self.control_loop()
+        print("PANIC_CHECK")
         if now > self.next_tick_time + (self._warning_tick_duration_ms - self._target_tick_duration_ms):
             time_overrun = now - self.next_tick_time
             print("PANIC: Scheduler tick overran target period by " + str(time_overrun) + " ms")
+        print("INC")
         self.next_tick_time += self._target_tick_duration_ms
 
     def _handle_periodic_callbacks_internal(self):
         if self.state.enabled:
             if self.state.mode == DRIVER_CONTROL:
+                print("DCP")
                 self.driver_control_periodic()
             elif self.state.mode == AUTONOMOUS_CONTROL:
+                print("ACP")
                 self.autonomous_periodic()
+            print("EP")
             self.enabled_periodic()
         else:
+            print("DP")
             self.disabled_periodic()
+        print("P")
         self.periodic()
+        print("NT")
         self._last_tick_time = ContinuousTimer.time_ms()
 
     def transition_to(self, new_state: GameState):
@@ -119,15 +144,16 @@ class TickBasedRobot(RobotBase):
     def _from_driver_control_disabled(self, new_state: GameState):
         if new_state == DRIVER_CONTROL_ENABLED:
             self.on_driver_control()
-        elif new_state == AUTONOMOUS_CONTROL_ENABLED:
-            self.on_autonomous()
+        # elif new_state == AUTONOMOUS_CONTROL_ENABLED:
+        #     self._on_autonomous_internal()
 
     def _from_autonomous_control_disabled(self, new_state: GameState):
-        if new_state == AUTONOMOUS_CONTROL_ENABLED:
-            # self.on_autonomous()
-            pass
-        elif new_state == DRIVER_CONTROL_ENABLED:
-            self.on_driver_control()
+        ...
+        # if new_state == AUTONOMOUS_CONTROL_ENABLED:
+        #     self._on_autonomous_internal()
+        #     pass
+        # elif new_state == DRIVER_CONTROL_ENABLED:
+        #     self.on_driver_control()
 
     def _from_driver_control_enabled(self, new_state: GameState):
         if new_state == DRIVER_CONTROL_DISABLED:
@@ -136,17 +162,20 @@ class TickBasedRobot(RobotBase):
             self.on_driver_control_disable()
         elif new_state == AUTONOMOUS_CONTROL_ENABLED:
             self.on_driver_control_disable()
-            self.on_disable()
-            # self.on_autonomous()
+        #     self.on_disable()
+        #     self._on_autonomous_internal()
 
     def _from_autonomous_control_enabled(self, new_state: GameState):
         if new_state == DRIVER_CONTROL_DISABLED:
+            # self.autonomous_thread.stop()
             self.on_autonomous_disable()
         elif new_state == DRIVER_CONTROL_ENABLED:
+            # self.autonomous_thread.stop()
             self.on_autonomous_disable()
             self.on_disable()
-            self.on_driver_control()
+            # self.on_driver_control()
         elif new_state == AUTONOMOUS_CONTROL_DISABLED:
+            # self.autonomous_thread.stop()
             self.on_autonomous_disable()
 
     """Polling methods"""

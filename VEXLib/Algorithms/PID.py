@@ -133,7 +133,7 @@ class PIDController:
         return abs(self._previous_error) <= threshold
 
     def reset(self):
-        self.setpoint = 0
+        print("RESET PID")
         self._current_value = 0
         self._previous_error = 0
         self._error_integral = 0

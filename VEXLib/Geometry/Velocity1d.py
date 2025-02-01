@@ -28,6 +28,10 @@ class Velocity1d:
         """Return the string representation of Velocity1d."""
         return str(self.magnitude) + " m/s"
 
+    def __repr__(self):
+        """Return the string representation of Velocity1d."""
+        return str(self.magnitude) + " m/s"
+
     @classmethod
     def from_meters_per_second(cls, x_meters_per_second):
         return cls(x_meters_per_second)

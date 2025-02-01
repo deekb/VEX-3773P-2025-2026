@@ -4,7 +4,7 @@ class RateOfChangeCalculator:
     with a minimum sample time to prevent repeated calculations.
     """
 
-    def __init__(self, minimum_sample_time: float):
+    def __init__(self, minimum_sample_time: float = 0.05):
         """
         Initializes the RateOfChangeCalculator.
 

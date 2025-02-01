@@ -12,3 +12,4 @@ from .TestSmallestAngularDifference import TestSmallestAngularDifference
 from .TestTickBasedRobot import TestNewTickBasedRobot
 from .TestTankOdometry import TestTankOdometry
 from .TestSlewRateLimiter import TestSlewRateLimiter
+from .TestGravitationalFeedforward import TestGravitationalFeedforward
