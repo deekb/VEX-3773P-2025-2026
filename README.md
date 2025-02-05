@@ -4,3 +4,5 @@ want a simple but functional interface to control aspects of their robot. I am a
 and have taken inspiration from how the WPILIB framework works in how my code is structured.
 
 Docs are [here](https://deekb.github.io/VEXlib/)
+
+Really cool dependency analysis: [here](https://deekb.github.io/VEXlib/dependency_analysis.html)
