@@ -94,8 +94,8 @@ class Robot(RobotBase):
         self.mobile_goal_clamp = MobileGoalClamp(ThreeWirePorts.MOBILE_GOAL_CLAMP_PISTON)
         self.corner_mechanism = CornerMechanism(DigitalOut(ThreeWirePorts.DOINKER_PISTON))
         self.scoring_mechanism = ScoringMechanism(
-            [Motor(Ports.PORT1, GearSetting.RATIO_18_1, False),
-             Motor(Ports.PORT4, GearSetting.RATIO_18_1, True)],
+            Motor(Ports.PORT1, GearSetting.RATIO_18_1, False),
+            Motor(Ports.PORT4, GearSetting.RATIO_18_1, True),
             Rotation(Ports.PORT18),
             Optical(Ports.PORT10),
             Distance(Ports.PORT5))
@@ -175,7 +175,7 @@ class Robot(RobotBase):
     def select_autonomous_routine(self):
         self.log_and_print("Starting autonomous routine selection")
         autonomous_type = self.get_selection(["red", "blue", "skills_alliance_stake"])
-        self.alliance_color = {"red": "red", "blue": "blue", "skills_alliance_stake": ""}[autonomous_type]
+        self.alliance_color = {"red": "red", "blue": "blue", "skills_alliance_stake": "red"}[autonomous_type]
 
         if autonomous_type == "skills_alliance_stake":
             self.drivetrain.set_angles_inverted(False)
@@ -265,7 +265,7 @@ class Robot(RobotBase):
                                     right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
 
         self.drivetrain.update_odometry()
-        self.wall_stake_mechanism.tick()
+        # self.wall_stake_mechanism.tick()
 
         # if self.controller.buttonX.pressing():
         #     self.on_autonomous()
@@ -282,7 +282,7 @@ class Robot(RobotBase):
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
         self.controller.buttonL1.pressed(self.wall_stake_mechanism.previous_state)
 
-        self.controller.buttonR2.released(lambda: self.scoring_mechanism.spin_motor_at_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
+        self.controller.buttonR2.released(lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
 
         self.controller.buttonY.pressed(self.corner_mechanism.toggle_corner_mechanism)
         self.controller.buttonRight.pressed(self.scoring_mechanism.intake_until_ring)
@@ -298,7 +298,7 @@ class Robot(RobotBase):
         self.controller.buttonL1.pressed(self.scoring_mechanism.intake)
         self.controller.buttonL1.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
-        self.controller.buttonL2.released(lambda: self.scoring_mechanism.spin_motor_at_speed(-35) or time.sleep(0.3) or self.scoring_mechanism.stop_motor())
+        self.controller.buttonL2.released(lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.3) or self.scoring_mechanism.stop_motor())
 
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
         self.controller.buttonR2.pressed(self.wall_stake_mechanism.previous_state)

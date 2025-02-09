@@ -63,7 +63,7 @@ class ThreeWirePorts:
     MOBILE_GOAL_CLAMP_PISTON = brain.three_wire_port.b
     DOINKER_PISTON = brain.three_wire_port.c
     WALL_STAKE_CALIBRATION_LIMIT_SWITCH = brain.three_wire_port.d
-    del brain
+
 
 
 class GearRatios:
@@ -90,7 +90,8 @@ class WallStakeMechanismProperties:
     DOCKED_TOLERANCE = Rotation2d.from_degrees(5)
     LOADING_POSITION = Rotation2d.from_degrees(-75)
     UPRIGHT_POSITION = Rotation2d.from_degrees(0)
-    SCORING_POSITION = Rotation2d.from_degrees(55)
+    HIGH_SCORING_POSITION = Rotation2d.from_degrees(55)
+    LOW_SCORING_POSITION = Rotation2d.from_degrees(110)
 
 
 class ScoringMechanismProperties:

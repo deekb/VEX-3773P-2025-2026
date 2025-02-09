@@ -1,6 +1,9 @@
+from vex import DigitalOut
+
+
 class CornerMechanism:
-    def __init__(self, piston_port):
-        self.corner_mechanism_piston = piston_port
+    def __init__(self, digital_out):
+        self.corner_mechanism_piston = digital_out
         self.corner_mechanism_state = False
 
     def _update_state(self):

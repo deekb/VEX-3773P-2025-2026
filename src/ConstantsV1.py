@@ -57,6 +57,8 @@ class SmartPorts:
 
     INERTIAL_SENSOR = Ports.PORT11
 
+    COLOR_SENSOR = Ports.PORT5
+
 
 class ThreeWirePorts:
     """Scoring Mechanism"""

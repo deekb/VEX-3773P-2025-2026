@@ -1,4 +1,4 @@
-import ConstantsV1
+import ConstantsV2
 import VEXLib.Math.MathUtil as MathUtil
 from ConstantsV2 import DrivetrainProperties
 from Odometry import TankOdometry
@@ -21,7 +21,7 @@ class Drivetrain:
         self.left_motors = left_motors
         self.right_motors = right_motors
 
-        self.odometry = TankOdometry(Inertial(ConstantsV1.SmartPorts.INERTIAL_SENSOR))
+        self.odometry = TankOdometry(Inertial(ConstantsV2.SmartPorts.INERTIAL_SENSOR))
         self.ANGLE_DIRECTION = 1
 
         self.left_drivetrain_PID = PIDFController(5, 0, 0, 5)
