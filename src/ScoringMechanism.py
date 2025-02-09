@@ -5,8 +5,9 @@ from ConstantsV2 import ScoringMechanismProperties
 
 
 class ScoringMechanism:
-    def __init__(self, motors, rotation_sensor: Rotation, optical_sensor, distance_sensor: Distance):
-        self.motors = motors
+    def __init__(self, lower_intake_motor, upper_intake_motor, rotation_sensor: Rotation, optical_sensor, distance_sensor: Distance):
+        self.lower_intake_motor = lower_intake_motor
+        self.upper_intake_motor = upper_intake_motor
         self.optical_sensor = optical_sensor
         self.distance_sensor = distance_sensor
         self.optical_sensor.set_light(LedStateType.ON)
@@ -16,19 +17,24 @@ class ScoringMechanism:
         self.last_ring_sighting_encoder_count = 0
         self.rotation_sensor = rotation_sensor
 
-    def spin_motor_at_speed(self, speed):
-        for motor in self.motors:
-            motor.spin(FORWARD, speed * (12 / 100), VOLT)
+    def set_speed(self, speed):
+        self.spin_lower_intake(speed)
+        self.spin_upper_intake(speed)
+
+    def spin_lower_intake(self, speed):
+        self.lower_intake_motor.spin(FORWARD, speed * (12 / 100), VOLT)
+
+    def spin_upper_intake(self, speed):
+        self.upper_intake_motor.spin(FORWARD, speed * (12 / 100), VOLT)
 
     def stop_motor(self):
-        for motor in self.motors:
-            motor.spin(FORWARD, 0, VOLT)
+        self.set_speed(0)
 
     def intake(self):
-        self.spin_motor_at_speed(100)
+        self.set_speed(100)
 
     def outtake(self):
-        self.spin_motor_at_speed(-100)
+        self.set_speed(-100)
 
     def get_ring_color(self):
         if is_near_continuous(238, self.optical_sensor.hue(), 45, 0, 360):

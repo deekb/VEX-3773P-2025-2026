@@ -3,13 +3,14 @@ from VEXLib.Algorithms.GravitationalFeedforward import GravitationalFeedforward
 from VEXLib.Algorithms.PID import PIDController
 from VEXLib.Geometry.Rotation2d import Rotation2d
 import VEXLib.Math.MathUtil as MathUtil
-from vex import FORWARD, DEGREES, VOLT, Rotation
+from vex import FORWARD, DEGREES, VOLT, Rotation, Thread
 
 
 class WallStakeState:
     DOCKED = 1
     LOADING = 2
-    SCORING = 3
+    HIGH_SCORING = 3
+    LOW_SCORING = 4
 
 
 class WallStakeMechanism:
@@ -36,7 +37,8 @@ class WallStakeMechanism:
         self.DOCKED_POSITION = WallStakeMechanismProperties.DOCKED_POSITION
         self.DOCKED_TOLERANCE = WallStakeMechanismProperties.DOCKED_TOLERANCE
         self.LOADING_POSITION = WallStakeMechanismProperties.LOADING_POSITION
-        self.SCORING_POSITION = WallStakeMechanismProperties.SCORING_POSITION
+        self.HIGH_SCORING_POSITION = WallStakeMechanismProperties.HIGH_SCORING_POSITION
+        self.LOW_SCORING_POSITION = WallStakeMechanismProperties.LOW_SCORING_POSITION
         self.UPRIGHT_POSITION = WallStakeMechanismProperties.UPRIGHT_POSITION
 
         self.gravitational_feedforward = GravitationalFeedforward(self.FEEDFORWARD_TUNINGS["kg"])
@@ -45,6 +47,7 @@ class WallStakeMechanism:
         self.state = WallStakeState.DOCKED
         # Call transition_to to ensure we are really in the initial state
         self.transition_to(self.state)
+        self.tick_thread = Thread(self.loop)
 
     def update_motor_voltage(self):
         current_rotation = Rotation2d.from_degrees(self.rotation_sensor.position(DEGREES))
@@ -64,14 +67,17 @@ class WallStakeMechanism:
         elif new_state == WallStakeState.LOADING:
             print("Transitioning to Loading")
             self.pid.setpoint = self.LOADING_POSITION.to_revolutions()
-        elif new_state == WallStakeState.SCORING:
-            print("Transitioning to Scoring")
-            self.pid.setpoint = self.SCORING_POSITION.to_revolutions()
+        elif new_state == WallStakeState.HIGH_SCORING:
+            print("Transitioning to High Scoring")
+            self.pid.setpoint = self.HIGH_SCORING_POSITION.to_revolutions()
+        elif new_state == WallStakeState.LOW_SCORING:
+            print("Transitioning to Low Scoring")
+            self.pid.setpoint = self.LOW_SCORING_POSITION.to_revolutions()
 
         self.state = new_state
 
     def next_state(self):
-        if self.state == 3:
+        if self.state == 4:
             return
         self.transition_to(self.state + 1)
 
@@ -82,3 +88,7 @@ class WallStakeMechanism:
 
     def tick(self):
         self.update_motor_voltage()
+
+    def loop(self):
+        while True:
+            self.tick()
