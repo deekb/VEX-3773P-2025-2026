@@ -179,7 +179,7 @@ class Robot(RobotBase):
 
         if autonomous_type == "skills_alliance_stake":
             self.drivetrain.set_angles_inverted(False)
-            self.autonomous = self.autonomous_mappings[autonomous_type]
+            self.autonomous = AutonomousRoutines.skills_alliance_stake
             self.log_and_print("Skills routine chosen:", autonomous_type)
             return autonomous_type
 
@@ -230,19 +230,19 @@ class Robot(RobotBase):
 
     def driver_control_periodic(self):
         left_speed = right_speed = 0
-        if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.TANK:
+        if self.user_preferences.CONTROL_STYLE == ControlStyles.TANK:
             left_speed = self.controller.left_stick_y()
             right_speed = self.controller.right_stick_y()
 
             left_speed = MathUtil.apply_deadband(left_speed)
             right_speed = MathUtil.apply_deadband(right_speed)
-        elif self.user_preferences.CONTROLLER_BINDINGS_STYLE in [ControlStyles.ARCADE, ControlStyles.SPLIT_ARCADE]:
+        elif self.user_preferences.CONTROL_STYLE in [ControlStyles.ARCADE, ControlStyles.SPLIT_ARCADE]:
             forward_speed = turn_speed = 0
             forward_speed = self.controller.left_stick_y()
-            if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.ARCADE:
-                turn_speed = self.controller.left_stick_x()
-            elif self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.SPLIT_ARCADE:
-                turn_speed = self.controller.right_stick_x()
+            if self.user_preferences.CONTROL_STYLE == ControlStyles.ARCADE:
+                turn_speed = self.controller.left_stick_x() * self.user_preferences.TURN_SPEED
+            elif self.user_preferences.CONTROL_STYLE == ControlStyles.SPLIT_ARCADE:
+                turn_speed = self.controller.right_stick_x() * self.user_preferences.TURN_SPEED
 
             forward_speed = MathUtil.apply_deadband(forward_speed)
             turn_speed = -MathUtil.apply_deadband(turn_speed)
@@ -250,7 +250,7 @@ class Robot(RobotBase):
             left_speed = forward_speed - turn_speed
             right_speed = forward_speed + turn_speed
         else:
-            self.log_and_print("Invalid controller bindings style:", self.user_preferences.CONTROLLER_BINDINGS_STYLE)
+            self.log_and_print("Invalid controller bindings style:", self.user_preferences.CONTROL_STYLE)
 
         left_speed, right_speed = desaturate_wheel_speeds([left_speed, right_speed])
 
@@ -259,6 +259,17 @@ class Robot(RobotBase):
 
         left_speed = MathUtil.cubic_filter(left_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
         right_speed = MathUtil.cubic_filter(right_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
+
+        # if self.drivetrain.left_motors[0].velocity(PERCENT) > left_speed * 100:
+        #     left_speed -= 0.1
+        # if self.drivetrain.left_motors[0].velocity(PERCENT) < left_speed * 100:
+        #     left_speed += 0.1
+        #
+        # if self.drivetrain.right_motors[0].velocity(PERCENT) < right_speed * 100:
+        #     right_speed += 0.1
+        # if self.drivetrain.right_motors[0].velocity(PERCENT) > right_speed * 100:
+        #     right_speed -= 0.1
+
 
         # self.log_and_print("Updating drivetrain voltages - Left:", left_speed, "Right:", right_speed)
         self.drivetrain.set_voltage(left_speed * self.user_preferences.MAX_MOTOR_VOLTAGE,

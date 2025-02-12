@@ -87,6 +87,11 @@ class WallStakeMechanism:
         self.transition_to(self.state - 1)
 
     def tick(self):
+        if self.state == WallStakeState.DOCKED:
+            self.gravitational_feedforward.kg = self.FEEDFORWARD_TUNINGS["kg"] * -1
+        else:
+            self.gravitational_feedforward.kg = self.FEEDFORWARD_TUNINGS["kg"]
+
         self.update_motor_voltage()
 
     def loop(self):

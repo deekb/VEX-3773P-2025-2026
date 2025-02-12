@@ -40,7 +40,7 @@ class Drivetrain:
             Constraints(DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_inches_per_second() / 5,
                         DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_inches_per_second() / 5))
 
-        self.target_pose = Pose2d()
+        self.target_pose = self.odometry.zero_rotation
 
     def set_angles_inverted(self, inverted):
         self.ANGLE_DIRECTION = -1 if inverted else 1
@@ -56,7 +56,7 @@ class Drivetrain:
 
     def update_voltages(self):
         self.update_drivetrain_velocities()
-        current_left_speed, current_right_speed = self.get_speed()
+        current_left_speed, current_right_speed = self.get_speeds()
         left_controller_output = self.left_drivetrain_PID.update(current_left_speed.to_meters_per_second())
         right_controller_output = self.right_drivetrain_PID.update(current_right_speed.to_meters_per_second())
 
@@ -71,7 +71,7 @@ class Drivetrain:
         self.left_drivetrain_speed_smoother.add_value(instantaneous_left_speed)
         self.right_drivetrain_speed_smoother.add_value(instantaneous_right_speed)
 
-    def get_speed(self):
+    def get_speeds(self):
         left_speed = Velocity1d.from_meters_per_second(self.left_drivetrain_speed_smoother.get_average())
         right_speed = Velocity1d.from_meters_per_second(self.right_drivetrain_speed_smoother.get_average())
         return left_speed, right_speed
@@ -194,6 +194,9 @@ class Drivetrain:
     #     self.turn_to_gyro(angle)
     #     self.move_distance_towards_direction_trap(distance, angle)
 
+    def update_zero_pose(self, new_zero_pose):
+        self.odometry.zero_rotation = new_zero_pose
+
     def reset(self):
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
@@ -204,7 +207,7 @@ class Drivetrain:
         return {
             "left_position (in)": self.get_left_wheel_position().to_inches(),
             "right_position (in)": self.get_right_wheel_position().to_inches(),
-            "left_speed (in/s)": self.get_speed()[0].to_inches_per_second(),
-            "right_speed (in/s)": self.get_speed()[1].to_inches_per_second(),
-            "odometry pose": self.odometry.pose
+            "left_speed (in/s)": self.get_speeds()[0].to_inches_per_second(),
+            "right_speed (in/s)": self.get_speeds()[1].to_inches_per_second(),
+            "odometry pose (m,rad)": self.odometry.pose
         }

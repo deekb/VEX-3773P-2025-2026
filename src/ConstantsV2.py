@@ -1,6 +1,5 @@
 from VEXLib.Geometry.GeometryUtil import circle_circumference
 from VEXLib.Geometry.Rotation2d import Rotation2d
-from VEXLib.Geometry.RotationalVelocity import RotationalVelocity
 from VEXLib.Geometry.Translation1d import Distance
 from VEXLib.Geometry.Velocity1d import Velocity1d
 from vex import Ports, GearSetting, Brain
@@ -15,28 +14,30 @@ class ControlStyles:
 
 
 class DefaultPreferences:
-    CONTROLLER_BINDINGS_STYLE = ControlStyles.TANK
+    CONTROL_STYLE = ControlStyles.TANK
     CUBIC_FILTER_LINEARITY = 1
     MAX_MOTOR_VOLTAGE = 12
+    TURN_SPEED = 1
 
 
 class DirkPreferences(DefaultPreferences):
-    CONTROLLER_BINDINGS_STYLE = ControlStyles.TANK
+    CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
+    TURN_SPEED = 0.7
 
 
 class DerekPreferences(DefaultPreferences):
-    CONTROLLER_BINDINGS_STYLE = ControlStyles.SPLIT_ARCADE
+    CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
 
 
 class AllisonPreferences(DefaultPreferences):
-    CONTROLLER_BINDINGS_STYLE = ControlStyles.SPLIT_ARCADE
+    CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
 
 
 class CarterPreferences(DefaultPreferences):
-    CONTROLLER_BINDINGS_STYLE = ControlStyles.TANK
+    CONTROL_STYLE = ControlStyles.TANK
     CUBIC_FILTER_LINEARITY = 1
 
 
@@ -87,7 +88,7 @@ class WallStakeMechanismProperties:
         "kg": 0.9
     }
     DOCKED_POSITION = Rotation2d.from_degrees(-100)
-    DOCKED_TOLERANCE = Rotation2d.from_degrees(5)
+    DOCKED_TOLERANCE = Rotation2d.from_degrees(2)
     LOADING_POSITION = Rotation2d.from_degrees(-75)
     UPRIGHT_POSITION = Rotation2d.from_degrees(0)
     HIGH_SCORING_POSITION = Rotation2d.from_degrees(55)

@@ -3,7 +3,7 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance, Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 import VEXLib.Math.MathUtil as MathUtil
-from vex import DEGREES, Inertial
+from vex import DEGREES, Inertial, TurnType
 
 
 class TankOdometry:
@@ -21,6 +21,7 @@ class TankOdometry:
         """
         # Device to measure the robot's rotational orientation
         self.inertial_sensor = inertial_sensor
+        self.inertial_sensor.set_turn_type(TurnType.LEFT)
 
         # Tracks the last recorded left and right wheel positions
         self.last_left_position = Distance()
@@ -30,7 +31,7 @@ class TankOdometry:
         self.pose = Pose2d()
 
         # Rotation offset to align the inertial sensor's initial orientation with the robot's coordinate system
-        self.starting_offset = Rotation2d()
+        self.zero_rotation = Rotation2d()
 
     def update(self, left_rotation: Translation1d, right_rotation: Translation1d):
         """
@@ -53,10 +54,11 @@ class TankOdometry:
             MathUtil.average(left_distance.to_meters(), right_distance.to_meters())
         )
 
-        # Update the robot's rotational orientation using the inertial sensor
-        self.pose.rotation = Rotation2d.from_degrees(
-            -self.inertial_sensor.rotation(DEGREES) + self.starting_offset.to_degrees()
-        )
+        # Convert from CW positive to CCW Positive
+        inertial_sensor_rotation = Rotation2d.from_degrees(self.inertial_sensor.rotation(DEGREES))
+
+        # Update the robot's orientation by subtracting the zero rotation (the rotation to be considered zero) from the measured pose
+        self.pose.rotation = inertial_sensor_rotation - self.zero_rotation
 
         # Update the robot's 2D position based on forward distance and orientation
         self.pose.translation += Translation2d(
