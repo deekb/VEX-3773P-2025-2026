@@ -356,6 +356,42 @@ def win_point_states(robot):
         robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(30), 140)
 
 
+def second_win_point_states(robot):
+    if robot.alliance_color == "red":
+        robot.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(130)
+    if robot.alliance_color == "blue":
+        robot.drivetrain.odometry.starting_offset = Rotation2d.from_degrees(-130)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(30, 30))
+    robot.mobile_goal_clamp.release_mobile_goal()
+    robot.wall_stake_mechanism.transition_to(2)
+    time.sleep(0.2)
+    robot.scoring_mechanism.set_speed(100)
+    schedule_function(0.5, lambda: robot.scoring_mechanism.set_speed(-50))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(7), 130)
+    robot.scoring_mechanism.stop_motor()
+    robot.wall_stake_mechanism.transition_to(4)
+    time.sleep(0.25)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-15), 130)
+    robot.wall_stake_mechanism.transition_to(1)
+    time.sleep(0.2)
+    robot.scoring_mechanism.set_speed(100)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(70), 50)
+    schedule_function(0.2, lambda: robot.scoring_mechanism.intake_until_ring())
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), 50)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-75), 135)
+    robot.mobile_goal_clamp.clamp_mobile_goal()
+    robot.scoring_mechanism.set_speed(100)
+    time.sleep(0.25)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(110), -150)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), -95)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-30), -95)
+    robot.scoring_mechanism.intake_until_ring()
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), 0)
+    # robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-50), 180)
+    # robot.mobile_goal_clamp.clamp_mobile_goal()
+
+
+
 
 def test_autonomous(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 0)
@@ -364,5 +400,6 @@ def test_autonomous(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 270)
 
 
-available_autos = [win_point_states, positive_2_mobile_goal, test_autonomous, negative, skills_alliance_stake,
+available_autos = [win_point_states, second_win_point_states, positive_2_mobile_goal, test_autonomous, negative,
+                   skills_alliance_stake,
                    win_point, skills_driver]
