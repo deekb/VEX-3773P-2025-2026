@@ -1,7 +1,8 @@
 import json
+
+import AutonomousRoutines2 as AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
 import VEXLib.Sensors.Controller
-import AutonomousRoutines2 as AutonomousRoutines
 from ConstantsV2 import *
 from CornerMechanism import CornerMechanism
 from DrivetrainV2 import Drivetrain
@@ -13,6 +14,7 @@ from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Util import time, pass_function
 from VEXLib.Util.Logging import Logger
 from WallStakeMechanismV2 import WallStakeMechanism
+from src.WallStakeMechanismV2 import WallStakeState
 from vex import *
 
 
@@ -62,7 +64,7 @@ def ramp_voltage_and_collect_data(motor_group, step_delay=0.25, voltage_step=0.1
 
         print("Voltage: {:.2f}V, Speed: {:.2f}%, Torque: {:.2f}Nm, Power: {:.2f}W, Efficiency: {:.2f}".format(
             voltage, total_speed / (10 * len(motor_group)), total_torque / (10 * len(motor_group)),
-                     total_power / (10 * len(motor_group)), total_efficiency / (10 * len(motor_group))))
+            total_power / (10 * len(motor_group)), total_efficiency / (10 * len(motor_group))))
 
     # Stop the drivetrain
     [motor.spin(FORWARD, 0, VOLT) for motor in motor_group]
@@ -70,6 +72,22 @@ def ramp_voltage_and_collect_data(motor_group, step_delay=0.25, voltage_step=0.1
     # Convert the data to JSON format
     json_data = json.dumps(data)
     return json_data
+
+
+class DoublePressHandler:
+    def __init__(self, pressed_callback, double_pressed_callback):
+        self.last_press_time = time.time()
+        self.double_press_time_threshold = 0.2
+        self.pressed_callback = pressed_callback
+        self.double_pressed_callback = double_pressed_callback
+
+    def press(self):
+        if time.time() - self.last_press_time < self.double_press_time_threshold:
+            self.last_press_time = time.time()
+            self.double_pressed_callback()
+        else:
+            self.last_press_time = time.time()
+            self.pressed_callback()
 
 
 # noinspection DuplicatedCode
@@ -101,6 +119,10 @@ class Robot(RobotBase):
             Distance(Ports.PORT5))
         self.wall_stake_mechanism = WallStakeMechanism(Motor(Ports.PORT8, GearSetting.RATIO_18_1, False),
                                                        Rotation(Ports.PORT21))
+
+        self.double_press_handler = DoublePressHandler(self.wall_stake_mechanism.previous_state,
+                                                       lambda: self.wall_stake_mechanism.transition_to(
+                                                           WallStakeState.DOCKED))
 
         self.user_preferences = DefaultPreferences
         self.autonomous_mappings = {str(function)[10:]: function for function in AutonomousRoutines.available_autos}
@@ -270,7 +292,6 @@ class Robot(RobotBase):
         # if self.drivetrain.right_motors[0].velocity(PERCENT) > right_speed * 100:
         #     right_speed -= 0.1
 
-
         # self.log_and_print("Updating drivetrain voltages - Left:", left_speed, "Right:", right_speed)
         self.drivetrain.set_voltage(left_speed * self.user_preferences.MAX_MOTOR_VOLTAGE,
                                     right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
@@ -291,9 +312,11 @@ class Robot(RobotBase):
         self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonR2.pressed(self.scoring_mechanism.intake)
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
-        self.controller.buttonL1.pressed(self.wall_stake_mechanism.previous_state)
 
-        self.controller.buttonR2.released(lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
+        self.controller.buttonL1.pressed(self.double_press_handler.press)
+
+        self.controller.buttonR2.released(
+            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
 
         self.controller.buttonY.pressed(self.corner_mechanism.toggle_corner_mechanism)
         self.controller.buttonRight.pressed(self.scoring_mechanism.intake_until_ring)
@@ -305,13 +328,16 @@ class Robot(RobotBase):
         self.controller.buttonLeft.pressed(lambda: self.drivetrain.turn_to_gyro(90))
         self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to_gyro(180))
         self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to_gyro(270))
-        self.controller.buttonB.pressed(lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
+        self.controller.buttonB.pressed(
+            lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
         self.controller.buttonL1.pressed(self.scoring_mechanism.intake)
         self.controller.buttonL1.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
-        self.controller.buttonL2.released(lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.3) or self.scoring_mechanism.stop_motor())
+        self.controller.buttonL2.released(
+            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.3) or self.scoring_mechanism.stop_motor())
 
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
         self.controller.buttonR2.pressed(self.wall_stake_mechanism.previous_state)
 
-        self.controller.buttonY.pressed(lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_corner_mechanism())
+        self.controller.buttonY.pressed(
+            lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_corner_mechanism())
