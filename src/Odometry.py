@@ -54,7 +54,6 @@ class TankOdometry:
             MathUtil.average(left_distance.to_meters(), right_distance.to_meters())
         )
 
-        # Convert from CW positive to CCW Positive
         inertial_sensor_rotation = Rotation2d.from_degrees(self.inertial_sensor.rotation(DEGREES))
 
         # Update the robot's orientation by subtracting the zero rotation (the rotation to be considered zero) from the measured pose
