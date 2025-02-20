@@ -1,7 +1,7 @@
 try:
-    import ubinascii
-except ImportError:
     import binascii
+except ImportError:
+    import ubinascii as binascii
 
 SV = [0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501, 0x698098d8,
       0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821, 0xf61e2562, 0xc040b340,
@@ -174,19 +174,3 @@ def md5sum(msg):
 def md5sum_file(filepath):
     with open(filepath, "rb") as f:
         return md5sum(f.read())
-
-
-def test():
-    # import timeit
-    x = 20000
-    # print(round(x/timeit.timeit("""md5sum(b"Secret Message")""", globals=globals(), number=x)))
-    data = str("Secret Message").encode("UTF-8")
-    print("str2hash: ", data)
-    print(md5sum(data))
-    data = str("Secret Message2").encode("UTF-8")
-    print("str2hash: ", data)
-    print(md5sum(data))
-
-
-if __name__ == "__main__":
-    test()

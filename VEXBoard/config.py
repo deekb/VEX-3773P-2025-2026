@@ -1,6 +1,6 @@
 # Socket parameters
-HOST = "192.168.1.1"
-PORT = 10002  # Port to connect to (non-privileged ports are >= 1024)
+HOST = "192.168.4.1"
+PORT = 8888  # Port to connect to (non-privileged ports are >= 1024)
 SOCKET_RECONNECT_INTERVAL_IN_SECONDS = 1
 
 # Ping parameters
