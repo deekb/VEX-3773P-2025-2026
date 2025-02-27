@@ -43,13 +43,13 @@ class CarterPreferences(DefaultPreferences):
 
 class SmartPorts:
     """Drivetrain"""
-    FRONT_LEFT_DRIVETRAIN_MOTOR = Ports.PORT17
-    MIDDLE_LEFT_DRIVETRAIN_MOTOR = Ports.PORT11
-    REAR_LEFT_DRIVETRAIN_MOTOR = Ports.PORT1
+    FRONT_LEFT_DRIVETRAIN_MOTOR = Ports.PORT14
+    REAR_LOWER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT17
+    REAR_UPPER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT12
 
-    FRONT_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT16
-    MIDDLE_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT13
-    REAR_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT15
+    FRONT_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT15
+    REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT16
+    REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT13
 
     SCORING_ELEVEN_WATT_MOTOR = Ports.PORT6
     SCORING_FIVE_POINT_FIVE_WATT_MOTOR = Ports.PORT3
@@ -61,10 +61,8 @@ class SmartPorts:
 class ThreeWirePorts:
     """Scoring Mechanism"""
     brain = Brain()
-    MOBILE_GOAL_CLAMP_PISTON = brain.three_wire_port.b
-    DOINKER_PISTON = brain.three_wire_port.c
-    WALL_STAKE_CALIBRATION_LIMIT_SWITCH = brain.three_wire_port.d
-
+    MOBILE_GOAL_CLAMP_PISTON = brain.three_wire_port.c
+    DOINKER_PISTON = brain.three_wire_port.b
 
 
 class GearRatios:
@@ -96,4 +94,7 @@ class WallStakeMechanismProperties:
 
 
 class ScoringMechanismProperties:
-    EJECT_RING_DISTANCE = 250
+    CALIBRATION_OFFSET = 255.6
+    HALF_ROTATION_DISTANCE = 1080
+    HOOK_DISTANCE = 100
+    RING_DISTANCE = 30

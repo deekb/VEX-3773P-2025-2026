@@ -13,8 +13,7 @@ from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Util import time, pass_function
 from VEXLib.Util.Logging import Logger
-from WallStakeMechanismV2 import WallStakeMechanism
-from src.WallStakeMechanismV2 import WallStakeState
+from WallStakeMechanismV2 import WallStakeMechanism, WallStakeState
 from vex import *
 
 
@@ -95,13 +94,13 @@ class Robot(RobotBase):
     def __init__(self, brain):
         super().__init__(brain)
         self.controller = VEXLib.Sensors.Controller.Controller(PRIMARY)
-        self.drivetrain = Drivetrain([Motor(Ports.PORT14, GearRatios.DRIVETRAIN, True),
-                                      Motor(Ports.PORT13, GearRatios.DRIVETRAIN, True),
-                                      Motor(Ports.PORT12, GearRatios.DRIVETRAIN, False)],
+        self.drivetrain = Drivetrain([Motor(SmartPorts.FRONT_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
+                                      Motor(SmartPorts.REAR_LOWER_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
+                                      Motor(SmartPorts.REAR_UPPER_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)],
 
-                                     [Motor(Ports.PORT15, GearRatios.DRIVETRAIN, False),
-                                      Motor(Ports.PORT16, GearRatios.DRIVETRAIN, False),
-                                      Motor(Ports.PORT17, GearRatios.DRIVETRAIN, True)])
+                                     [Motor(SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
+                                      Motor(SmartPorts.REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
+                                      Motor(SmartPorts.REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)])
 
         self.screen = ScrollBufferedScreen()
 
@@ -116,7 +115,8 @@ class Robot(RobotBase):
             Motor(Ports.PORT4, GearSetting.RATIO_18_1, True),
             Rotation(Ports.PORT18),
             Optical(Ports.PORT10),
-            Distance(Ports.PORT5))
+            Distance(Ports.PORT5),
+            self.brain.screen)
         self.wall_stake_mechanism = WallStakeMechanism(Motor(Ports.PORT8, GearSetting.RATIO_18_1, False),
                                                        Rotation(Ports.PORT21))
 
@@ -217,8 +217,12 @@ class Robot(RobotBase):
 
     def on_setup(self):
         self.wall_stake_mechanism.rotation_sensor.set_position(-100, DEGREES)
-        self.drivetrain.odometry.inertial_sensor.calibrate()
         self.log_and_print("Calibrating inertial sensor...")
+        self.drivetrain.odometry.inertial_sensor.calibrate()
+        self.log_and_print("Calibrating scoring mechanism...")
+
+        self.scoring_mechanism.calibrate()
+
         while self.drivetrain.odometry.inertial_sensor.is_calibrating():
             time.sleep_ms(5)
         self.log_and_print("Calibrated inertial sensor successfully")
@@ -297,11 +301,10 @@ class Robot(RobotBase):
                                     right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
 
         self.drivetrain.update_odometry()
-        # self.wall_stake_mechanism.tick()
 
         # if self.controller.buttonX.pressing():
         #     self.on_autonomous()
-        # self.scoring_mechanism.tick(self.alliance_color)
+        self.scoring_mechanism.tick(self.alliance_color)
 
     def setup_dirk_preferences(self):
         """Setup controller buttons for DirkPreferences."""
