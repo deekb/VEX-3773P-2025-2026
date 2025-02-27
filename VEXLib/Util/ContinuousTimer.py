@@ -8,7 +8,7 @@ except ImportError:
 from VEXLib.Units import Units
 
 # Define constants
-MAX_TIMER_VALUE = (2 ** 31) // 2
+MAX_TIMER_VALUE = (2 ** 30)
 continuous_time_us = 0
 prev_timer_value_us = 0
 
