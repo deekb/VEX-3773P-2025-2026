@@ -1,21 +1,24 @@
+import math
+
 from VEXLib.Math import is_near_continuous
 import VEXLib.Util.time as time
-from vex import VOLT, FORWARD, LedStateType, PERCENT, Rotation, DEGREES, Distance, MM
+from vex import VOLT, FORWARD, LedStateType, PERCENT, Rotation, DEGREES, Distance, MM, Brain, Color
 from ConstantsV2 import ScoringMechanismProperties
 
 
 class ScoringMechanism:
-    def __init__(self, lower_intake_motor, upper_intake_motor, rotation_sensor: Rotation, optical_sensor, distance_sensor: Distance):
+    def __init__(self, lower_intake_motor, upper_intake_motor, rotation_sensor: Rotation, optical_sensor, distance_sensor: Distance, screen: Brain.Lcd):
         self.lower_intake_motor = lower_intake_motor
         self.upper_intake_motor = upper_intake_motor
+        self.screen = screen
         self.optical_sensor = optical_sensor
-        self.distance_sensor = distance_sensor
-        self.optical_sensor.set_light(LedStateType.ON)
         self.optical_sensor.set_light_power(100, PERCENT)
+        self.optical_sensor.set_light(LedStateType.ON)
+        self.distance_sensor = distance_sensor
+        self.rotation_sensor = rotation_sensor
+        self.eject_ring_at_position = 0
         self.ejecting_ring = False
         self.found_ring = False
-        self.last_ring_sighting_encoder_count = 0
-        self.rotation_sensor = rotation_sensor
 
     def set_speed(self, speed):
         self.spin_lower_intake(speed)
@@ -45,7 +48,7 @@ class ScoringMechanism:
             return None
 
     def ring_is_near(self):
-        return self.distance_sensor.object_distance(MM) < 70
+        return self.distance_sensor.object_distance(MM) < ScoringMechanismProperties.RING_DISTANCE
 
     def intake_until_ring(self):
         self.intake()
@@ -63,28 +66,57 @@ class ScoringMechanism:
         print(self.get_ring_color())
 
     def eject_ring(self):
-        self.found_ring = True
         self.ejecting_ring = True
-        self.last_ring_sighting_encoder_count = self.rotation_sensor.position(DEGREES)
+        self.eject_ring_at_position = math.ceil(self.get_position())
 
     def sort_ring(self, alliance_color):
         if self.ejecting_ring:
-            if self.distance_sensor.object_distance(MM) < 150:
-                self.last_ring_sighting_encoder_count = self.rotation_sensor.position(DEGREES)
-            if self.rotation_sensor.position(DEGREES) - self.last_ring_sighting_encoder_count > ScoringMechanismProperties.EJECT_RING_DISTANCE:
+            if self.get_position() > self.eject_ring_at_position:
                 self.outtake()
                 time.sleep(0.1)
                 self.stop_motor()
-
                 self.ejecting_ring = False
-                self.found_ring = False
             return
 
         if self.ring_is_near():
+            if self.found_ring:
+                return
+
             ring_color = self.get_ring_color()
+            if not ring_color:
+                self.screen.clear_screen()
+                self.screen.set_fill_color(Color.BLACK)
+                self.screen.set_pen_color(Color.BLACK)
+                return
+            if ring_color == "red":
+                self.screen.clear_screen()
+                self.screen.set_fill_color(Color.RED)
+                self.screen.set_pen_color(Color.RED)
+            elif ring_color == "blue":
+                self.screen.clear_screen()
+                self.screen.set_fill_color(Color.BLUE)
+                self.screen.set_pen_color(Color.BLUE)
+
+            self.screen.draw_rectangle(0, 0, 480, 240)
+
+            self.found_ring = True
             if ring_color != alliance_color:
                 self.eject_ring()
             print(self.get_ring_color())
+        else:
+            self.found_ring = False
+
+    def calibrate(self):
+        self.spin_upper_intake(20)
+        while self.distance_sensor.object_distance(MM) > ScoringMechanismProperties.HOOK_DISTANCE:
+            pass
+        self.stop_motor()
+        self.rotation_sensor.set_position(ScoringMechanismProperties.CALIBRATION_OFFSET, DEGREES)
+        self.eject_ring()
+        self.spin_upper_intake(100)
+
+    def get_position(self):
+        return self.rotation_sensor.position(DEGREES) / ScoringMechanismProperties.HALF_ROTATION_DISTANCE
 
     def tick(self, alliance_color):
         self.sort_ring(alliance_color)
