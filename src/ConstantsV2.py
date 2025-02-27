@@ -91,7 +91,7 @@ class WallStakeMechanismProperties:
     DOCKED_TOLERANCE = Rotation2d.from_degrees(2)
     LOADING_POSITION = Rotation2d.from_degrees(-75)
     UPRIGHT_POSITION = Rotation2d.from_degrees(0)
-    HIGH_SCORING_POSITION = Rotation2d.from_degrees(55)
+    HIGH_SCORING_POSITION = Rotation2d.from_degrees(60)
     LOW_SCORING_POSITION = Rotation2d.from_degrees(110)
 
 
