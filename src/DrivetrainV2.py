@@ -34,7 +34,7 @@ class Drivetrain:
         self.right_drivetrain_speed_smoother = MovingWindowAverage(5)
 
         self.position_PID = PIDController(15, 0.1, 0.2, 0.05, 10)
-        self.rotation_PID = PIDController(0.85, 0, 0.03, 0.01, 1)
+        self.rotation_PID = PIDController(0.85 * 0.9, 0, 0.03, 0.01, 1)
 
         self.trapezoidal_profile = TrapezoidProfile(
             Constraints(DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_inches_per_second() / 5,

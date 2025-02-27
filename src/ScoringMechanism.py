@@ -54,6 +54,14 @@ class ScoringMechanism:
         self.stop_motor()
         print(self.get_ring_color())
 
+    def intake_until_no_ring(self):
+        self.intake()
+        while self.ring_is_near():
+            time.sleep(0.1)
+        time.sleep(0.25)
+        self.stop_motor()
+        print(self.get_ring_color())
+
     def eject_ring(self):
         self.found_ring = True
         self.ejecting_ring = True
