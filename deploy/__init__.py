@@ -1,5 +1,4 @@
-import configparser
-import os
+import argparse
 import re
 import shutil
 import sys
@@ -7,37 +6,16 @@ import time
 
 from rich.console import Console
 
-from .utils import get_removable_disks, get_available_modules, get_checksum, detect_dependencies, unmount_drive, \
+from .Constants import *
+from .Utils import get_removable_disks, get_available_modules, get_checksum, detect_dependencies, unmount_drive, \
     convert_size
-
-import argparse
-
-BASENAME = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(BASENAME)
 
 os.chdir(PROJECT_ROOT)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-a", "--remote-address", help="The address of the remote device connected to the brain and running the RemoteDeploy.py script from the util folder", type=str)
-parser.add_argument("-p", "--remote-port", help="The port of the remote device connected to the brain and running the RemoteDeploy.py script from the util folder", type=int, default=5000)
+# parser.add_argument("-a", "--remote-address", help="The address of the remote device connected to the brain and running the RemoteDeploy.py script from the util folder", type=str)
+# parser.add_argument("-p", "--remote-port", help="The port of the remote device connected to the brain and running the RemoteDeploy.py script from the util folder", type=int, default=5000)
 parser.parse_args()
-
-# Load constants from config
-config = configparser.ConfigParser()
-config.read("deploy_config.ini")
-
-# print(open(os.path.join(basename, "deploy_config.ini"), "r").read())
-
-SRC_DIRECTORY = os.path.abspath(config.get("Paths", "SRC_DIRECTORY"))
-DEPLOY_DIRECTORY = os.path.abspath(config.get("Paths", "DEPLOY_DIRECTORY"))
-VEXLIB_DIRECTORY = os.path.abspath(config.get("Paths", "VEXLIB_DIRECTORY"))
-MAIN_PROGRAM = os.path.abspath(config.get("Paths", "MAIN_PROGRAM_PATH"))
-POSIX_MOUNT_POINT_DIR = eval(config.get("Paths", "POSIX_MOUNT_POINT_DIR"))
-DRIVE_IDENTIFIER_STRING = config.get("Drive", "DRIVE_IDENTIFIER_STRING")
-FIND_VEX_DISK_MAX_ATTEMPTS = config.getint("Drive", "FIND_VEX_DISK_MAX_ATTEMPTS")
-FIND_VEX_DISK_TIME_BETWEEN_ATTEMPTS = config.getfloat("Drive", "FIND_VEX_DISK_TIME_BETWEEN_ATTEMPTS")
-VEX_BUILTIN_MODULES = config.get("Deploy", "VEX_BUILTIN_MODULES")
-DEPLOY_EXCLUDE_REGEX = config.get("Deploy", "DEPLOY_EXCLUDE_REGEX")
 
 
 def exclude_from_deploy(filename):
@@ -101,7 +79,8 @@ def main():
 
     required_libraries = ["main"]
 
-    required_libraries.extend(detect_dependencies(SRC_DIRECTORY, MAIN_PROGRAM, available_libraries, VEX_BUILTIN_MODULES))
+    required_libraries.extend(
+        detect_dependencies(SRC_DIRECTORY, MAIN_PROGRAM, available_libraries, VEX_BUILTIN_MODULES))
 
     print(required_libraries)
 
@@ -118,7 +97,7 @@ def main():
 
     for root, dirs, files in os.walk(DEPLOY_DIRECTORY):
         for file in files:
-            dependency = os.path.join(root, file)
+            dependency = str(os.path.join(root, file))
             if os.path.isfile(dependency) and not exclude_from_deploy(dependency):
                 deploy_objects.append(os.path.join(DEPLOY_DIRECTORY, dependency))
 
@@ -126,8 +105,9 @@ def main():
         for file in files:
             if exclude_from_deploy(file):
                 continue
-            to_copy = os.path.join(root, file)
-            target_path = os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk, "VEXLib", os.path.relpath(to_copy, VEXLIB_DIRECTORY))
+            to_copy = str(os.path.join(root, file))
+            target_path = os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk, "VEXLib",
+                                       os.path.relpath(to_copy, VEXLIB_DIRECTORY))
             target_dir = os.path.dirname(target_path)
             if not os.path.isdir(target_dir):
                 if os.path.isfile(target_dir):
