@@ -1,8 +1,5 @@
 def main(brain, robot_id):
-    if robot_id == 1:
-        from Robot import Robot
-    elif robot_id == 2:
-        from Robot2 import Robot
+    from Robot import Robot
 
     robot = Robot(brain)
 

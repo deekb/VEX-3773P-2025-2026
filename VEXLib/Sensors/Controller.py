@@ -1,5 +1,22 @@
 import vex
 from VEXLib.Math import apply_deadband, cubic_filter
+from VEXLib.Util import time
+
+
+class DoublePressHandler:
+    def __init__(self, pressed_callback, double_pressed_callback):
+        self.last_press_time = time.time()
+        self.double_press_time_threshold = 0.2
+        self.pressed_callback = pressed_callback
+        self.double_pressed_callback = double_pressed_callback
+
+    def press(self):
+        if time.time() - self.last_press_time < self.double_press_time_threshold:
+            self.last_press_time = time.time()
+            self.double_pressed_callback()
+        else:
+            self.last_press_time = time.time()
+            self.pressed_callback()
 
 
 class InputProcessor:

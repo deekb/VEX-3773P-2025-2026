@@ -1,6 +1,5 @@
-import ConstantsV2
+from Constants import SmartPorts, DrivetrainProperties
 import VEXLib.Math.MathUtil as MathUtil
-from ConstantsV2 import DrivetrainProperties
 from Odometry import TankOdometry
 from VEXLib.Algorithms.MovingWindowAverage import MovingWindowAverage
 from VEXLib.Algorithms.PID import PIDController
@@ -15,13 +14,12 @@ from VEXLib.Util import ContinuousTimer
 from vex import FORWARD, VOLT, Inertial, DEGREES, Motor
 
 
-# noinspection DuplicatedCode
 class Drivetrain:
     def __init__(self, left_motors: list[Motor], right_motors: list[Motor]):
         self.left_motors = left_motors
         self.right_motors = right_motors
 
-        self.odometry = TankOdometry(Inertial(ConstantsV2.SmartPorts.INERTIAL_SENSOR))
+        self.odometry = TankOdometry(Inertial(SmartPorts.INERTIAL_SENSOR))
         self.ANGLE_DIRECTION = 1
 
         self.left_drivetrain_PID = PIDFController(5, 0, 0, 5)

@@ -1,74 +1,130 @@
+import json
+
+import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
 import VEXLib.Sensors.Controller
-from AutonomousRoutines import AutonomousRoutines
-from ConstantsV1 import *
+from Constants import *
 from CornerMechanism import CornerMechanism
-from Drivetrain import Drivetrain
+from DrivetrainV2 import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
-from WallStakeMechanism import WallStakeMechanism
 from VEXLib.Kinematics import desaturate_wheel_speeds
+from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
-from VEXLib.Robot.TimedRobot import TimedRobot
-from VEXLib.Threading.BinarySemaphore import BinarySemaphore
+from VEXLib.Sensors.Controller import DoublePressHandler
 from VEXLib.Util import time, pass_function
 from VEXLib.Util.Logging import Logger
+from WallStakeMechanism import WallStakeMechanism, WallStakeState
 from vex import *
 
 
-class Robot(TimedRobot):
+def ramp_voltage_and_collect_data(motor_group, step_delay=0.25, voltage_step=0.1, max_voltage=12):
+    """
+    Ramp the voltage from 0 to the maximum voltage and collect torque, power, and efficiency data.
+
+    Args:
+        motor_group:
+        step_delay: Time (in seconds) to wait between each voltage step.
+        voltage_step: Incremental voltage step (in volts).
+        max_voltage: Maximum allowable voltage (in volts).
+
+    Returns:
+        data: A JSON string with torque-voltage, power-voltage, and efficiency-voltage data.
+    """
+    data = {
+        "voltage": [],
+        "torque": [],
+        "speed": [],
+        "power": [],
+        "efficiency": []
+    }
+
+    print("Starting voltage ramp and data collection...")
+
+    for voltage in [i * voltage_step for i in range(int(max_voltage / voltage_step) + 1)]:
+        # Apply the current voltage to the motors
+        [motor.spin(FORWARD, voltage, VOLT) for motor in motor_group]
+        total_torque = total_speed = total_power = total_efficiency = 0
+        # Wait for the drivetrain to respond
+        time.sleep(step_delay)
+        for _ in range(10):
+            total_torque += sum([motor.torque(TorqueUnits.NM) for motor in motor_group])
+            total_speed += sum([motor.velocity(PERCENT) for motor in motor_group])  # in radians/sec
+            total_power += sum([motor.power(PowerUnits.WATT) for motor in motor_group])
+            total_efficiency += sum([motor.efficiency(PERCENT) for motor in motor_group])
+            time.sleep(0.1)
+
+        average_torque = total_torque / (10 * len(motor_group))
+        average_speed = total_speed / (10 * len(motor_group))
+        average_power = total_power / (10 * len(motor_group))
+        average_efficiency = total_efficiency / (10 * len(motor_group))
+
+        # Append data to the lists
+        data["voltage"].append(voltage)
+        data["torque"].append(average_torque)
+        data["speed"].append(total_speed / (10 * len(motor_group)))
+        data["power"].append(total_power / (10 * len(motor_group)))
+        data["efficiency"].append(total_efficiency / (10 * len(motor_group)))
+
+        print("Voltage: {:.2f}V, Speed: {:.2f}%, Torque: {:.2f}Nm, Power: {:.2f}W, Efficiency: {:.2f}".format(
+            voltage, total_speed / (10 * len(motor_group)), total_torque / (10 * len(motor_group)),
+            total_power / (10 * len(motor_group)), total_efficiency / (10 * len(motor_group))))
+
+    # Stop the drivetrain
+    [motor.spin(FORWARD, 0, VOLT) for motor in motor_group]
+
+    # Convert the data to JSON format
+    json_data = json.dumps(data)
+    return json_data
+
+
+class Robot(RobotBase):
     def __init__(self, brain):
         super().__init__(brain)
         self.controller = VEXLib.Sensors.Controller.Controller(PRIMARY)
         self.drivetrain = Drivetrain([Motor(SmartPorts.FRONT_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
-                                      Motor(SmartPorts.MIDDLE_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
-                                      Motor(SmartPorts.REAR_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)],
+                                      Motor(SmartPorts.REAR_LOWER_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
+                                      Motor(SmartPorts.REAR_UPPER_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)],
 
                                      [Motor(SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
-                                      Motor(SmartPorts.MIDDLE_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
-                                      Motor(SmartPorts.REAR_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)], )
+                                      Motor(SmartPorts.REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
+                                      Motor(SmartPorts.REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)])
 
         self.screen = ScrollBufferedScreen()
-        self.render_lock = BinarySemaphore()
 
         self.main_log = Logger(self.brain.sdcard, MAIN_LOG_FILENAME)
 
-        self.user_preferences = DefaultPreferences
+        self.alliance_color = None
+
         self.mobile_goal_clamp = MobileGoalClamp(ThreeWirePorts.MOBILE_GOAL_CLAMP_PISTON)
+        self.corner_mechanism = CornerMechanism(DigitalOut(ThreeWirePorts.DOINKER_PISTON))
         self.scoring_mechanism = ScoringMechanism(
-            [Motor(SmartPorts.SCORING_ELEVEN_WATT_MOTOR, GearSetting.RATIO_18_1, False),
-             Motor(SmartPorts.SCORING_FIVE_POINT_FIVE_WATT_MOTOR, GearSetting.RATIO_18_1, True)])
-        self.wall_stake_mechanism = WallStakeMechanism(Motor(SmartPorts.WALL_STAKE_MOTOR, GearSetting.RATIO_36_1, True),
-                                                       Limit(ThreeWirePorts.WALL_STAKE_CALIBRATION_LIMIT_SWITCH), )
-        self.corner_mechanism = CornerMechanism(
-            DigitalOut(ThreeWirePorts.DOINKER_PISTON)
-        )
-        self.animation_frame = 1
-        self.autonomous_mappings = self.scan_autonomous_routines()
+            Motor(Ports.PORT1, GearSetting.RATIO_18_1, False),
+            Motor(Ports.PORT4, GearSetting.RATIO_18_1, True),
+            Rotation(Ports.PORT18),
+            Optical(Ports.PORT10),
+            Distance(Ports.PORT5),
+            self.brain.screen)
+        self.wall_stake_mechanism = WallStakeMechanism(Motor(Ports.PORT8, GearSetting.RATIO_18_1, False),
+                                                       Rotation(Ports.PORT21))
 
+        self.double_press_handler = DoublePressHandler(self.wall_stake_mechanism.previous_state,
+                                                       lambda: self.wall_stake_mechanism.transition_to(WallStakeState.DOCKED))
+
+        self.user_preferences = DefaultPreferences
+        self.autonomous_mappings = {str(function)[10:]: function for function in AutonomousRoutines.available_autos}
+        print([dir(function) for function in AutonomousRoutines.available_autos])
         self.autonomous = pass_function
-
-    def scan_autonomous_routines(self):
-        objects = AutonomousRoutines.__dict__
-        routines = {}
-
-        for name, _object in objects.items():
-            if callable(_object) and not name.startswith("_"):
-                # Ignore hidden objects or objects that can not be executed
-                self.log_and_print("Discovered autonomous routine: " + str(name))
-                routines[name] = _object
-        return routines
+        self.competition = Competition(self.on_driver_control, self.on_autonomous)
 
     def log_and_print(self, *parts):
         message = " ".join(map(str, parts))
         self.screen.add_line(message)
-        self.render_lock.acquire()
         self.brain.screen.clear_screen()
         self.brain.screen.set_cursor(1, 1)
         for line in self.screen.get_screen_content():
             self.brain.screen.print(line)
             self.brain.screen.next_row()
-        self.render_lock.release()
         self.main_log.log(message)
         print(message)
 
@@ -79,16 +135,9 @@ class Robot(TimedRobot):
             pass
 
     def on_autonomous(self):
+        self.drivetrain.reset()
         self.log_and_print("Executing chosen autonomous routine:", str(self.autonomous))
         self.autonomous(self)
-
-    def on_enable(self):
-        self.log_and_print("on_enable called: resetting drivetrain")
-        self.drivetrain.reset()
-
-    def on_driver_control(self):
-        self.wall_stake_mechanism.motor.set_velocity(0, PERCENT)
-        self.wall_stake_mechanism.motor.spin(FORWARD)
 
     def get_selection(self, options):
         """
@@ -135,6 +184,8 @@ class Robot(TimedRobot):
     def select_autonomous_routine(self):
         self.log_and_print("Starting autonomous routine selection")
         autonomous_type = self.get_selection(["red", "blue", "skills_alliance_stake"])
+        self.alliance_color = {"red": "red", "blue": "blue", "skills_alliance_stake": "red"}[autonomous_type]
+
         if autonomous_type == "skills_alliance_stake":
             self.drivetrain.set_angles_inverted(False)
             self.autonomous = AutonomousRoutines.skills_alliance_stake
@@ -148,16 +199,20 @@ class Robot(TimedRobot):
 
         return autonomous_type + " " + auto
 
+    def start(self):
+        self.on_setup()
+
     def on_setup(self):
-        self.drivetrain.inertial.calibrate()
+        self.wall_stake_mechanism.rotation_sensor.set_position(-100, DEGREES)
         self.log_and_print("Calibrating inertial sensor...")
-        while self.drivetrain.inertial.is_calibrating():
+        self.drivetrain.odometry.inertial_sensor.calibrate()
+        self.log_and_print("Calibrating scoring mechanism...")
+
+        self.scoring_mechanism.calibrate()
+
+        while self.drivetrain.odometry.inertial_sensor.is_calibrating():
             time.sleep_ms(5)
         self.log_and_print("Calibrated inertial sensor successfully")
-
-        self.log_and_print("Calibrating wall stake mechanism...")
-        self.wall_stake_mechanism.calibrate()
-        self.log_and_print("Calibrated wall stake mechanism successfully")
         self.controller.rumble("..")
         self.log_and_print("Selecting autonomous routine...")
         autonomous_routine = self.select_autonomous_routine()
@@ -168,36 +223,39 @@ class Robot(TimedRobot):
 
         if drive_style == "Dirk":
             self.user_preferences = DirkPreferences
+            self.setup_dirk_preferences()
         elif drive_style == "Derek":
             self.user_preferences = DerekPreferences
+            self.setup_derek_preferences()
 
         self.log_and_print("Set up user preferences:", drive_style)
 
-        if isinstance(self.user_preferences, DirkPreferences):
-            self.setup_dirk_preferences()
-        elif isinstance(self.user_preferences, DerekPreferences):
-            self.setup_derek_preferences()
+        self.log_and_print("Setup complete")
+        # self.log_and_print("Measuring drivetrain properties...")
+        # self.log_and_print("Left drivetrain properties:", ramp_voltage_and_collect_data(self.drivetrain.left_motors))
+        # self.log_and_print("Right drivetrain properties:", ramp_voltage_and_collect_data(self.drivetrain.right_motors))
 
-    def periodic(self):
-        self.render_lock.acquire()
-        self.brain.screen.render()
-        self.render_lock.release()
+    def on_driver_control(self):
+        self.drivetrain.reset()
+        while True:
+            self.driver_control_periodic()
+            time.sleep_ms(20)
 
     def driver_control_periodic(self):
         left_speed = right_speed = 0
-        if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.TANK:
+        if self.user_preferences.CONTROL_STYLE == ControlStyles.TANK:
             left_speed = self.controller.left_stick_y()
             right_speed = self.controller.right_stick_y()
 
             left_speed = MathUtil.apply_deadband(left_speed)
             right_speed = MathUtil.apply_deadband(right_speed)
-        elif self.user_preferences.CONTROLLER_BINDINGS_STYLE in [ControlStyles.ARCADE, ControlStyles.SPLIT_ARCADE]:
+        elif self.user_preferences.CONTROL_STYLE in [ControlStyles.ARCADE, ControlStyles.SPLIT_ARCADE]:
             forward_speed = turn_speed = 0
             forward_speed = self.controller.left_stick_y()
-            if self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.ARCADE:
-                turn_speed = self.controller.left_stick_x()
-            elif self.user_preferences.CONTROLLER_BINDINGS_STYLE == ControlStyles.SPLIT_ARCADE:
-                turn_speed = self.controller.right_stick_x()
+            if self.user_preferences.CONTROL_STYLE == ControlStyles.ARCADE:
+                turn_speed = self.controller.left_stick_x() * self.user_preferences.TURN_SPEED
+            elif self.user_preferences.CONTROL_STYLE == ControlStyles.SPLIT_ARCADE:
+                turn_speed = self.controller.right_stick_x() * self.user_preferences.TURN_SPEED
 
             forward_speed = MathUtil.apply_deadband(forward_speed)
             turn_speed = -MathUtil.apply_deadband(turn_speed)
@@ -205,45 +263,71 @@ class Robot(TimedRobot):
             left_speed = forward_speed - turn_speed
             right_speed = forward_speed + turn_speed
         else:
-            self.log_and_print("Invalid controller bindings style:", self.user_preferences.CONTROLLER_BINDINGS_STYLE)
+            self.log_and_print("Invalid controller bindings style:", self.user_preferences.CONTROL_STYLE)
 
         left_speed, right_speed = desaturate_wheel_speeds([left_speed, right_speed])
 
+        left_speed = MathUtil.clamp(left_speed, -1, 1)
+        right_speed = MathUtil.clamp(right_speed, -1, 1)
+
         left_speed = MathUtil.cubic_filter(left_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
         right_speed = MathUtil.cubic_filter(right_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
+
+        # if self.drivetrain.left_motors[0].velocity(PERCENT) > left_speed * 100:
+        #     left_speed -= 0.1
+        # if self.drivetrain.left_motors[0].velocity(PERCENT) < left_speed * 100:
+        #     left_speed += 0.1
+        #
+        # if self.drivetrain.right_motors[0].velocity(PERCENT) < right_speed * 100:
+        #     right_speed += 0.1
+        # if self.drivetrain.right_motors[0].velocity(PERCENT) > right_speed * 100:
+        #     right_speed -= 0.1
 
         # self.log_and_print("Updating drivetrain voltages - Left:", left_speed, "Right:", right_speed)
         self.drivetrain.set_voltage(left_speed * self.user_preferences.MAX_MOTOR_VOLTAGE,
                                     right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
 
         self.drivetrain.update_odometry()
-        self.wall_stake_mechanism.tick()
+
+        # if self.controller.buttonX.pressing():
+        #     self.on_autonomous()
+        self.scoring_mechanism.tick(self.alliance_color)
 
     def setup_dirk_preferences(self):
         """Setup controller buttons for DirkPreferences."""
-        self.controller.buttonX.pressed(self.trigger_restart)
-        self.controller.buttonB.pressed(lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp)
-        self.controller.buttonY.pressed(lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_corner_mechanism)
-        self.controller.buttonR1.pressed(lambda: self.log_and_print("Wall stake mechanism moving in") or self.wall_stake_mechanism.move_in)
-        self.controller.buttonR1.released(lambda: self.log_and_print("Wall stake mechanism stopped") or self.wall_stake_mechanism.stop)
-        self.controller.buttonL1.released(self.wall_stake_mechanism.stop)
+        self.log_and_print("Setting up Dirk Preferences")
+        self.controller.buttonB.pressed(
+            lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
         self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonR2.pressed(self.scoring_mechanism.intake)
-        self.controller.buttonR2.released(self.scoring_mechanism.stop_motor)
-        self.controller.buttonDown.pressed(self.wall_stake_mechanism.dock)
-        self.controller.buttonRight.pressed(self.wall_stake_mechanism.score)
+        self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
+
+        self.controller.buttonL1.pressed(self.double_press_handler.press)
+
+        self.controller.buttonR2.released(
+            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
+
+        self.controller.buttonY.pressed(self.corner_mechanism.toggle_corner_mechanism)
+        self.controller.buttonRight.pressed(self.scoring_mechanism.intake_until_ring)
 
     def setup_derek_preferences(self):
         """Setup controller buttons for DerekPreferences."""
-        self.controller.buttonX.pressed(self.trigger_restart)
-        self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
-        self.controller.buttonY.pressed(self.corner_mechanism.toggle_corner_mechanism)
+        self.log_and_print("Setting up Derek Preferences")
+        self.controller.buttonUp.pressed(lambda: self.drivetrain.turn_to_gyro(0))
+        self.controller.buttonLeft.pressed(lambda: self.drivetrain.turn_to_gyro(90))
+        self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to_gyro(180))
+        self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to_gyro(270))
+        self.controller.buttonB.pressed(
+            lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
         self.controller.buttonL1.pressed(self.scoring_mechanism.intake)
         self.controller.buttonL1.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
-        self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
-        self.controller.buttonR2.pressed(self.wall_stake_mechanism.move_in)
-        self.controller.buttonR2.released(self.wall_stake_mechanism.stop)
-        self.controller.buttonR1.pressed(self.wall_stake_mechanism.move_out)
-        self.controller.buttonR1.released(self.wall_stake_mechanism.stop)
+        self.controller.buttonL2.released(
+            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.3) or self.scoring_mechanism.stop_motor())
+
+        self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
+        self.controller.buttonR2.pressed(self.wall_stake_mechanism.previous_state)
+
+        self.controller.buttonY.pressed(
+            lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_corner_mechanism())

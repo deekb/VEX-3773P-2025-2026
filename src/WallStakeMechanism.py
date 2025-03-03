@@ -1,109 +1,99 @@
-from VEXLib.Math import clamp, MathUtil
-import ConstantsV1
-from vex import Motor, GearSetting, FORWARD, PERCENT, DEGREES, HOLD, BRAKE, VOLT, wait, MSEC, Limit
+from Constants import WallStakeMechanismProperties
+from VEXLib.Algorithms.GravitationalFeedforward import GravitationalFeedforward
+from VEXLib.Algorithms.PID import PIDController
+from VEXLib.Geometry.Rotation2d import Rotation2d
+import VEXLib.Math.MathUtil as MathUtil
+from vex import FORWARD, DEGREES, VOLT, Rotation, Thread
+
+
+class WallStakeState:
+    DOCKED = 1
+    LOADING = 2
+    HIGH_SCORING = 3
+    LOW_SCORING = 4
 
 
 class WallStakeMechanism:
     """
-    A class representing the wall stake mechanism used for scoring in a VEX Robotics system.
-    The mechanism uses a motor to control movement and provides functionality for docking, scoring,
-    and managing motor velocity and position.
+    A class representing the wall stake mechanism.
+    The mechanism uses a motor to control movement and provides a state machine
+    for managing the setpoint of the mechanism
     """
 
-    def __init__(self, motor, limit_switch):
+    def __init__(self, motor, rotation_sensor: Rotation):
         """
-        Initializes the WallStakeMechanism object.
-
-        The motor is set up with a gear ratio of 36:1, and the initial position and velocity are configured.
-        A separate thread is used to continuously monitor the state of the mechanism.
+        Initializes the WallStakeMechanism subsystem.
 
         Attributes:
             motor (vex.Motor): The motor controlling the wall stake mechanism.
-            docking (bool): Whether the mechanism is currently docking.
-            thread (vex.Thread): A thread that runs the `tick` method to handle real-time operations.
+            rotation_sensor (vex.Rotation): The rotation sensor used to measure the mechanism's position.
         """
-        self.manual_control = True
 
-        self.limit_switch = limit_switch
+        self.rotation_sensor = rotation_sensor
         self.motor = motor
-        self.motor.spin(FORWARD)
-        self.motor.set_velocity(0)
-        self.target_velocity = ConstantsV1.ScoringMechanismProperties.STARTUP_POSITION
 
-        self.DOCKING_POSITION = ConstantsV1.ScoringMechanismProperties.DOCKED_POSITION
-        self.SCORING_POSITION = ConstantsV1.ScoringMechanismProperties.MAX_POSITION
+        self.PID_TUNINGS = WallStakeMechanismProperties.PID_TUNINGS
+        self.FEEDFORWARD_TUNINGS = WallStakeMechanismProperties.FEEDFORWARD_TUNINGS
+        self.DOCKED_POSITION = WallStakeMechanismProperties.DOCKED_POSITION
+        self.DOCKED_TOLERANCE = WallStakeMechanismProperties.DOCKED_TOLERANCE
+        self.LOADING_POSITION = WallStakeMechanismProperties.LOADING_POSITION
+        self.HIGH_SCORING_POSITION = WallStakeMechanismProperties.HIGH_SCORING_POSITION
+        self.LOW_SCORING_POSITION = WallStakeMechanismProperties.LOW_SCORING_POSITION
+        self.UPRIGHT_POSITION = WallStakeMechanismProperties.UPRIGHT_POSITION
 
-    def calibrate(self):
-        while not self.limit_switch.pressing():
-            self.motor.spin(FORWARD, -5, VOLT)
-            wait(10, MSEC)
+        self.gravitational_feedforward = GravitationalFeedforward(self.FEEDFORWARD_TUNINGS["kg"])
+        self.pid = PIDController(self.PID_TUNINGS["kp"], self.PID_TUNINGS["ki"], self.PID_TUNINGS["kd"])
 
-        while self.limit_switch.pressing():
-            self.motor.spin(FORWARD, 5, VOLT)
-            wait(10, MSEC)
+        self.state = WallStakeState.DOCKED
+        # Call transition_to to ensure we are really in the initial state
+        self.transition_to(self.state)
+        self.tick_thread = Thread(self.loop)
 
-        self.motor.set_position(0, DEGREES)
-        self.motor.set_velocity(0, PERCENT)
-        self.motor.spin(FORWARD)
+    def update_motor_voltage(self):
+        current_rotation = Rotation2d.from_degrees(self.rotation_sensor.position(DEGREES))
+        feedforward_output = self.gravitational_feedforward.update(current_rotation.to_degrees())
+        pid_output = self.pid.update(current_rotation.normalize().to_revolutions())
 
-    def move_out(self):
-        """
-        Starts the process of docking the wall stake mechanism.
+        if self.state == WallStakeState.DOCKED and MathUtil.is_near(self.DOCKED_POSITION.to_revolutions(), current_rotation.to_revolutions(), self.DOCKED_TOLERANCE.to_revolutions()):
+            self.motor.spin(FORWARD, 0, VOLT)
+            return
 
-        The motor is set to move backward at a defined speed to dock the mechanism.
-        """
-        self.manual_control = True
-        self.target_velocity = -ConstantsV1.ScoringMechanismProperties.SCORING_SPEED_PERCENT
+        self.motor.spin(FORWARD, feedforward_output - pid_output, VOLT)
 
-    def move_in(self):
-        """
-        Starts the process of moving the wall stake mechanism to score a ring.
+    def transition_to(self, new_state):
+        if new_state == WallStakeState.DOCKED:
+            print("Transitioning to Docked")
+            self.pid.setpoint = self.DOCKED_POSITION.to_revolutions()
+        elif new_state == WallStakeState.LOADING:
+            print("Transitioning to Loading")
+            self.pid.setpoint = self.LOADING_POSITION.to_revolutions()
+        elif new_state == WallStakeState.HIGH_SCORING:
+            print("Transitioning to High Scoring")
+            self.pid.setpoint = self.HIGH_SCORING_POSITION.to_revolutions()
+        elif new_state == WallStakeState.LOW_SCORING:
+            print("Transitioning to Low Scoring")
+            self.pid.setpoint = self.LOW_SCORING_POSITION.to_revolutions()
 
-        The motor is set to move forward at a defined speed to extend the mechanism.
-        """
-        self.manual_control = True
-        self.target_velocity = ConstantsV1.ScoringMechanismProperties.SCORING_SPEED_PERCENT
+        self.state = new_state
 
-    def dock(self):
-        self.manual_control = False
-        self.motor.set_velocity(ConstantsV1.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
-        self.motor.spin_to_position(self.DOCKING_POSITION, DEGREES, wait=False)
+    def next_state(self):
+        if self.state == 4:
+            return
+        self.transition_to(self.state + 1)
 
-    def score(self):
-        self.manual_control = False
-        self.motor.set_velocity(ConstantsV1.ScoringMechanismProperties.SCORING_SPEED_PERCENT, PERCENT)
-        self.motor.spin_to_position(self.SCORING_POSITION, DEGREES, wait=False)
-
-    def stop(self):
-        """
-        Stops the movement of the wall stake mechanism.
-
-        The motor is paused and placed into PID hold mode to maintain its position.
-        """
-        self.target_velocity = 0
+    def previous_state(self):
+        if self.state == 1:
+            return
+        self.transition_to(self.state - 1)
 
     def tick(self):
-        """
-        Monitors the state of the wall stake mechanism in real-time.
-
-        This method continuously checks the motor's position to determine if docking is complete
-        or if the mechanism has reached the maximum position. If conditions are met, the motor's velocity is set to 0
-        and the motor is set to COAST mode to prevent power consumption and overheating when idle. The method is run in
-        a thread that belongs to the class instance.
-
-        The method sleeps for 50 milliseconds between checks.
-        """
-        if self.limit_switch.pressing():
-            self.motor.set_stopping(BRAKE)
+        if self.state == WallStakeState.DOCKED:
+            self.gravitational_feedforward.kg = self.FEEDFORWARD_TUNINGS["kg"] * -1
         else:
-            self.motor.set_stopping(HOLD)
+            self.gravitational_feedforward.kg = self.FEEDFORWARD_TUNINGS["kg"]
 
-        if self.manual_control:
-            if self.limit_switch.pressing():
-                self.target_velocity = MathUtil.clamp(self.target_velocity, 0, None)
+        self.update_motor_voltage()
 
-            if self.motor.position(DEGREES) > ConstantsV1.ScoringMechanismProperties.MAX_POSITION:
-                self.target_velocity = clamp(self.target_velocity, None, 0)
-
-            self.motor.spin(FORWARD)
-            self.motor.set_velocity(self.target_velocity, PERCENT)
+    def loop(self):
+        while True:
+            self.tick()

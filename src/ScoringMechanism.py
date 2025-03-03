@@ -3,7 +3,7 @@ import math
 from VEXLib.Math import is_near_continuous
 import VEXLib.Util.time as time
 from vex import VOLT, FORWARD, LedStateType, PERCENT, Rotation, DEGREES, Distance, MM, Brain, Color
-from ConstantsV2 import ScoringMechanismProperties
+from Constants import ScoringMechanismProperties
 
 
 class ScoringMechanism:
