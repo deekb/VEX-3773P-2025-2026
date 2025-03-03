@@ -52,3 +52,13 @@ def sleep_ms(time_milliseconds):
     Works in both MicroPython and standard Python.
     """
     time_module.sleep(Units.milliseconds_to_seconds(time_milliseconds))
+
+
+def wait_until(condition_function, delay_ms=5):
+    while not condition_function():
+        sleep_ms(delay_ms)
+
+
+def wait_until_not(condition_function, delay_ms=5):
+    while condition_function():
+        sleep_ms(delay_ms)

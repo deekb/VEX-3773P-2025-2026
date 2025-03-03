@@ -1,6 +1,6 @@
 """
 This file is just a quick attempt at reverse-engineering the vex brain's communications protocol in order to make a tool that works on linux
-I gave up and decided to just use an SD card to transfer programs (hence the deploy.py script), however, if you would like to develop this
+I gave up and decided to just use an SD card to transfer programs (hence the deploy module), however, if you would like to develop this
 into a full project, please contact me and I will help
 """
 

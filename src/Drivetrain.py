@@ -1,5 +1,6 @@
+from VEXLib.Geometry.Translation1d import Translation1d
+from vex import FORWARD, VOLT, Inertial, DEGREES, Motor
 from Constants import SmartPorts, DrivetrainProperties
-import VEXLib.Math.MathUtil as MathUtil
 from Odometry import TankOdometry
 from VEXLib.Algorithms.MovingWindowAverage import MovingWindowAverage
 from VEXLib.Algorithms.PID import PIDController
@@ -11,7 +12,8 @@ from VEXLib.Geometry.Pose2d import Pose2d
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Util import ContinuousTimer
-from vex import FORWARD, VOLT, Inertial, DEGREES, Motor
+from VEXLib.Util.motor_tests import collect_power_relationship_data
+import VEXLib.Math.MathUtil as MathUtil
 
 
 class Drivetrain:
@@ -44,13 +46,13 @@ class Drivetrain:
         self.ANGLE_DIRECTION = -1 if inverted else 1
 
     def update_odometry(self):
-        self.odometry.update(self.get_left_wheel_position(), self.get_right_wheel_position())
+        self.odometry.update(self.get_left_distance(), self.get_right_distance())
 
-    def set_voltage(self, left_voltage, right_voltage):
+    def set_powers(self, left_power, right_power):
         for motor in self.left_motors:
-            motor.spin(FORWARD, left_voltage, VOLT)
+            motor.spin(FORWARD, left_power, VOLT)
         for motor in self.right_motors:
-            motor.spin(FORWARD, right_voltage, VOLT)
+            motor.spin(FORWARD, right_power, VOLT)
 
     def update_voltages(self):
         self.update_drivetrain_velocities()
@@ -58,13 +60,13 @@ class Drivetrain:
         left_controller_output = self.left_drivetrain_PID.update(current_left_speed.to_meters_per_second())
         right_controller_output = self.right_drivetrain_PID.update(current_right_speed.to_meters_per_second())
 
-        self.set_voltage(left_controller_output, right_controller_output)
+        self.set_powers(left_controller_output / 12, right_controller_output / 12)
 
     def update_drivetrain_velocities(self):
         instantaneous_left_speed = self.left_drivetrain_speed_calculator.calculate_rate(
-            self.get_left_wheel_position().to_meters(), ContinuousTimer.time())
+            self.get_left_distance().to_meters(), ContinuousTimer.time())
         instantaneous_right_speed = self.right_drivetrain_speed_calculator.calculate_rate(
-            self.get_right_wheel_position().to_meters(), ContinuousTimer.time())
+            self.get_right_distance().to_meters(), ContinuousTimer.time())
 
         self.left_drivetrain_speed_smoother.add_value(instantaneous_left_speed)
         self.right_drivetrain_speed_smoother.add_value(instantaneous_right_speed)
@@ -74,23 +76,21 @@ class Drivetrain:
         right_speed = Velocity1d.from_meters_per_second(self.right_drivetrain_speed_smoother.get_average())
         return left_speed, right_speed
 
-    def get_left_wheel_position(self):
-        position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.left_motors])
+    def get_left_distance(self) -> Translation1d:
+        motor_rotation_degrees = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.left_motors])
 
-        left_position = Rotation2d.from_degrees(
-            position * DrivetrainProperties.MOTOR_TO_WHEEL_GEAR_RATIO)
-        return GeometryUtil.arc_length_from_rotation(DrivetrainProperties.WHEEL_CIRCUMFERENCE, left_position)
+        wheel_rotation = Rotation2d.from_degrees(
+            motor_rotation_degrees * DrivetrainProperties.MOTOR_TO_WHEEL_GEAR_RATIO)
+        return GeometryUtil.arc_length_from_rotation(DrivetrainProperties.WHEEL_CIRCUMFERENCE, wheel_rotation)
 
-    def get_right_wheel_position(self):
-        position = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.right_motors])
+    def get_right_distance(self) -> Translation1d:
+        motor_rotation_degrees = MathUtil.average_iterable([motor.position(DEGREES) for motor in self.right_motors])
 
-        right_position = Rotation2d.from_degrees(
-            position * DrivetrainProperties.MOTOR_TO_WHEEL_GEAR_RATIO)
-        return GeometryUtil.arc_length_from_rotation(DrivetrainProperties.WHEEL_CIRCUMFERENCE, right_position)
+        wheel_rotation = Rotation2d.from_degrees(
+            motor_rotation_degrees * DrivetrainProperties.MOTOR_TO_WHEEL_GEAR_RATIO)
+        return GeometryUtil.arc_length_from_rotation(DrivetrainProperties.WHEEL_CIRCUMFERENCE, wheel_rotation)
 
-    def set_speed_percent(self, left_speed_percent, right_speed_percent):
-        left_speed_percent /= 100
-        right_speed_percent /= 100
+    def set_speed_zero_to_one(self, left_speed_percent, right_speed_percent):
         self.set_speed(DrivetrainProperties.MAX_ACHIEVABLE_SPEED * left_speed_percent,
                        DrivetrainProperties.MAX_ACHIEVABLE_SPEED * right_speed_percent)
 
@@ -108,11 +108,11 @@ class Drivetrain:
         self.rotation_PID.update(self.odometry.get_rotation().to_radians())
         while not self.rotation_PID.at_setpoint(threshold=Rotation2d.from_degrees(4).to_radians()):
             output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
-            self.set_speed_percent(output * 100, -output * 100)
+            self.set_speed_zero_to_one(output, -output)
             self.update_voltages()
             self.update_odometry()
-        self.set_speed_percent(0, 0)
-        self.set_voltage(0, 0)
+        self.set_speed_zero_to_one(0, 0)
+        self.set_powers(0, 0)
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
 
@@ -120,8 +120,8 @@ class Drivetrain:
         if turn_first:
             self.turn_to_gyro(direction)
 
-        left_start_position = self.get_left_wheel_position().to_inches()
-        right_start_position = self.get_right_wheel_position().to_inches()
+        left_start_position = self.get_left_distance().to_inches()
+        right_start_position = self.get_right_distance().to_inches()
 
         if ramp_up:
             initial_state = State(0, 0)
@@ -146,8 +146,8 @@ class Drivetrain:
             elapsed_time = ContinuousTimer.time() - start_time
             target_distance_traveled = self.trapezoidal_profile.calculate(elapsed_time, initial_state, goal_state)
 
-            left_position = self.get_left_wheel_position().to_inches() - left_start_position
-            right_position = self.get_right_wheel_position().to_inches() - right_start_position
+            left_position = self.get_left_distance().to_inches() - left_start_position
+            right_position = self.get_right_distance().to_inches() - right_start_position
 
             distance_traveled = MathUtil.average(left_position, right_position)
 
@@ -156,12 +156,12 @@ class Drivetrain:
             output_speed = self.position_PID.update(distance_traveled)
 
             rotation_output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
-            self.set_speed_percent(output_speed + (rotation_output * 100), output_speed - (rotation_output * 100))
+            self.set_speed_zero_to_one(output_speed + rotation_output, output_speed - rotation_output)
             self.update_voltages()
             self.update_odometry()
 
-        self.set_speed_percent(0, 0)
-        self.set_voltage(0, 0)
+        self.set_speed_zero_to_one(0, 0)
+        self.set_powers(0, 0)
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
 
@@ -201,10 +201,17 @@ class Drivetrain:
         self.odometry.pose = Pose2d()
         self.odometry.inertial_sensor.reset_rotation()
 
+    def measure_properties(self):
+        # We are yielding the results in a generator fashion instead of printing them directly,
+        # this lets the robot send the data wherever it wants and keeps the program responsive throughout collection
+        yield "Measuring drivetrain properties..."
+        yield "Left drivetrain properties:", collect_power_relationship_data(self.left_motors)
+        yield "Right drivetrain properties:", collect_power_relationship_data(self.right_motors)
+
     def debug(self):
         return {
-            "left_position (in)": self.get_left_wheel_position().to_inches(),
-            "right_position (in)": self.get_right_wheel_position().to_inches(),
+            "left_position (in)": self.get_left_distance().to_inches(),
+            "right_position (in)": self.get_right_distance().to_inches(),
             "left_speed (in/s)": self.get_speeds()[0].to_inches_per_second(),
             "right_speed (in/s)": self.get_speeds()[1].to_inches_per_second(),
             "odometry pose (m,rad)": self.odometry.pose

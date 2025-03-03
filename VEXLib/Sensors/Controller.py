@@ -1,6 +1,7 @@
 import vex
 from VEXLib.Math import apply_deadband, cubic_filter
 from VEXLib.Util import time
+from VEXLib.Util.time import wait_until, wait_until_not
 
 
 class DoublePressHandler:
@@ -48,7 +49,8 @@ class Controller(vex.Controller):
     def __init__(self, controller_type=vex.ControllerType.PRIMARY):
         """
         Wrapper for the VEX Controller object.
-        :param controller_type: ControllerType.PRIMARY or ControllerType.PARTNER
+        Args:
+            controller_type: ControllerType.PRIMARY or ControllerType.PARTNER
         """
         self.controller = vex.Controller(controller_type)
 
@@ -66,7 +68,7 @@ class Controller(vex.Controller):
         """
         return self.input_processor.process(axis.position() / 100)
 
-    # ----- Stick (Joystick) Methods -----
+    # ----- Joystick Methods -----
     def left_stick_x(self):
         """
         Get the X-axis value of the left stick (horizontal movement).
@@ -102,3 +104,41 @@ class Controller(vex.Controller):
             "right_stick_x": self.right_stick_x(),
             "right_stick_y": self.right_stick_y(),
         }
+
+    def get_selection(self, options):
+        """
+        Allows the user to navigate through a list of options and select one using left/right and A.
+        The function implements a loop to display and navigate through options on the controller.
+        It reacts to button presses to modify the selection index or make a selection.
+
+        Args:
+            options (list): A list of options from which the user can select.
+
+        Returns:
+            selected (Any): The selected option from the list.
+        """
+        selection_index = 0
+
+        while True:
+            self.screen.clear_screen()
+            self.screen.set_cursor(1, 1)
+            self.screen.print(options[selection_index])
+            wait_until(lambda: self.buttonRight.pressing() or self.buttonLeft.pressing() or self.buttonA.pressing())
+
+            if self.buttonA.pressing():
+                break
+
+            if self.buttonRight.pressing():
+                selection_index += 1
+            elif self.buttonLeft.pressing():
+                selection_index -= 1
+
+            wait_until_not(lambda: self.buttonRight.pressing() or self.buttonLeft.pressing())
+
+            if selection_index < 0:
+                selection_index = 0
+            elif selection_index >= len(options) - 1:
+                selection_index = len(options) - 1
+        wait_until_not(lambda: self.buttonA.pressing())
+
+        return options[selection_index]

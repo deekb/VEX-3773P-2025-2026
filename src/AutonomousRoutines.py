@@ -1,10 +1,10 @@
-import WallStakeMechanismV2 as WallStakeMechanism
-from WallStakeMechanismV2 import WallStakeState
+import WallStakeMechanism as WallStakeMechanism
 from Constants import DrivetrainProperties
 from VEXLib.Algorithms.TrapezoidProfile import TrapezoidProfile, Constraints
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Util import time
+from WallStakeMechanism import WallStakeState
 from vex import PERCENT, DEGREES, Thread
 
 
@@ -348,7 +348,8 @@ def second_win_point_states(robot):
     robot.wall_stake_mechanism.transition_to(WallStakeState.DOCKED)
     time.sleep(0.2)
     robot.scoring_mechanism.set_speed(100)
-    schedule_function(0.3, lambda: robot.scoring_mechanism.intake_until_ring() or robot.scoring_mechanism.set_speed(100) or time.sleep(0.75) or robot.scoring_mechanism.intake_until_ring())
+    schedule_function(0.3, lambda: robot.scoring_mechanism.intake_until_ring() or robot.scoring_mechanism.set_speed(
+        100) or time.sleep(0.75) or robot.scoring_mechanism.intake_until_ring())
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(30), 55)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(50), 55)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-30), 55)
@@ -374,11 +375,12 @@ def second_win_point_states(robot):
 
 def test_autonomous(robot):
     robot.drivetrain.odometry.zero_rotation = Rotation2d.from_degrees(45)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 45+(90*0))
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 45+(90*1))
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 45+(90*2))
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 45+(90*3))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 45 + (90 * 0))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 45 + (90 * 1))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 45 + (90 * 2))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 45 + (90 * 3))
 
 
-available_autos = [new_skills_alliance_stake, win_point_states, second_win_point_states, positive_2_mobile_goal, test_autonomous, negative,
+available_autos = [new_skills_alliance_stake, win_point_states, second_win_point_states, positive_2_mobile_goal,
+                   test_autonomous, negative,
                    skills_alliance_stake, win_point]

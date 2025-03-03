@@ -2,6 +2,7 @@ import math
 
 from VEXLib.Math import is_near_continuous
 import VEXLib.Util.time as time
+from VEXLib.Util.time import wait_until_not
 from vex import VOLT, FORWARD, LedStateType, PERCENT, Rotation, DEGREES, Distance, MM, Brain, Color
 from Constants import ScoringMechanismProperties
 
@@ -42,7 +43,7 @@ class ScoringMechanism:
     def get_ring_color(self):
         if is_near_continuous(238, self.optical_sensor.hue(), 45, 0, 360):
             return "blue"
-        elif is_near_continuous(10, self.optical_sensor.hue(), 10, 0, 360):
+        elif is_near_continuous(10, self.optical_sensor.hue(), 30, 0, 360):
             return "red"
         else:
             return None
@@ -59,8 +60,7 @@ class ScoringMechanism:
 
     def intake_until_no_ring(self):
         self.intake()
-        while self.ring_is_near():
-            time.sleep(0.1)
+        wait_until_not(lambda: self.ring_is_near(), 100)
         time.sleep(0.25)
         self.stop_motor()
         print(self.get_ring_color())
@@ -107,7 +107,7 @@ class ScoringMechanism:
             self.found_ring = False
 
     def calibrate(self):
-        self.spin_upper_intake(20)
+        self.spin_upper_intake(40)
         while self.distance_sensor.object_distance(MM) > ScoringMechanismProperties.HOOK_DISTANCE:
             pass
         self.stop_motor()

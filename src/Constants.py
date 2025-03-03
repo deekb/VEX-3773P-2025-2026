@@ -18,6 +18,7 @@ class DefaultPreferences:
     CUBIC_FILTER_LINEARITY = 1
     MAX_MOTOR_VOLTAGE = 12
     TURN_SPEED = 1
+    MEASURE_DRIVETRAIN_PROPERTIES_ON_STARTUP = False
 
 
 class DirkPreferences(DefaultPreferences):
@@ -87,7 +88,7 @@ class WallStakeMechanismProperties:
     }
     DOCKED_POSITION = Rotation2d.from_degrees(-100)
     DOCKED_TOLERANCE = Rotation2d.from_degrees(2)
-    LOADING_POSITION = Rotation2d.from_degrees(-75)
+    LOADING_POSITION = Rotation2d.from_degrees(-80)
     UPRIGHT_POSITION = Rotation2d.from_degrees(0)
     HIGH_SCORING_POSITION = Rotation2d.from_degrees(60)
     LOW_SCORING_POSITION = Rotation2d.from_degrees(110)
