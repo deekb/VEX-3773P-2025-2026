@@ -96,15 +96,15 @@ class Robot(RobotBase):
 
     def on_setup(self):
         self.wall_stake_mechanism.rotation_sensor.set_position(-100, DEGREES)
-        self.log_and_print("Calibrating inertial sensor...")
-        self.drivetrain.odometry.inertial_sensor.calibrate()
-        self.log_and_print("Calibrating scoring mechanism...")
-
-        self.scoring_mechanism.calibrate()
-
         while self.drivetrain.odometry.inertial_sensor.is_calibrating():
             time.sleep_ms(5)
         self.log_and_print("Calibrated inertial sensor successfully")
+
+        self.log_and_print("Calibrating scoring mechanism...")
+        self.scoring_mechanism.calibrate()
+        self.log_and_print("Calibrating inertial sensor...")
+        self.drivetrain.odometry.inertial_sensor.calibrate()
+
         self.controller.rumble("..")
         self.log_and_print("Selecting autonomous routine...")
         autonomous_routine = self.select_autonomous_routine()
@@ -177,8 +177,15 @@ class Robot(RobotBase):
         #     right_speed -= 0.1
 
         # self.log_and_print("Updating drivetrain voltages - Left:", left_speed, "Right:", right_speed)
-        self.drivetrain.set_powers(left_speed * self.user_preferences.MAX_MOTOR_VOLTAGE,
-                                    right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
+        speeds = self.drivetrain.get_speeds()
+        # self.log_and_print("Drivetrain Speeds - Left:", speeds[0], "Right:", speeds[1])
+
+        if self.user_preferences.USE_PIDF_CONTROL:
+            self.drivetrain.set_speed_zero_to_one(left_speed, right_speed)
+            self.drivetrain.update_powers()
+        else:
+            self.drivetrain.set_powers(left_speed * self.user_preferences.MAX_MOTOR_VOLTAGE,
+                                       right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
 
         self.drivetrain.update_odometry()
 

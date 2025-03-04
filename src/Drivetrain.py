@@ -24,8 +24,8 @@ class Drivetrain:
         self.odometry = TankOdometry(Inertial(SmartPorts.INERTIAL_SENSOR))
         self.ANGLE_DIRECTION = 1
 
-        self.left_drivetrain_PID = PIDFController(5, 0, 0, 5)
-        self.right_drivetrain_PID = PIDFController(5, 0, 0, 5)
+        self.left_drivetrain_PID = PIDFController(5, 0, 0, 7.5)
+        self.right_drivetrain_PID = PIDFController(5, 0, 0, 7.5)
 
         self.left_drivetrain_speed_calculator = RateOfChangeCalculator()
         self.right_drivetrain_speed_calculator = RateOfChangeCalculator()
@@ -33,12 +33,12 @@ class Drivetrain:
         self.left_drivetrain_speed_smoother = MovingWindowAverage(5)
         self.right_drivetrain_speed_smoother = MovingWindowAverage(5)
 
-        self.position_PID = PIDController(15, 0.1, 0.2, 0.05, 10)
-        self.rotation_PID = PIDController(0.85 * 0.9, 0, 0.03, 0.01, 1)
+        self.position_PID = PIDController(2.5, 0, 0, 0.05, 10)
+        self.rotation_PID = PIDController(0.7, 0.05, 0.03, 0.01, 1)
 
         self.trapezoidal_profile = TrapezoidProfile(
-            Constraints(DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_inches_per_second() / 5,
-                        DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_inches_per_second() / 5))
+            Constraints(DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(),
+                        DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second()))
 
         self.target_pose = self.odometry.zero_rotation
 
@@ -54,13 +54,13 @@ class Drivetrain:
         for motor in self.right_motors:
             motor.spin(FORWARD, right_power, VOLT)
 
-    def update_voltages(self):
+    def update_powers(self):
         self.update_drivetrain_velocities()
         current_left_speed, current_right_speed = self.get_speeds()
         left_controller_output = self.left_drivetrain_PID.update(current_left_speed.to_meters_per_second())
         right_controller_output = self.right_drivetrain_PID.update(current_right_speed.to_meters_per_second())
 
-        self.set_powers(left_controller_output / 12, right_controller_output / 12)
+        self.set_powers(left_controller_output, right_controller_output)
 
     def update_drivetrain_velocities(self):
         instantaneous_left_speed = self.left_drivetrain_speed_calculator.calculate_rate(
@@ -90,9 +90,9 @@ class Drivetrain:
             motor_rotation_degrees * DrivetrainProperties.MOTOR_TO_WHEEL_GEAR_RATIO)
         return GeometryUtil.arc_length_from_rotation(DrivetrainProperties.WHEEL_CIRCUMFERENCE, wheel_rotation)
 
-    def set_speed_zero_to_one(self, left_speed_percent, right_speed_percent):
-        self.set_speed(DrivetrainProperties.MAX_ACHIEVABLE_SPEED * left_speed_percent,
-                       DrivetrainProperties.MAX_ACHIEVABLE_SPEED * right_speed_percent)
+    def set_speed_zero_to_one(self, left_speed, right_speed):
+        self.set_speed(DrivetrainProperties.MAX_ACHIEVABLE_SPEED * left_speed,
+                       DrivetrainProperties.MAX_ACHIEVABLE_SPEED * right_speed)
 
     def set_speed(self, left_speed: Velocity1d, right_speed: Velocity1d):
         self.left_drivetrain_PID.setpoint = left_speed.to_meters_per_second()
@@ -106,10 +106,10 @@ class Drivetrain:
         self.update_odometry()
         self.rotation_PID.reset()
         self.rotation_PID.update(self.odometry.get_rotation().to_radians())
-        while not self.rotation_PID.at_setpoint(threshold=Rotation2d.from_degrees(4).to_radians()):
+        while not self.rotation_PID.at_setpoint(threshold=DrivetrainProperties.TURNING_THRESHOLD.to_radians()):
             output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
             self.set_speed_zero_to_one(output, -output)
-            self.update_voltages()
+            self.update_powers()
             self.update_odometry()
         self.set_speed_zero_to_one(0, 0)
         self.set_powers(0, 0)
@@ -120,20 +120,11 @@ class Drivetrain:
         if turn_first:
             self.turn_to_gyro(direction)
 
-        left_start_position = self.get_left_distance().to_inches()
-        right_start_position = self.get_right_distance().to_inches()
+        left_start_position = self.get_left_distance().to_meters()
+        right_start_position = self.get_right_distance().to_meters()
 
-        if ramp_up:
-            initial_state = State(0, 0)
-        else:
-            initial_state = State(0, self.trapezoidal_profile.constraints.max_velocity * MathUtil.sign(
-                distance.to_inches()))
-
-        if ramp_down:
-            goal_state = State(distance.to_inches(), 0)
-        else:
-            goal_state = State(distance.to_inches(),
-                               self.trapezoidal_profile.constraints.max_velocity * MathUtil.sign(distance.to_inches()))
+        initial_state = State(0, 0)
+        goal_state = State(distance.to_meters(), 0)
 
         start_time = ContinuousTimer.time()
 
@@ -146,8 +137,8 @@ class Drivetrain:
             elapsed_time = ContinuousTimer.time() - start_time
             target_distance_traveled = self.trapezoidal_profile.calculate(elapsed_time, initial_state, goal_state)
 
-            left_position = self.get_left_distance().to_inches() - left_start_position
-            right_position = self.get_right_distance().to_inches() - right_start_position
+            left_position = self.get_left_distance().to_meters() - left_start_position
+            right_position = self.get_right_distance().to_meters() - right_start_position
 
             distance_traveled = MathUtil.average(left_position, right_position)
 
@@ -156,8 +147,10 @@ class Drivetrain:
             output_speed = self.position_PID.update(distance_traveled)
 
             rotation_output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
+            print("Rotation Output: " + str(rotation_output))
+
             self.set_speed_zero_to_one(output_speed + rotation_output, output_speed - rotation_output)
-            self.update_voltages()
+            self.update_powers()
             self.update_odometry()
 
         self.set_speed_zero_to_one(0, 0)

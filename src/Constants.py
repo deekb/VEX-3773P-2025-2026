@@ -19,6 +19,7 @@ class DefaultPreferences:
     MAX_MOTOR_VOLTAGE = 12
     TURN_SPEED = 1
     MEASURE_DRIVETRAIN_PROPERTIES_ON_STARTUP = False
+    USE_PIDF_CONTROL = False
 
 
 class DirkPreferences(DefaultPreferences):
@@ -30,6 +31,7 @@ class DirkPreferences(DefaultPreferences):
 class DerekPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
+    USE_PIDF_CONTROL = True
 
 
 class AllisonPreferences(DefaultPreferences):
@@ -71,7 +73,8 @@ class GearRatios:
 
 
 class DrivetrainProperties:
-    MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(2)
+    TURNING_THRESHOLD = Rotation2d.from_degrees(2)
+    MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.6)
     MOTOR_TO_WHEEL_GEAR_RATIO = (36 / 60)
     WHEEL_DIAMETER = Distance.from_inches(3.235)
     WHEEL_CIRCUMFERENCE = circle_circumference(WHEEL_DIAMETER / 2)
