@@ -1,5 +1,6 @@
 from Constants import *
-from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES
+from VEXLib.Math import is_near_continuous, distance_continuous
+from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color
 
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
@@ -69,7 +70,6 @@ class Robot(RobotBase):
         print(message)
 
     def on_autonomous(self):
-        self.drivetrain.reset()
         self.log_and_print("Executing chosen autonomous routine:", str(self.autonomous))
         self.autonomous(self)
 
@@ -96,16 +96,43 @@ class Robot(RobotBase):
 
     def on_setup(self):
         self.wall_stake_mechanism.rotation_sensor.set_position(-100, DEGREES)
+
+        # self.log_and_print("Calibrating scoring mechanism...")
+        # self.scoring_mechanism.calibrate()
+        self.log_and_print("Calibrating inertial sensor...")
+        self.drivetrain.odometry.inertial_sensor.calibrate()
         while self.drivetrain.odometry.inertial_sensor.is_calibrating():
             time.sleep_ms(5)
         self.log_and_print("Calibrated inertial sensor successfully")
 
-        self.log_and_print("Calibrating scoring mechanism...")
-        self.scoring_mechanism.calibrate()
-        self.log_and_print("Calibrating inertial sensor...")
-        self.drivetrain.odometry.inertial_sensor.calibrate()
-
         self.controller.rumble("..")
+        self.log_and_print("Please line up robot...")
+        rotation = self.drivetrain.odometry.get_rotation()
+
+        while not self.controller.buttonA.pressing():
+            self.screen.clear_screen()
+            if is_near_continuous(0, rotation.to_degrees(), 1, 0, 360):
+                brightness = 1 - distance_continuous(0, rotation.to_degrees(), 0, 360)
+                self.brain.screen.set_fill_color(Color().hsv(0, 1, brightness))
+            elif is_near_continuous(130, rotation.to_degrees(), 1, 0, 360):
+                brightness = 1 - distance_continuous(130, rotation.to_degrees(), 0, 360)
+                self.brain.screen.set_fill_color(Color().hsv(90, 1, brightness))
+            elif is_near_continuous(90, rotation.to_degrees(), 1, 0, 360):
+                brightness = 1 - distance_continuous(90, rotation.to_degrees(), 0, 360)
+                self.brain.screen.set_fill_color(Color().hsv(180, 1, brightness))
+            else:
+                self.brain.screen.set_fill_color(Color.BLACK)
+                self.brain.screen.set_pen_color(Color.BLACK)
+
+            self.brain.screen.draw_rectangle(0, 0, 480, 240)
+            self.drivetrain.update_odometry()
+            rotation = self.drivetrain.odometry.get_rotation()
+
+        self.drivetrain.update_odometry()
+        rotation = self.drivetrain.odometry.get_rotation()
+        self.log_and_print(rotation.to_degrees())
+        self.log_and_print("Lined up")
+
         self.log_and_print("Selecting autonomous routine...")
         autonomous_routine = self.select_autonomous_routine()
         self.log_and_print("Selected autonomous routine:", autonomous_routine)
@@ -129,7 +156,6 @@ class Robot(RobotBase):
         self.log_and_print("Setup complete")
 
     def on_driver_control(self):
-        self.drivetrain.reset()
         while True:
             self.driver_control_periodic()
             time.sleep_ms(20)

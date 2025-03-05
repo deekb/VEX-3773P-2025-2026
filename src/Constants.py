@@ -73,6 +73,7 @@ class GearRatios:
 
 
 class DrivetrainProperties:
+    TURN_TIMEOUT_SECONDS = 1
     TURNING_THRESHOLD = Rotation2d.from_degrees(2)
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.6)
     MOTOR_TO_WHEEL_GEAR_RATIO = (36 / 60)

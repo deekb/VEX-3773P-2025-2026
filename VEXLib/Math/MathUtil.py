@@ -277,6 +277,33 @@ def is_near_continuous(expected, actual, tolerance, minimum, maximum):
     return abs(error) < tolerance
 
 
+def distance_continuous(expected, actual, minimum, maximum):
+    """
+    Checks if the given value matches an expected value within a certain tolerance. Supports
+    continuous input for cases like absolute encoders.
+
+    Continuous input means that the min and max value are considered to be the same point, and
+    tolerances can be checked across them. A common example would be for absolute encoders: calling
+    is_near_continuous(2, 359, 5, 0, 360) returns true because 359 is 1 away from 360 (which is treated as the
+    same as 0) and 2 is 2 away from 0, adding up to an error of 3 degrees, which is within the
+    given tolerance of 5.
+
+    Args:
+        expected (float): The expected value.
+        actual (float): The actual value.
+        minimum (float): Smallest value before wrapping around to the largest value.
+        maximum (float): Largest value before wrapping around to the smallest value.
+
+    Returns:
+        float: The smallest distance between the actual and the expected.
+    """
+
+    # Max error is exactly halfway between the min and max
+    error_bound = (maximum - minimum) / 2.0
+    error = input_modulus(expected - actual, -error_bound, error_bound)
+    return abs(error)
+
+
 def cubic_filter(value, linearity=0) -> float:
     """
     Apply a cubic filter to a value with a given linearity

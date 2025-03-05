@@ -119,6 +119,8 @@ class Controller(vex.Controller):
         """
         selection_index = 0
 
+        wait_until_not(lambda: self.buttonA.pressing())
+
         while True:
             self.screen.clear_screen()
             self.screen.set_cursor(1, 1)

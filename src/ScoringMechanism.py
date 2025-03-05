@@ -41,9 +41,9 @@ class ScoringMechanism:
         self.set_speed(-100)
 
     def get_ring_color(self):
-        if is_near_continuous(238, self.optical_sensor.hue(), 45, 0, 360):
+        if is_near_continuous(220, self.optical_sensor.hue(), 20, 0, 360):
             return "blue"
-        elif is_near_continuous(10, self.optical_sensor.hue(), 30, 0, 360):
+        elif is_near_continuous(13, self.optical_sensor.hue(), 20, 0, 360):
             return "red"
         else:
             return None

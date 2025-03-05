@@ -1,3 +1,5 @@
+import time
+
 from VEXLib.Geometry.Translation1d import Translation1d
 from vex import FORWARD, VOLT, Inertial, DEGREES, Motor
 from Constants import SmartPorts, DrivetrainProperties
@@ -34,7 +36,7 @@ class Drivetrain:
         self.right_drivetrain_speed_smoother = MovingWindowAverage(5)
 
         self.position_PID = PIDController(2.5, 0, 0, 0.05, 10)
-        self.rotation_PID = PIDController(0.9, 0.05, 0.03, 0.01, 1)
+        self.rotation_PID = PIDController(0.9, 0, 0.03, 0.01, 1)
 
         self.trapezoidal_profile = TrapezoidProfile(
             Constraints(DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(),
@@ -106,7 +108,8 @@ class Drivetrain:
         self.update_odometry()
         self.rotation_PID.reset()
         self.rotation_PID.update(self.odometry.get_rotation().to_radians())
-        while not self.rotation_PID.at_setpoint(threshold=DrivetrainProperties.TURNING_THRESHOLD.to_radians()):
+        start_time = time.time()
+        while (not self.rotation_PID.at_setpoint(threshold=DrivetrainProperties.TURNING_THRESHOLD.to_radians())) and (time.time() - start_time < DrivetrainProperties.TURN_TIMEOUT_SECONDS):
             output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
             self.set_speed_zero_to_one(output, -output)
             self.update_powers()
