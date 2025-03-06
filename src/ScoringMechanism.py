@@ -56,7 +56,6 @@ class ScoringMechanism:
         while not self.ring_is_near():
             pass
         self.stop_motor()
-        print(self.get_ring_color())
 
     def intake_until_no_ring(self):
         self.intake()
@@ -70,49 +69,55 @@ class ScoringMechanism:
         self.eject_ring_at_position = math.ceil(self.get_position())
 
     def sort_ring(self, alliance_color):
-        # if self.ejecting_ring:
-        #     if self.get_position() > self.eject_ring_at_position:
-        #         self.outtake()
-        #         time.sleep(0.1)
-        #         self.stop_motor()
-        #         self.ejecting_ring = False
-        #     return
-        #
-        # if self.ring_is_near():
-        #     if self.found_ring:
-        #         return
-        #
-        #     ring_color = self.get_ring_color()
-        #     if not ring_color:
-        #         self.screen.clear_screen()
-        #         self.screen.set_fill_color(Color.BLACK)
-        #         self.screen.set_pen_color(Color.BLACK)
-        #         return
-        #     if ring_color == "red":
-        #         self.screen.clear_screen()
-        #         self.screen.set_fill_color(Color.RED)
-        #         self.screen.set_pen_color(Color.RED)
-        #     elif ring_color == "blue":
-        #         self.screen.clear_screen()
-        #         self.screen.set_fill_color(Color.BLUE)
-        #         self.screen.set_pen_color(Color.BLUE)
-        #
-        #     self.screen.draw_rectangle(0, 0, 480, 240)
-        #
-        #     self.found_ring = True
-        #     if ring_color != alliance_color:
-        #         self.eject_ring()
-        #     print(self.get_ring_color())
-        # else:
-        #     self.found_ring = False
-        ...
+        if self.ejecting_ring:
+            if self.get_position() > self.eject_ring_at_position:
+                self.outtake()
+                time.sleep(0.1)
+                self.stop_motor()
+                time.sleep(0.25)
+                self.intake()
+                self.ejecting_ring = False
+            return
+
+        if self.ring_is_near():
+            if self.found_ring:
+                return
+
+            ring_color = self.get_ring_color()
+            if not ring_color:
+                self.screen.clear_screen()
+                self.screen.set_fill_color(Color.BLACK)
+                self.screen.set_pen_color(Color.BLACK)
+                return
+            if ring_color == "red":
+                self.screen.clear_screen()
+                self.screen.set_fill_color(Color.RED)
+                self.screen.set_pen_color(Color.RED)
+            elif ring_color == "blue":
+                self.screen.clear_screen()
+                self.screen.set_fill_color(Color.BLUE)
+                self.screen.set_pen_color(Color.BLUE)
+
+            self.screen.draw_rectangle(0, 0, 480, 240)
+
+            self.found_ring = True
+            if ring_color != alliance_color:
+                self.eject_ring()
+            print(self.get_ring_color())
+        else:
+            self.found_ring = False
 
     def calibrate(self):
         self.spin_upper_intake(40)
         while self.distance_sensor.object_distance(MM) > ScoringMechanismProperties.HOOK_DISTANCE:
             pass
-        self.stop_motor()
+        self.spin_upper_intake(-20)
+        time.sleep(0.25)
+        self.spin_upper_intake(20)
+        while self.distance_sensor.object_distance(MM) > ScoringMechanismProperties.HOOK_DISTANCE:
+            pass
         self.rotation_sensor.set_position(ScoringMechanismProperties.CALIBRATION_OFFSET, DEGREES)
+        self.stop_motor()
         # self.eject_ring()
         # self.spin_upper_intake(100)
 
@@ -121,3 +126,7 @@ class ScoringMechanism:
 
     def tick(self, alliance_color):
         self.sort_ring(alliance_color)
+
+    def loop(self, alliance_color):
+        while True:
+            self.tick(alliance_color)

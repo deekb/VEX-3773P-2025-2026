@@ -18,20 +18,24 @@ class DefaultPreferences:
     CUBIC_FILTER_LINEARITY = 1
     MAX_MOTOR_VOLTAGE = 12
     TURN_SPEED = 1
+    COLOR_SORT = False
     MEASURE_DRIVETRAIN_PROPERTIES_ON_STARTUP = False
     USE_PIDF_CONTROL = False
+    ENABLE_DRIVING = True
 
 
 class DirkPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
     TURN_SPEED = 0.7
+    COLOR_SORT = True
 
 
 class DerekPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
     USE_PIDF_CONTROL = True
+    ENABLE_DRIVING = False
 
 
 class AllisonPreferences(DefaultPreferences):
@@ -73,7 +77,7 @@ class GearRatios:
 
 
 class DrivetrainProperties:
-    TURN_TIMEOUT_SECONDS = 1
+    TURN_TIMEOUT_SECONDS = 2
     TURNING_THRESHOLD = Rotation2d.from_degrees(2)
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.6)
     MOTOR_TO_WHEEL_GEAR_RATIO = (36 / 60)
@@ -99,7 +103,9 @@ class WallStakeMechanismProperties:
 
 
 class ScoringMechanismProperties:
-    CALIBRATION_OFFSET = 255.6
+    CALIBRATION_OFFSET = 325
+
     HALF_ROTATION_DISTANCE = 1080
+
     HOOK_DISTANCE = 100
-    RING_DISTANCE = 30
+    RING_DISTANCE = 50

@@ -1,6 +1,7 @@
 import time
 
 from VEXLib.Geometry.Translation1d import Translation1d
+from VEXLib.Units import Units
 from vex import FORWARD, VOLT, Inertial, DEGREES, Motor
 from Constants import SmartPorts, DrivetrainProperties
 from Odometry import TankOdometry
@@ -19,9 +20,11 @@ import VEXLib.Math.MathUtil as MathUtil
 
 
 class Drivetrain:
-    def __init__(self, left_motors: list[Motor], right_motors: list[Motor]):
+    def __init__(self, left_motors: list[Motor], right_motors: list[Motor], log_function=print):
         self.left_motors = left_motors
         self.right_motors = right_motors
+
+        self.log_function = log_function
 
         self.odometry = TankOdometry(Inertial(SmartPorts.INERTIAL_SENSOR))
         self.ANGLE_DIRECTION = 1
@@ -35,12 +38,14 @@ class Drivetrain:
         self.left_drivetrain_speed_smoother = MovingWindowAverage(5)
         self.right_drivetrain_speed_smoother = MovingWindowAverage(5)
 
-        self.position_PID = PIDController(2.5, 0, 0, 0.05, 10)
-        self.rotation_PID = PIDController(0.9, 0, 0.03, 0.01, 1)
+        self.position_PID = PIDController(5, 0.1, 0, 0.02, 10)
+        self.rotation_PID = PIDController(0.9, 0.0, 0.04, 0.02, 10)
 
         self.trapezoidal_profile = TrapezoidProfile(
             Constraints(DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(),
                         DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second()))
+
+        self.TURNING_THRESHOLD = DrivetrainProperties.TURNING_THRESHOLD
 
         self.target_pose = self.odometry.zero_rotation
 
@@ -109,8 +114,8 @@ class Drivetrain:
         self.rotation_PID.reset()
         self.rotation_PID.update(self.odometry.get_rotation().to_radians())
         start_time = time.time()
-        while (not self.rotation_PID.at_setpoint(threshold=DrivetrainProperties.TURNING_THRESHOLD.to_radians())) and (time.time() - start_time < DrivetrainProperties.TURN_TIMEOUT_SECONDS):
-            output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
+        while (not self.rotation_PID.at_setpoint(threshold=self.TURNING_THRESHOLD.to_radians())) and (time.time() - start_time < DrivetrainProperties.TURN_TIMEOUT_SECONDS):
+            output = MathUtil.clamp(-self.rotation_PID.update(self.odometry.get_rotation().to_radians()), -0.6, 0.6)
             self.set_speed_zero_to_one(output, -output)
             self.update_powers()
             self.update_odometry()
@@ -119,7 +124,7 @@ class Drivetrain:
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
 
-    def move_distance_towards_direction_trap(self, distance, direction, ramp_up=True, ramp_down=True, turn_first=True):
+    def move_distance_towards_direction_trap(self, distance, direction, turn_first=True, turn_correct=True):
         if turn_first:
             self.turn_to_gyro(direction)
 
@@ -149,12 +154,22 @@ class Drivetrain:
 
             output_speed = self.position_PID.update(distance_traveled)
 
-            rotation_output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
-            print("Rotation Output: " + str(rotation_output))
+            if turn_correct:
+                rotation_output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
+                self.log_function("Rotation error (deg): " + str(
+                    Units.radians_to_degrees((self.odometry.get_rotation().to_radians() - self.rotation_PID.setpoint))))
+            else:
+                rotation_output = 0
+                self.log_function("Turn correction is off")
 
             self.set_speed_zero_to_one(output_speed + rotation_output, output_speed - rotation_output)
             self.update_powers()
             self.update_odometry()
+
+        self.log_function("Distance Traveled: " + str(distance_traveled))
+        self.log_function("Target Distance: " + str(distance))
+        self.log_function("Remaining Distance: " + str(distance.to_meters() - distance_traveled))
+        self.log_function("Last Target: " + str(target_distance_traveled))
 
         self.set_speed_zero_to_one(0, 0)
         self.set_powers(0, 0)
@@ -189,7 +204,7 @@ class Drivetrain:
     #     self.move_distance_towards_direction_trap(distance, angle)
 
     def update_zero_pose(self, new_zero_pose):
-        self.odometry.zero_rotation = new_zero_pose
+        self.odometry.zero_pose = new_zero_pose
 
     def reset(self):
         self.left_drivetrain_PID.reset()

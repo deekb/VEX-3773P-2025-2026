@@ -1,6 +1,6 @@
 from Constants import *
 from VEXLib.Math import is_near_continuous, distance_continuous
-from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color
+from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, Thread
 
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
@@ -28,7 +28,7 @@ class Robot(RobotBase):
 
                                      [Motor(SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
                                       Motor(SmartPorts.REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
-                                      Motor(SmartPorts.REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)])
+                                      Motor(SmartPorts.REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)], self.log_and_print)
 
         self.screen = ScrollBufferedScreen()
 
@@ -57,6 +57,7 @@ class Robot(RobotBase):
         self.autonomous_mappings = {str(function)[10:]: function for function in AutonomousRoutines.available_autos}
         self.autonomous = pass_function
         self.competition = Competition(self.on_driver_control, self.on_autonomous)
+        self.color_sort_tick_thread = None
 
     def log_and_print(self, *parts):
         message = " ".join(map(str, parts))
@@ -71,6 +72,7 @@ class Robot(RobotBase):
 
     def on_autonomous(self):
         self.log_and_print("Executing chosen autonomous routine:", str(self.autonomous))
+        self.color_sort_tick_thread = Thread(self.scoring_mechanism.loop, (self.alliance_color,))
         self.autonomous(self)
 
     def select_autonomous_routine(self):
@@ -97,8 +99,8 @@ class Robot(RobotBase):
     def on_setup(self):
         self.wall_stake_mechanism.rotation_sensor.set_position(-100, DEGREES)
 
-        # self.log_and_print("Calibrating scoring mechanism...")
-        # self.scoring_mechanism.calibrate()
+        self.log_and_print("Calibrating scoring mechanism...")
+        self.scoring_mechanism.calibrate()
         self.log_and_print("Calibrating inertial sensor...")
         self.drivetrain.odometry.inertial_sensor.calibrate()
         while self.drivetrain.odometry.inertial_sensor.is_calibrating():
@@ -117,8 +119,14 @@ class Robot(RobotBase):
             elif is_near_continuous(130, rotation.to_degrees(), 1, 0, 360):
                 brightness = 1 - distance_continuous(130, rotation.to_degrees(), 0, 360)
                 self.brain.screen.set_fill_color(Color().hsv(90, 1, brightness))
+            elif is_near_continuous(-130, rotation.to_degrees(), 1, 0, 360):
+                brightness = 1 - distance_continuous(-130, rotation.to_degrees(), 0, 360)
+                self.brain.screen.set_fill_color(Color().hsv(90, 1, brightness))
             elif is_near_continuous(90, rotation.to_degrees(), 1, 0, 360):
                 brightness = 1 - distance_continuous(90, rotation.to_degrees(), 0, 360)
+                self.brain.screen.set_fill_color(Color().hsv(180, 1, brightness))
+            elif is_near_continuous(-90, rotation.to_degrees(), 1, 0, 360):
+                brightness = 1 - distance_continuous(-90, rotation.to_degrees(), 0, 360)
                 self.brain.screen.set_fill_color(Color().hsv(180, 1, brightness))
             else:
                 self.brain.screen.set_fill_color(Color.BLACK)
@@ -156,6 +164,8 @@ class Robot(RobotBase):
         self.log_and_print("Setup complete")
 
     def on_driver_control(self):
+        if self.color_sort_tick_thread:
+            self.color_sort_tick_thread.stop()
         while True:
             self.driver_control_periodic()
             time.sleep_ms(20)
@@ -206,36 +216,35 @@ class Robot(RobotBase):
         speeds = self.drivetrain.get_speeds()
         # self.log_and_print("Drivetrain Speeds - Left:", speeds[0], "Right:", speeds[1])
 
-        if self.user_preferences.USE_PIDF_CONTROL:
-            self.drivetrain.set_speed_zero_to_one(left_speed, right_speed)
-            self.drivetrain.update_powers()
-        else:
-            self.drivetrain.set_powers(left_speed * self.user_preferences.MAX_MOTOR_VOLTAGE,
-                                       right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
+        if self.user_preferences.ENABLE_DRIVING:
+            if self.user_preferences.USE_PIDF_CONTROL:
+                self.drivetrain.set_speed_zero_to_one(left_speed, right_speed)
+                self.drivetrain.update_powers()
+            else:
+                self.drivetrain.set_powers(left_speed * self.user_preferences.MAX_MOTOR_VOLTAGE,
+                                           right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
 
         self.drivetrain.update_odometry()
 
         # if self.controller.buttonX.pressing():
         #     self.on_autonomous()
-        self.scoring_mechanism.tick(self.alliance_color)
+        if self.user_preferences.COLOR_SORT and (not self.controller.buttonRight.pressing()):
+            self.scoring_mechanism.tick(self.alliance_color)
 
     def setup_dirk_preferences(self):
         """Setup controller buttons for DirkPreferences."""
         self.log_and_print("Setting up Dirk Preferences")
-        self.controller.buttonB.pressed(
-            lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
-        self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
+        self.controller.buttonB.pressed(lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
+        self.controller.buttonL2.pressed(lambda: self.log_and_print("Outtake") or self.scoring_mechanism.outtake())
         self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
-        self.controller.buttonR2.pressed(self.scoring_mechanism.intake)
+        self.controller.buttonR2.pressed(lambda: self.log_and_print("Intake") or self.scoring_mechanism.intake())
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
 
         self.controller.buttonL1.pressed(self.double_press_handler.press)
 
-        self.controller.buttonR2.released(
-            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
+        self.controller.buttonR2.released(lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
 
         self.controller.buttonY.pressed(self.corner_mechanism.toggle_corner_mechanism)
-        self.controller.buttonRight.pressed(self.scoring_mechanism.intake_until_ring)
 
     def setup_derek_preferences(self):
         """Setup controller buttons for DerekPreferences."""
