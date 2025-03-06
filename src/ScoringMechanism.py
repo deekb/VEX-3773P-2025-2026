@@ -122,7 +122,7 @@ class ScoringMechanism:
         # self.spin_upper_intake(100)
 
     def get_position(self):
-        return self.rotation_sensor.position(DEGREES) / ScoringMechanismProperties.HALF_ROTATION_DISTANCE
+        return self.rotation_sensor.position(DEGREES) / ScoringMechanismProperties.AVERAGE_HALF_ROTATION
 
     def tick(self, alliance_color):
         self.sort_ring(alliance_color)
