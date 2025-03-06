@@ -155,21 +155,20 @@ class Drivetrain:
             output_speed = self.position_PID.update(distance_traveled)
 
             if turn_correct:
-                rotation_output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
-                self.log_function("Rotation error (deg): " + str(
-                    Units.radians_to_degrees((self.odometry.get_rotation().to_radians() - self.rotation_PID.setpoint))))
+                rotation_output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians()) * 0.9
+                # self.log_function("Rotation error (deg): " + str(
+                #     Units.radians_to_degrees((self.odometry.get_rotation().to_radians() - self.rotation_PID.setpoint))))
             else:
                 rotation_output = 0
-                self.log_function("Turn correction is off")
+                # self.log_function("Turn correction is off")
 
             self.set_speed_zero_to_one(output_speed + rotation_output, output_speed - rotation_output)
             self.update_powers()
             self.update_odometry()
 
-        self.log_function("Distance Traveled: " + str(distance_traveled))
         self.log_function("Target Distance: " + str(distance))
+        self.log_function("Distance Traveled: " + str(distance_traveled))
         self.log_function("Remaining Distance: " + str(distance.to_meters() - distance_traveled))
-        self.log_function("Last Target: " + str(target_distance_traveled))
 
         self.set_speed_zero_to_one(0, 0)
         self.set_powers(0, 0)
