@@ -221,11 +221,12 @@ def new_skills_alliance_stake(robot):
     robot.scoring_mechanism.stop_motor()
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 2))
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(75), -135)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(240), -75)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(240), -70)
     robot.scoring_mechanism.spin_lower_intake(-100)
-    robot.wall_stake_mechanism.transition_to(WallStakeState.LOW_SCORING)
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.7, 5))
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-80), -35)
+    schedule_function(1, lambda: robot.wall_stake_mechanism.transition_to(WallStakeState.LOW_SCORING))
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 5))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-4000000), -35)
+
 
 
 def win_point(robot):
