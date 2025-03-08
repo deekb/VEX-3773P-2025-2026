@@ -108,18 +108,21 @@ class ScoringMechanism:
             self.found_ring = False
 
     def calibrate(self):
-        self.spin_upper_intake(40)
         while self.distance_sensor.object_distance(MM) > ScoringMechanismProperties.HOOK_DISTANCE:
-            pass
+            self.spin_upper_intake(40)
         self.spin_upper_intake(-20)
         time.sleep(0.25)
-        self.spin_upper_intake(20)
         while self.distance_sensor.object_distance(MM) > ScoringMechanismProperties.HOOK_DISTANCE:
-            pass
+            self.spin_upper_intake(20)
         self.rotation_sensor.set_position(ScoringMechanismProperties.CALIBRATION_OFFSET, DEGREES)
         self.stop_motor()
-        # self.eject_ring()
-        # self.spin_upper_intake(100)
+        target_end_position = math.ceil(self.get_position()) - 0.3
+        while self.get_position() < target_end_position:
+            self.spin_upper_intake(100)
+        self.spin_upper_intake(-40)
+        time.sleep(0.05)
+        self.spin_upper_intake(0)
+
 
     def get_position(self):
         return self.rotation_sensor.position(DEGREES) / ScoringMechanismProperties.AVERAGE_HALF_ROTATION

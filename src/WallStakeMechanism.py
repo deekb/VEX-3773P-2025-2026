@@ -35,7 +35,7 @@ class WallStakeMechanism:
         self.PID_TUNINGS = WallStakeMechanismProperties.PID_TUNINGS
         self.FEEDFORWARD_TUNINGS = WallStakeMechanismProperties.FEEDFORWARD_TUNINGS
         self.DOCKED_POSITION = WallStakeMechanismProperties.DOCKED_POSITION
-        self.DOCKED_TOLERANCE = WallStakeMechanismProperties.DOCKED_TOLERANCE
+        self.POSITIONAL_TOLERANCE = WallStakeMechanismProperties.POSITIONAL_TOLERANCE
         self.LOADING_POSITION = WallStakeMechanismProperties.LOADING_POSITION
         self.HIGH_SCORING_POSITION = WallStakeMechanismProperties.HIGH_SCORING_POSITION
         self.LOW_SCORING_POSITION = WallStakeMechanismProperties.LOW_SCORING_POSITION
@@ -54,7 +54,7 @@ class WallStakeMechanism:
         feedforward_output = self.gravitational_feedforward.update(current_rotation.to_degrees())
         pid_output = self.pid.update(current_rotation.normalize().to_revolutions())
 
-        if self.state == WallStakeState.DOCKED and MathUtil.is_near(self.DOCKED_POSITION.to_revolutions(), current_rotation.to_revolutions(), self.DOCKED_TOLERANCE.to_revolutions()):
+        if self.state == WallStakeState.DOCKED and self.at_setpoint():
             self.motor.spin(FORWARD, 0, VOLT)
             return
 
@@ -97,3 +97,6 @@ class WallStakeMechanism:
     def loop(self):
         while True:
             self.tick()
+
+    def at_setpoint(self):
+        return self.pid.at_setpoint(self.POSITIONAL_TOLERANCE.to_revolutions())

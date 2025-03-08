@@ -5,6 +5,7 @@ from VEXLib.Geometry.Velocity1d import Velocity1d
 from vex import Ports, GearSetting, Brain
 
 MAIN_LOG_FILENAME = "main"
+DEBUG_LOG_FILENAME = "debug"
 
 
 class ControlStyles:
@@ -95,7 +96,7 @@ class WallStakeMechanismProperties:
         "kg": 0.9
     }
     DOCKED_POSITION = Rotation2d.from_degrees(-100)
-    DOCKED_TOLERANCE = Rotation2d.from_degrees(2)
+    POSITIONAL_TOLERANCE = Rotation2d.from_degrees(2)
     LOADING_POSITION = Rotation2d.from_degrees(-80)
     UPRIGHT_POSITION = Rotation2d.from_degrees(0)
     HIGH_SCORING_POSITION = Rotation2d.from_degrees(60)

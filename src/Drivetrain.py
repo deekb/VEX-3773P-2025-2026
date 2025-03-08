@@ -115,7 +115,7 @@ class Drivetrain:
         self.rotation_PID.update(self.odometry.get_rotation().to_radians())
         start_time = time.time()
         while (not self.rotation_PID.at_setpoint(threshold=self.TURNING_THRESHOLD.to_radians())) and (time.time() - start_time < DrivetrainProperties.TURN_TIMEOUT_SECONDS):
-            output = MathUtil.clamp(-self.rotation_PID.update(self.odometry.get_rotation().to_radians()), -0.6, 0.6)
+            output = MathUtil.clamp(-self.rotation_PID.update(self.odometry.get_rotation().to_radians()), -0.7, 0.7)
             self.set_speed_zero_to_one(output, -output)
             self.update_powers()
             self.update_odometry()

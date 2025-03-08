@@ -1,7 +1,6 @@
 from Constants import *
-from VEXLib.Math import is_near_continuous, distance_continuous
-from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, Thread
-
+from VEXLib import Util
+from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, Thread, FontType
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
 from CornerMechanism import CornerMechanism
@@ -14,133 +13,220 @@ from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Sensors.Controller import DoublePressHandler, Controller
 from VEXLib.Util import time, pass_function
-from VEXLib.Util.Logging import Logger
+from VEXLib.Util.Logging import Logger, logged
 from WallStakeMechanism import WallStakeMechanism, WallStakeState
+
+main_log = Logger(Brain().sdcard, Brain().screen, MAIN_LOG_FILENAME)
+debug_log = Logger(Brain().sdcard, Brain().screen, DEBUG_LOG_FILENAME)
 
 
 class Robot(RobotBase):
     def __init__(self, brain):
         super().__init__(brain)
+        self.brain.screen.set_font(FontType.MONO12)
+
         self.controller = Controller(PRIMARY)
-        self.drivetrain = Drivetrain([Motor(SmartPorts.FRONT_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
-                                      Motor(SmartPorts.REAR_LOWER_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
-                                      Motor(SmartPorts.REAR_UPPER_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)],
+        self.drivetrain = Drivetrain(
+            [Motor(SmartPorts.FRONT_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
+             Motor(SmartPorts.REAR_LOWER_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True),
+             Motor(SmartPorts.REAR_UPPER_LEFT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False)],
+            [Motor(SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
+             Motor(SmartPorts.REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
+             Motor(SmartPorts.REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)],
+            self.log_and_print)
 
-                                     [Motor(SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
-                                      Motor(SmartPorts.REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
-                                      Motor(SmartPorts.REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)], self.log_and_print)
-
-        self.screen = ScrollBufferedScreen()
-
-        self.main_log = Logger(self.brain.sdcard, MAIN_LOG_FILENAME)
-
+        self.screen = ScrollBufferedScreen(max_lines=20)
+        self.main_log = main_log
+        self.debug_log = debug_log
         self.alliance_color = None
 
         self.mobile_goal_clamp = MobileGoalClamp(ThreeWirePorts.MOBILE_GOAL_CLAMP_PISTON)
-
         self.corner_mechanism = CornerMechanism(DigitalOut(ThreeWirePorts.DOINKER_PISTON))
 
-        self.scoring_mechanism = ScoringMechanism(Motor(Ports.PORT1, GearSetting.RATIO_18_1, False),
-                                                  Motor(Ports.PORT4, GearSetting.RATIO_18_1, True),
-                                                  Rotation(Ports.PORT18),
-                                                  Optical(Ports.PORT10),
-                                                  Distance(Ports.PORT5),
-                                                  self.brain.screen)
+        self.scoring_mechanism = ScoringMechanism(
+            Motor(Ports.PORT1, GearSetting.RATIO_18_1, False),
+            Motor(Ports.PORT4, GearSetting.RATIO_18_1, True),
+            Rotation(Ports.PORT18),
+            Optical(Ports.PORT10),
+            Distance(Ports.PORT5),
+            self.brain.screen)
 
-        self.wall_stake_mechanism = WallStakeMechanism(Motor(Ports.PORT8, GearSetting.RATIO_18_1, False),
-                                                       Rotation(Ports.PORT21))
+        self.wall_stake_mechanism = WallStakeMechanism(
+            Motor(Ports.PORT8, GearSetting.RATIO_18_1, False),
+            Rotation(Ports.PORT21))
 
-        self.double_press_handler = DoublePressHandler(self.wall_stake_mechanism.previous_state,
-                                                       lambda: self.wall_stake_mechanism.transition_to(WallStakeState.DOCKED))
+        self.double_press_handler = DoublePressHandler(
+            self.wall_stake_mechanism.previous_state,
+            lambda: self.wall_stake_mechanism.transition_to(WallStakeState.DOCKED))
 
         self.user_preferences = DefaultPreferences
-        self.autonomous_mappings = {str(function)[10:]: function for function in AutonomousRoutines.available_autos}
+        self.autonomous_mappings = {str(function)[10:-14]: function for function in AutonomousRoutines.available_autos}
         self.autonomous = pass_function
         self.competition = Competition(self.on_driver_control, self.on_autonomous)
         self.color_sort_tick_thread = None
 
     def log_and_print(self, *parts):
+        self.brain.screen.set_font(FontType.MONO15)
         message = " ".join(map(str, parts))
         self.screen.add_line(message)
-        self.brain.screen.set_cursor(1, 1)
-        self.brain.screen.clear_screen()
-        for line in self.screen.get_screen_content():
+
+        for row, line in Util.enumerate(self.screen.get_screen_content()):
+            self.brain.screen.set_cursor(row, 1)
+            self.brain.screen.clear_row(row)
             self.brain.screen.print(line)
-            self.brain.screen.next_row()
+
         self.main_log.log(message)
         print(message)
 
     def on_autonomous(self):
-        self.log_and_print("Executing chosen autonomous routine:", str(self.autonomous))
+        self.main_log.debug("Executing chosen autonomous routine:", str(self.autonomous))
+        self.main_log.debug("Starting color_sort_tick_thread")
         self.color_sort_tick_thread = Thread(self.scoring_mechanism.loop, (self.alliance_color,))
+        self.main_log.debug("Started color_sort_tick_thread")
         self.autonomous(self)
 
     def select_autonomous_routine(self):
-        self.log_and_print("Starting autonomous routine selection")
+        self.main_log.debug("Starting autonomous routine selection")
+        self.main_log.trace("Available autonomous routines:", self.autonomous_mappings)
         autonomous_type = self.controller.get_selection(["red", "blue", "skills_alliance_stake"])
+        self.main_log.debug("Autonomous type:", autonomous_type)
         self.alliance_color = {"red": "red", "blue": "blue", "skills_alliance_stake": "red"}[autonomous_type]
 
-        if autonomous_type == "skills_alliance_stake":
+        if "skills" in autonomous_type:
             self.drivetrain.set_angles_inverted(False)
+            self.main_log.trace("set_angles_inverted: False")
             self.autonomous = AutonomousRoutines.skills_alliance_stake
-            self.log_and_print("Skills routine chosen:", autonomous_type)
+            self.main_log.debug("Skills routine chosen:", autonomous_type)
             return autonomous_type
 
         auto = self.controller.get_selection(sorted(list(self.autonomous_mappings.keys())))
-
-        self.drivetrain.set_angles_inverted(autonomous_type == "blue")
+        angles_inverted = autonomous_type == "blue"
+        self.drivetrain.set_angles_inverted(angles_inverted)
+        self.main_log.trace("set_angles_inverted:", angles_inverted)
         self.autonomous = self.autonomous_mappings[auto]
-
+        self.main_log.trace("Selected autonomous routine:", angles_inverted)
         return autonomous_type + " " + auto
 
     def start(self):
         self.on_setup()
 
+    @main_log.logged
     def on_setup(self):
-        self.wall_stake_mechanism.rotation_sensor.set_position(-100, DEGREES)
+        # Break down the setup process into dedicated steps.
+        self.calibrate_sensors()
+        self.align_robot()
+        self.select_autonomous_and_drive_style()
+        self.main_log.info("Setup complete")
 
-        self.log_and_print("Calibrating scoring mechanism...")
+    @debug_log.logged
+    def calibrate_sensors(self):
+        self.main_log.info("Calibrating sensors")
+        # Set initial sensor positions and calibrate mechanisms.
+        self.wall_stake_mechanism.rotation_sensor.set_position(
+            WallStakeMechanismProperties.DOCKED_POSITION.to_degrees(), DEGREES)
+
+        self.main_log.debug("Calibrating scoring mechanism")
         self.scoring_mechanism.calibrate()
-        self.log_and_print("Calibrating inertial sensor...")
+        self.main_log.debug("Calibrated scoring mechanism successfully")
+        self.main_log.debug("Calibrating inertial sensor")
         self.drivetrain.odometry.inertial_sensor.calibrate()
         while self.drivetrain.odometry.inertial_sensor.is_calibrating():
             time.sleep_ms(5)
-        self.log_and_print("Calibrated inertial sensor successfully")
+        self.main_log.debug("Calibrated inertial sensor successfully")
+
+    @main_log.logged
+    def align_robot(self):
+        self.main_log.info("Waiting for robot alignment")
+        # Define target rotations using degrees.
+        target_rotations = [
+            Rotation2d.from_degrees(0),
+            Rotation2d.from_degrees(90),
+            Rotation2d.from_degrees(-90),
+            Rotation2d.from_degrees(130),
+            Rotation2d.from_degrees(-130),
+            Rotation2d.from_degrees(180),
+        ]
 
         self.controller.rumble("..")
         self.log_and_print("Please line up robot...")
-        rotation = self.drivetrain.odometry.get_rotation()
+        self.log_and_print("The screen will turn green when properly aligned")
 
         while not self.controller.buttonA.pressing():
-            self.screen.clear_screen()
-            if is_near_continuous(0, rotation.to_degrees(), 1, 0, 360):
-                brightness = 1 - distance_continuous(0, rotation.to_degrees(), 0, 360)
-                self.brain.screen.set_fill_color(Color().hsv(0, 1, brightness))
-            elif is_near_continuous(130, rotation.to_degrees(), 1, 0, 360):
-                brightness = 1 - distance_continuous(130, rotation.to_degrees(), 0, 360)
-                self.brain.screen.set_fill_color(Color().hsv(90, 1, brightness))
-            elif is_near_continuous(-130, rotation.to_degrees(), 1, 0, 360):
-                brightness = 1 - distance_continuous(-130, rotation.to_degrees(), 0, 360)
-                self.brain.screen.set_fill_color(Color().hsv(90, 1, brightness))
-            elif is_near_continuous(90, rotation.to_degrees(), 1, 0, 360):
-                brightness = 1 - distance_continuous(90, rotation.to_degrees(), 0, 360)
-                self.brain.screen.set_fill_color(Color().hsv(180, 1, brightness))
-            elif is_near_continuous(-90, rotation.to_degrees(), 1, 0, 360):
-                brightness = 1 - distance_continuous(-90, rotation.to_degrees(), 0, 360)
-                self.brain.screen.set_fill_color(Color().hsv(180, 1, brightness))
+            # Get the current rotation as a Rotation2d object.
+            current_rotation = self.drivetrain.odometry.get_rotation()
+
+            # Initialize variables for the minimum signed error.
+            min_signed_error = None
+            min_abs_error = float("inf")
+            # Calculate the signed error for each target and find the minimum absolute error.
+            for target in target_rotations:
+                error_rotation = (current_rotation - target).normalize()
+                error_deg_signed = error_rotation.to_degrees()
+                abs_error = abs(error_deg_signed)
+                if abs_error < min_abs_error:
+                    min_abs_error = abs_error
+                    min_signed_error = error_deg_signed
+
+            # Decide on the screen color based on the absolute error.
+            if min_abs_error > 5.0:
+                # More than 5° away: flash the screen.
+                flash_period_ms = 500
+                current_time = time.time_ms()  # Get current time in ms.
+                if ((current_time // flash_period_ms) % 2) == 0:
+                    screen_color = Color.RED
+                    text_color = Color.BLACK
+                else:
+                    screen_color = Color.BLACK
+                    text_color = Color.RED
             else:
-                self.brain.screen.set_fill_color(Color.BLACK)
-                self.brain.screen.set_pen_color(Color.BLACK)
+                # Within 5°: interpolate hue from green (120° at 0° error) to red (0° at 5° error).
+                ratio = min_abs_error / 5.0
+                hue = MathUtil.interpolate(120, 0, ratio, allow_extrapolation=False)
+                screen_color = Color().hsv(hue, 1, 1)
+                text_color = Color.BLACK
 
+            # Do all logic before drawing to the screen to prevent flashing
+            # Determine direction based on the signed error.
+            if min_signed_error >= 0:
+                direction = "CW"
+            else:
+                direction = "CCW"
+
+            # Display the absolute error (formatted to two decimals) and the direction.
+            display_error = abs(min_signed_error)
+            display_text = "{:.2f}° {}".format(display_error, direction)
+
+            self.brain.screen.set_fill_color(screen_color)
+            self.brain.screen.set_pen_color(screen_color)
             self.brain.screen.draw_rectangle(0, 0, 480, 240)
+
+            self.brain.screen.set_font(FontType.MONO60)
+            self.brain.screen.set_cursor(2, 4)
+            self.brain.screen.set_pen_color(text_color)
+
+            self.brain.screen.print(display_text)
+
+            if min_abs_error < 0.1:
+                self.brain.screen.set_cursor(3, 3)
+                self.brain.screen.print("Lined Up :)")
+            else:
+                self.brain.screen.set_cursor(1, 2)
+                self.brain.screen.print("Please Rotate")
+
             self.drivetrain.update_odometry()
-            rotation = self.drivetrain.odometry.get_rotation()
+            time.sleep_ms(20)
 
+        # Reset colors
+        self.brain.screen.set_fill_color(Color.BLACK)
+        self.brain.screen.set_pen_color(Color.WHITE)
+
+        # Final update and logging after button press.
         self.drivetrain.update_odometry()
-        rotation = self.drivetrain.odometry.get_rotation()
-        self.log_and_print(rotation.to_degrees())
-        self.log_and_print("Lined up")
+        final_deg = self.drivetrain.odometry.get_rotation().to_degrees()
+        self.brain.screen.clear_screen()
+        self.log_and_print("Lined up, current angle:", final_deg)
 
+    def select_autonomous_and_drive_style(self):
         self.log_and_print("Selecting autonomous routine...")
         autonomous_routine = self.select_autonomous_routine()
         self.log_and_print("Selected autonomous routine:", autonomous_routine)
@@ -161,8 +247,6 @@ class Robot(RobotBase):
             for message in self.drivetrain.measure_properties():
                 self.log_and_print(message)
 
-        self.log_and_print("Setup complete")
-
     def on_driver_control(self):
         if self.color_sort_tick_thread:
             self.color_sort_tick_thread.stop()
@@ -171,50 +255,33 @@ class Robot(RobotBase):
             time.sleep_ms(20)
 
     def driver_control_periodic(self):
+        # (Driver control logic remains unchanged)
         left_speed = right_speed = 0
         if self.user_preferences.CONTROL_STYLE == ControlStyles.TANK:
             left_speed = self.controller.left_stick_y()
             right_speed = self.controller.right_stick_y()
-
             left_speed = MathUtil.apply_deadband(left_speed)
             right_speed = MathUtil.apply_deadband(right_speed)
         elif self.user_preferences.CONTROL_STYLE in [ControlStyles.ARCADE, ControlStyles.SPLIT_ARCADE]:
-            forward_speed = turn_speed = 0
             forward_speed = self.controller.left_stick_y()
             if self.user_preferences.CONTROL_STYLE == ControlStyles.ARCADE:
                 turn_speed = self.controller.left_stick_x() * self.user_preferences.TURN_SPEED
-            elif self.user_preferences.CONTROL_STYLE == ControlStyles.SPLIT_ARCADE:
+            else:
                 turn_speed = self.controller.right_stick_x() * self.user_preferences.TURN_SPEED
-
             forward_speed = MathUtil.apply_deadband(forward_speed)
             turn_speed = -MathUtil.apply_deadband(turn_speed)
-
             left_speed = forward_speed - turn_speed
             right_speed = forward_speed + turn_speed
         else:
             self.log_and_print("Invalid controller bindings style:", self.user_preferences.CONTROL_STYLE)
 
         left_speed, right_speed = desaturate_wheel_speeds([left_speed, right_speed])
-
         left_speed = MathUtil.clamp(left_speed, -1, 1)
         right_speed = MathUtil.clamp(right_speed, -1, 1)
-
         left_speed = MathUtil.cubic_filter(left_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
         right_speed = MathUtil.cubic_filter(right_speed, linearity=self.user_preferences.CUBIC_FILTER_LINEARITY)
 
-        # if self.drivetrain.left_motors[0].velocity(PERCENT) > left_speed * 100:
-        #     left_speed -= 0.1
-        # if self.drivetrain.left_motors[0].velocity(PERCENT) < left_speed * 100:
-        #     left_speed += 0.1
-        #
-        # if self.drivetrain.right_motors[0].velocity(PERCENT) < right_speed * 100:
-        #     right_speed += 0.1
-        # if self.drivetrain.right_motors[0].velocity(PERCENT) > right_speed * 100:
-        #     right_speed -= 0.1
-
-        # self.log_and_print("Updating drivetrain voltages - Left:", left_speed, "Right:", right_speed)
         speeds = self.drivetrain.get_speeds()
-        # self.log_and_print("Drivetrain Speeds - Left:", speeds[0], "Right:", speeds[1])
 
         if self.user_preferences.ENABLE_DRIVING:
             if self.user_preferences.USE_PIDF_CONTROL:
@@ -226,43 +293,31 @@ class Robot(RobotBase):
 
         self.drivetrain.update_odometry()
 
-        # if self.controller.buttonX.pressing():
-        #     self.on_autonomous()
         if self.user_preferences.COLOR_SORT and (not self.controller.buttonRight.pressing()):
             self.scoring_mechanism.tick(self.alliance_color)
 
     def setup_dirk_preferences(self):
-        """Setup controller buttons for DirkPreferences."""
         self.log_and_print("Setting up Dirk Preferences")
         self.controller.buttonB.pressed(lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
         self.controller.buttonL2.pressed(lambda: self.log_and_print("Outtake") or self.scoring_mechanism.outtake())
         self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonR2.pressed(lambda: self.log_and_print("Intake") or self.scoring_mechanism.intake())
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
-
         self.controller.buttonL1.pressed(self.double_press_handler.press)
-
         self.controller.buttonR2.released(lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
-
         self.controller.buttonY.pressed(self.corner_mechanism.toggle_corner_mechanism)
 
     def setup_derek_preferences(self):
-        """Setup controller buttons for DerekPreferences."""
         self.log_and_print("Setting up Derek Preferences")
         self.controller.buttonUp.pressed(lambda: self.drivetrain.turn_to_gyro(0))
         self.controller.buttonLeft.pressed(lambda: self.drivetrain.turn_to_gyro(90))
         self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to_gyro(180))
         self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to_gyro(270))
-        self.controller.buttonB.pressed(
-            lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
+        self.controller.buttonB.pressed(lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
         self.controller.buttonL1.pressed(self.scoring_mechanism.intake)
         self.controller.buttonL1.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
-        self.controller.buttonL2.released(
-            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.3) or self.scoring_mechanism.stop_motor())
-
+        self.controller.buttonL2.released(lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.3) or self.scoring_mechanism.stop_motor())
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
         self.controller.buttonR2.pressed(self.wall_stake_mechanism.previous_state)
-
-        self.controller.buttonY.pressed(
-            lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_corner_mechanism())
+        self.controller.buttonY.pressed(lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_corner_mechanism())

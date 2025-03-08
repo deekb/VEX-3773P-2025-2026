@@ -124,7 +124,15 @@ class Controller(vex.Controller):
         while True:
             self.screen.clear_screen()
             self.screen.set_cursor(1, 1)
-            self.screen.print(options[selection_index])
+            option_name = str(options[selection_index])  # Assuming options[selection_index] is a string.
+
+            # Split the string into 20-character chunks.
+            for i in range(0, len(option_name), 20):
+                # Extract a substring of 20 characters starting from index i.
+                line = option_name[i:i + 20]
+                self.screen.print(line)  # Print each line.
+                self.screen.next_row()  # Move to the next row after each line.
+
             wait_until(lambda: self.buttonRight.pressing() or self.buttonLeft.pressing() or self.buttonA.pressing())
 
             if self.buttonA.pressing():
