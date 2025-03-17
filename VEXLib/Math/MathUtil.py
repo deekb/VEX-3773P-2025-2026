@@ -5,6 +5,7 @@ calculating angular differences, and applying filters. These functions are desig
 relevant to robotics, geometry, and numerical computation.
 """
 import math
+
 from VEXLib.Geometry.GeometryUtil import hypotenuse
 
 
@@ -17,10 +18,16 @@ def sign(x: float) -> float:
 
     Returns:
         float: 1 for positive or zero, -1 for negative.
+
+    Examples:
+        >>> sign(10.0)
+        1
+        >>> sign(-5.0)
+        -1
+        >>> sign(0.0)
+        1
     """
-    if x == 0:
-        return 1
-    return x / abs(x)
+    return 1 if x >= 0 else -1
 
 
 def average(*args: float) -> float:
@@ -34,16 +41,16 @@ def average(*args: float) -> float:
         The average of all the values.
 
     Examples:
-        >>> average(1, 2, 3)
+        >>> average(1.0, 2.0, 3.0)
         2.0
-        >>> average(5, 10)
+        >>> average(5.0, 10.0)
         7.5
         >>> average(3.5, 4.5, 6.0)
         4.666666666666667
-        >>> average(1, 2, 3, 4, 5)
+        >>> average(1.0, 2.0, 3.0, 4.0, 5.0)
         3.0
     """
-    return average_iterable(args)
+    return average_iterable(list(args))
 
 
 def average_iterable(iterable: list[float]) -> float:
@@ -55,8 +62,17 @@ def average_iterable(iterable: list[float]) -> float:
 
     Returns:
         The average of all the values in the iterable.
-    """
 
+    Examples:
+        >>> average_iterable([1.0, 2.0, 3.0])
+        2.0
+        >>> average_iterable([5.0, 10.0])
+        7.5
+        >>> average_iterable([3.5, 4.5, 6.0])
+        4.666666666666667
+        >>> average_iterable([1.0, 2.0, 3.0, 4.0, 5.0])
+        3.0
+    """
     return sum(iterable) / len(iterable)
 
 
@@ -71,8 +87,19 @@ def clamp(value: float, lower_limit: float | None = None, upper_limit: float | N
 
     Returns:
         The clamped value.
-    """
 
+    Examples:
+        >>> clamp(5.0, 1.0, 10.0)
+        5.0
+        >>> clamp(0.0, 1.0, 10.0)
+        1.0
+        >>> clamp(15.0, 1.0, 10.0)
+        10.0
+        >>> clamp(5.0, None, 10.0)
+        5.0
+        >>> clamp(5.0, 1.0, None)
+        5.0
+    """
     if lower_limit is not None and upper_limit is not None and upper_limit < lower_limit:
         raise ValueError(
             "The value of upper_limit should be greater than or equal to that of lower_limit"
@@ -99,21 +126,24 @@ def apply_deadband(value: float, deadband: float = 0.05, max_magnitude: float = 
 
     Returns:
         The value after the deadband is applied.
-    """
 
-    if max_magnitude < abs(value):
+    Examples:
+        >>> apply_deadband(0.03)
+        0.0
+        >>> apply_deadband(0.1)
+        0.052631578947368425
+        >>> apply_deadband(-0.1)
+        -0.052631578947368425
+        >>> apply_deadband(0.1, 0.1)
+        0.0
+    """
+    if abs(value) > max_magnitude:
         raise ValueError
 
     if abs(value) <= deadband:
         return 0.0
 
-    sign = 1 if value > 0 else -1
-
-    # Calculate the scaled value
-    if abs(value) > deadband:
-        return sign * max_magnitude * (abs(value) - deadband) / (max_magnitude - deadband)
-
-    return value - sign * deadband
+    return sign(value) * max_magnitude * (abs(value) - deadband) / (max_magnitude - deadband)
 
 
 def input_modulus(input_: float, minimum_input: float, maximum_input: float) -> float:
@@ -127,12 +157,26 @@ def input_modulus(input_: float, minimum_input: float, maximum_input: float) -> 
 
     Returns:
         float: The wrapped value within the range minimum_input, maximum_input inclusive of maximum_input but exclusive of minimum_input.
+
+    Examples:
+        >>> input_modulus(370.0, 0.0, 360.0)
+        10.0
+        >>> input_modulus(-10.0, 0.0, 360.0)
+        350.0
+        >>> input_modulus(370.0, -180.0, 180.0)
+        10.0
+        >>> input_modulus(-190.0, -180.0, 180.0)
+        170.0
     """
     modulus = maximum_input - minimum_input
     if modulus <= 0:
         raise ValueError("Maximum input must be greater than minimum input")
 
-    return (input_ - minimum_input) % modulus + minimum_input
+    wrapped_value = (input_ - minimum_input) % modulus
+    if wrapped_value < 0:
+        wrapped_value += modulus
+
+    return wrapped_value + minimum_input
 
 
 def angle_modulus(angle_radians: float) -> float:
@@ -144,6 +188,16 @@ def angle_modulus(angle_radians: float) -> float:
 
     Returns:
         The wrapped angle.
+
+    Examples:
+        >>> angle_modulus(3 * math.pi)
+        3.141592653589793
+        >>> angle_modulus(-3 * math.pi)
+        3.141592653589793
+        >>> angle_modulus(math.pi)
+        3.141592653589793
+        >>> angle_modulus(-math.pi)
+        3.141592653589793
     """
     angle = input_modulus(angle_radians, -math.pi, math.pi)
     if angle == -math.pi:
@@ -163,8 +217,17 @@ def interpolate(start_value: float, end_value: float, t: float, allow_extrapolat
 
     Returns:
         The interpolated value.
-    """
 
+    Examples:
+        >>> interpolate(0.0, 10.0, 0.5)
+        5.0
+        >>> interpolate(0.0, 10.0, 1.5)
+        15.0
+        >>> interpolate(0.0, 10.0, 1.5, allow_extrapolation=False)
+        10.0
+        >>> interpolate(0.0, 10.0, -0.5, allow_extrapolation=False)
+        0.0
+    """
     if not allow_extrapolation:
         t = clamp(t, 0, 1)
 
@@ -185,8 +248,17 @@ def interpolate_2d(x1: float, x2: float, y1: float, y2: float, x: float, allow_e
 
     Returns:
         The Y value for the given x value, calculated using linear interpolation from the points given
-    """
 
+    Examples:
+        >>> interpolate_2d(0.0, 10.0, 0.0, 20.0, 5.0)
+        10.0
+        >>> interpolate_2d(0.0, 10.0, 0.0, 20.0, 15.0)
+        30.0
+        >>> interpolate_2d(0.0, 10.0, 0.0, 20.0, 15.0, allow_extrapolation=False)
+        20.0
+        >>> interpolate_2d(0.0, 10.0, 0.0, 20.0, -5.0, allow_extrapolation=False)
+        0.0
+    """
     if not allow_extrapolation:
         if x < x1:
             return y1
@@ -208,14 +280,17 @@ def inverse_interpolate(start_value: float, end_value: float, q: float, allow_ex
 
     Returns:
         float: Interpolant in range [0, 1].
+
+    Examples:
+        >>> inverse_interpolate(0.0, 10.0, 5.0)
+        0.5
+        >>> inverse_interpolate(0.0, 10.0, 15.0)
+        1.5
+        >>> inverse_interpolate(0.0, 10.0, 15.0, allow_extrapolation=False)
+        1.0
+        >>> inverse_interpolate(0.0, 10.0, -5.0, allow_extrapolation=False)
+        0.0
     """
-
-    if not allow_extrapolation:
-        if q < start_value:
-            return 0.0
-        elif q > end_value:
-            return 1.0
-
     total_range = end_value - start_value
     if total_range <= 0:
         return 0.0
@@ -224,7 +299,10 @@ def inverse_interpolate(start_value: float, end_value: float, q: float, allow_ex
     if query_to_start <= 0:
         return 0.0
 
-    return min(max(query_to_start / total_range, 0.0), 1.0)
+    interpolant = query_to_start / total_range
+    if not allow_extrapolation:
+        return clamp(interpolant, 0.0, 1.0)
+    return interpolant
 
 
 def is_near(expected, actual, tolerance) -> bool:
@@ -238,8 +316,17 @@ def is_near(expected, actual, tolerance) -> bool:
 
     Returns:
         bool: Whether the actual value is within the allowed tolerance.
-    """
 
+    Examples:
+        >>> is_near(10.0, 10.1, 0.2)
+        True
+        >>> is_near(10.0, 10.3, 0.2)
+        False
+        >>> is_near(10.0, 9.9, 0.2)
+        True
+        >>> is_near(10.0, 9.7, 0.2)
+        False
+    """
     if tolerance < 0:
         raise ValueError("Tolerance must be a non-negative number!")
 
@@ -253,9 +340,9 @@ def is_near_continuous(expected, actual, tolerance, minimum, maximum):
 
     Continuous input means that the min and max value are considered to be the same point, and
     tolerances can be checked across them. A common example would be for absolute encoders: calling
-    is_near_continuous(2, 359, 5, 0, 360) returns true because 359 is 1 away from 360 (which is treated as the
-    same as 0) and 2 is 2 away from 0, adding up to an error of 3 degrees, which is within the
-    given tolerance of 5.
+    is_near_continuous(2.0, 359.0, 5.0, 0.0, 360.0) returns true because 359.0 is 1.0 away from 360.0 (which is treated as the
+    same as 0.0) and 2.0 is 2.0 away from 0.0, adding up to an error of 3.0 degrees, which is within the
+    given tolerance of 5.0.
 
     Args:
         expected (float): The expected value.
@@ -266,8 +353,17 @@ def is_near_continuous(expected, actual, tolerance, minimum, maximum):
 
     Returns:
         bool: Whether the actual value is within the allowed tolerance.
-    """
 
+    Examples:
+        >>> is_near_continuous(2.0, 359.0, 5.0, 0.0, 360.0)
+        True
+        >>> is_near_continuous(2.0, 355.0, 5.0, 0.0, 360.0)
+        False
+        >>> is_near_continuous(2.0, 3.0, 5.0, 0.0, 360.0)
+        True
+        >>> is_near_continuous(2.0, 8.0, 5.0, 0.0, 360.0)
+        False
+    """
     if tolerance < 0:
         raise ValueError("Tolerance must be non-negative!")
 
@@ -284,9 +380,9 @@ def distance_continuous(expected, actual, minimum, maximum):
 
     Continuous input means that the min and max value are considered to be the same point, and
     tolerances can be checked across them. A common example would be for absolute encoders: calling
-    is_near_continuous(2, 359, 5, 0, 360) returns true because 359 is 1 away from 360 (which is treated as the
-    same as 0) and 2 is 2 away from 0, adding up to an error of 3 degrees, which is within the
-    given tolerance of 5.
+    is_near_continuous(2.0, 359.0, 5.0, 0.0, 360.0) returns true because 359.0 is 1.0 away from 360.0 (which is treated as the
+    same as 0.0) and 2.0 is 2.0 away from 0.0, adding up to an error of 3.0 degrees, which is within the
+    given tolerance of 5.0.
 
     Args:
         expected (float): The expected value.
@@ -296,15 +392,24 @@ def distance_continuous(expected, actual, minimum, maximum):
 
     Returns:
         float: The smallest distance between the actual and the expected.
-    """
 
+    Examples:
+        >>> distance_continuous(2.0, 359.0, 0.0, 360.0)
+        3.0
+        >>> distance_continuous(2.0, 355.0, 0.0, 360.0)
+        7.0
+        >>> distance_continuous(2.0, 3.0, 0.0, 360.0)
+        1.0
+        >>> distance_continuous(2.0, 8.0, 0.0, 360.0)
+        6.0
+    """
     # Max error is exactly halfway between the min and max
     error_bound = (maximum - minimum) / 2.0
     error = input_modulus(expected - actual, -error_bound, error_bound)
     return abs(error)
 
 
-def cubic_filter(value, linearity=0) -> float:
+def cubic_filter(value, linearity=0.0) -> float:
     """
     Apply a cubic filter to a value with a given linearity
 
@@ -314,8 +419,17 @@ def cubic_filter(value, linearity=0) -> float:
 
     Returns:
         The input value with a cubic filter applied
-    """
 
+    Examples:
+        >>> cubic_filter(0.5)
+        0.125
+        >>> cubic_filter(0.5, 1.0)
+        0.5
+        >>> cubic_filter(-0.5)
+        -0.125
+        >>> cubic_filter(-0.5, 1.0)
+        -0.5
+    """
     if abs(value) > 1:
         raise ValueError("Input value must be between -1 and 1")
     if linearity < 0 or linearity > 1:
@@ -334,6 +448,16 @@ def slope_intercept_to_standard(slope, intercept):
 
     Returns:
         tuple: Coefficients (A, B, C) of the line equation in standard form Ax + By + C = 0.
+
+    Examples:
+        >>> slope_intercept_to_standard(2, 3)
+        (2, -1, 3)
+        >>> slope_intercept_to_standard(-2, 3)
+        (2, 1, -3)
+        >>> slope_intercept_to_standard(0, 3)
+        (0, -1, 3)
+        >>> slope_intercept_to_standard(2, 0)
+        (2, -1, 0)
     """
     # Step 1: Move terms to one side
     # y = mx + b --> mx - y + b = 0
@@ -362,14 +486,20 @@ def standard_to_x_intercept(a, b, c):
 
     Returns:
         float or None: The x-intercept of the line. Returns None if the line is vertical (B == 0).
+
+    Examples:
+        >>> standard_to_x_intercept(1, 2, 3)
+        -3.0
+        >>> standard_to_x_intercept(0, 2, 3)
+
+        >>> standard_to_x_intercept(4, 5, 6)
+        -1.5
+        >>> standard_to_x_intercept(2, 0, 8)
+        -4.0
     """
-    # If B == 0, the line is vertical and has no x-intercept
-    if b == 0:
+    if a == 0:
         return None
-
-    # Calculate x-intercept by setting y = 0 and solving for x
     x_intercept = -c / a
-
     return x_intercept
 
 
@@ -384,24 +514,46 @@ def distance_from_point_to_line(point, slope, y_intercept):
 
     Returns:
         float: The perpendicular distance from the point to the line.
+
+    Examples:
+        >>> distance_from_point_to_line((1, 2), 1, 0)
+        0.7071067811865475
+        >>> distance_from_point_to_line((1, 2), float('inf'), 0)
+        1.0
+        >>> distance_from_point_to_line((3, 4), 2, 1)
+        1.3416407864998738
+        >>> distance_from_point_to_line((5, 6), -1, 2)
+        2.8284271247461903
     """
     x0, y0 = point
-
     a, b, c = slope_intercept_to_standard(slope, y_intercept)
-
     if math.isinf(slope):
         x_intercept = standard_to_x_intercept(a, b, c)
         return abs(x0 - x_intercept)
     else:
-        # Distance formula
         distance = abs(a * x0 + b * y0 + c) / hypotenuse(a, b)
-
         return distance
 
 
 def factorial(n):
     """
     Calculate the factorial of a non-negative integer.
+
+    Args:
+        n (int): The non-negative integer to calculate the factorial of.
+
+    Returns:
+        int: The factorial of the input integer.
+
+    Examples:
+        >>> factorial(5)
+        120
+        >>> factorial(0)
+        1
+        >>> factorial(3)
+        6
+        >>> factorial(7)
+        5040
     """
     result = 1
     for i in range(n + 1):
@@ -410,68 +562,36 @@ def factorial(n):
     return result
 
 
-def sin(x, terms=12):
-    """
-    Calculate the sine of an angle using Taylor series expansion.
-    Args:
-        x (float): The angle in radians.
-        terms (int): The number of terms to use in the Taylor series expansion. (overridden if that amount of terms causes a float to overflow)
-    Returns:
-        float: The sine of the angle.
-    """
-    x = x % (math.pi * 2)
-    result = 0
-    for n in range(terms):
-        coefficient = (-1) ** n
-        exponent = 2 * n + 1
-        term = coefficient * (x ** exponent) / factorial(exponent)
-
-        if math.isnan(term) or math.isinf(term):
-            break  # Exit the loop if the term becomes NaN or infinity
-
-        result += term
-
-    return result
-
-
-def cos(x, terms=12):
-    """
-    Calculate the cosine of an angle using Taylor series expansion.
-    Args:
-        x (float): The angle in radians.
-        terms (int): The number of terms to use in the Taylor series expansion. (overridden if that amount of terms causes a float to overflow)
-    Returns:
-        float: The cosine of the angle.
-    """
-    return sin(x + (math.pi / 2), terms)
-
-
-def tan(x, terms=12):
-    """
-    Calculate the cosine of an angle using Taylor series expansion.
-    Args:
-        x (float): The angle in radians.
-        terms (int): The number of terms to use in the Taylor series expansion. (overridden if that amount of terms causes a float to overflow)
-    Returns:
-        float: The cosine of the angle.
-    """
-    return sin(x, terms) / cos(x, terms)
-
-
 def smallest_angular_difference(current, target):
-    """Calculate the shortest angular difference between the current and target headings
-    This will return a value such that if you add it to the current heading you will get a value that represents
-
     """
-    current = current % (math.pi * 2)
-    target = target % (math.pi * 2)
+    Calculate the shortest angular difference between the current and target headings.
+    This will return a value such that if you add it to the current heading you will get a value that represents the
+    shortest path to the target heading. This value will be in the range -π to π.
 
+    Args:
+        current (float): The current heading in radians.
+        target (float): The target heading in radians.
+
+    Returns:
+        float: The signed angular difference between the current and target. The result is in the range (-π, π],
+               inclusive of π and exclusive of -π.
+
+    Examples:
+        >>> smallest_angular_difference(math.pi, -math.pi)
+        0.0
+        >>> smallest_angular_difference(0, math.pi)
+        3.141592653589793
+        >>> smallest_angular_difference(math.pi / 2, -math.pi / 2)
+        3.141592653589793
+        >>> smallest_angular_difference(0, 3 * math.pi / 2)
+        -1.5707963267948966
+    """
+    tau = 2 * math.pi
+    current %= 2 * tau
+    target %= tau
     angular_difference = target - current
-
-    # Normalize the angular difference between -π and π
     if angular_difference > math.pi:
-        angular_difference -= 2 * math.pi
+        angular_difference -= tau
     elif angular_difference < -math.pi:
-        angular_difference += 2 * math.pi
-
+        angular_difference += tau
     return angular_difference
