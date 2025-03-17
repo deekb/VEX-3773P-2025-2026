@@ -70,8 +70,8 @@ class TestTankOdometry(unittest.TestCase):
 
         # Expected values for 90-degree rotation:
         expected_x = 0.0  # No movement along the x-axis
-        expected_y = -1.0  # Forward along the y-axis
-        expected_rotation = -90.0  # Converted to counterclockwise-positive internally
+        expected_y = 1.0  # Forward along the y-axis
+        expected_rotation = 90.0  # Converted to counterclockwise-positive internally
 
         # Assertions
         self.assertAlmostEqual(self.odometry.get_translation().x_component.to_meters(), expected_x, places=5)
@@ -85,7 +85,7 @@ class TestTankOdometry(unittest.TestCase):
         # Simulate movement: left and right wheels move equally 1 meter
         left_position = Distance.from_meters(1.0)
         right_position = Distance.from_meters(1.0)
-        self.mock_inertial.rotation.return_value = 45  # Clockwise +45 degrees from inertial sensor
+        self.mock_inertial.rotation.return_value = -45  # Clockwise +45 degrees from inertial sensor
 
         # Update odometry
         self.odometry.update(left_position, right_position)

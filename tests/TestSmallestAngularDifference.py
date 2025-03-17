@@ -31,6 +31,22 @@ class TestSmallestAngularDifference(unittest.TestCase):
         self.setpoint = math.pi
         self.assertAlmostEqual(smallest_angular_difference(self.setpoint, 0), -math.pi)
 
+    def test_heading_slightly_greater_than_2pi(self):
+        self.setpoint = 0
+        self.assertAlmostEqual(smallest_angular_difference(self.setpoint, 2 * math.pi + 0.1), 0.1)
+
+    def test_heading_slightly_less_than_minus_2pi(self):
+        self.setpoint = 0
+        self.assertAlmostEqual(smallest_angular_difference(self.setpoint, -2 * math.pi - 0.1), -0.1)
+
+    def test_heading_exactly_pi(self):
+        self.setpoint = 0
+        self.assertAlmostEqual(smallest_angular_difference(self.setpoint, math.pi), math.pi)
+
+    def test_heading_exactly_minus_pi(self):
+        self.setpoint = 0
+        self.assertAlmostEqual(smallest_angular_difference(self.setpoint, -math.pi), math.pi)
+
 
 if __name__ == '__main__':
     unittest.main()
