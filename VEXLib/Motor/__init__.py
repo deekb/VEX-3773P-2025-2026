@@ -1,9 +1,6 @@
 import math
 
 import vex
-from vex import Motor as vexMotor, GearSetting, DEGREES, RPM, VOLT, Thread
-from ..Algorithms.PID import PIDController
-from ..Util import time as time
 from .Constants import *
 
 
@@ -12,7 +9,7 @@ class Motor(vex.Motor):
         super().__init__(port, gear_ratio, inverted)
 
     def set(self, power):
-        self.spin(FORWARD, power * 12, VOLT)
+        self.spin(vex.FORWARD, power * 12, vex.VOLT)
 
 # class Motor:
 #     def __init__(self, port, gear_ratio=18, direction=FORWARD, run_mode=NONE):
