@@ -1,20 +1,21 @@
-from Constants import *
-from VEXLib import Util
-from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, Thread, FontType
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
+from Constants import *
 from CornerMechanism import CornerMechanism
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
+from VEXLib import Util
 from VEXLib.Kinematics import desaturate_wheel_speeds
 from VEXLib.Motor import Motor
 from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Sensors.Controller import DoublePressHandler, Controller
 from VEXLib.Util import time, pass_function
-from VEXLib.Util.Logging import Logger, logged
+from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism, WallStakeState
+from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, Thread, FontType, \
+    Inertial
 
 main_log = Logger(Brain().sdcard, Brain().screen, MAIN_LOG_FILENAME)
 debug_log = Logger(Brain().sdcard, Brain().screen, DEBUG_LOG_FILENAME)
@@ -33,6 +34,7 @@ class Robot(RobotBase):
             [Motor(SmartPorts.FRONT_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
              Motor(SmartPorts.REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, False),
              Motor(SmartPorts.REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR, GearRatios.DRIVETRAIN, True)],
+            Inertial(SmartPorts.INERTIAL_SENSOR),
             self.log_and_print)
 
         self.screen = ScrollBufferedScreen(max_lines=20)
@@ -81,8 +83,10 @@ class Robot(RobotBase):
     def on_autonomous(self):
         self.main_log.debug("Executing chosen autonomous routine:", str(self.autonomous))
         self.main_log.debug("Starting color_sort_tick_thread")
+        self.scoring_mechanism.log.info("Starting color_sort_tick_thread")
         self.color_sort_tick_thread = Thread(self.scoring_mechanism.loop, (self.alliance_color,))
         self.main_log.debug("Started color_sort_tick_thread")
+        self.scoring_mechanism.log.info("Started color_sort_tick_thread")
         self.autonomous(self)
 
     def select_autonomous_routine(self):
@@ -288,8 +292,8 @@ class Robot(RobotBase):
                 self.drivetrain.set_speed_zero_to_one(left_speed, right_speed)
                 self.drivetrain.update_powers()
             else:
-                self.drivetrain.set_powers(left_speed * self.user_preferences.MAX_MOTOR_VOLTAGE,
-                                           right_speed * self.user_preferences.MAX_MOTOR_VOLTAGE)
+                self.drivetrain.set_powers(left_speed * self.user_preferences.MOVE_SPEED,
+                                           right_speed * self.user_preferences.MOVE_SPEED)
 
         self.drivetrain.update_odometry()
 
@@ -298,26 +302,29 @@ class Robot(RobotBase):
 
     def setup_dirk_preferences(self):
         self.log_and_print("Setting up Dirk Preferences")
-        self.controller.buttonB.pressed(lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
-        self.controller.buttonL2.pressed(lambda: self.log_and_print("Outtake") or self.scoring_mechanism.outtake())
+        self.controller.buttonB.pressed(
+            lambda: [self.log_and_print("Toggling clamp"), self.mobile_goal_clamp.toggle_clamp()])
+        self.controller.buttonL2.pressed(lambda: [self.log_and_print("Outtake"), self.scoring_mechanism.outtake()])
         self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
-        self.controller.buttonR2.pressed(lambda: self.log_and_print("Intake") or self.scoring_mechanism.intake())
+        self.controller.buttonR2.pressed(lambda: [self.log_and_print("Intake"), self.scoring_mechanism.intake()])
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
         self.controller.buttonL1.pressed(self.double_press_handler.press)
-        self.controller.buttonR2.released(lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
+        self.controller.buttonR2.released(
+            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
         self.controller.buttonY.pressed(self.corner_mechanism.toggle_corner_mechanism)
 
     def setup_derek_preferences(self):
         self.log_and_print("Setting up Derek Preferences")
-        self.controller.buttonUp.pressed(lambda: self.drivetrain.turn_to_gyro(0))
-        self.controller.buttonLeft.pressed(lambda: self.drivetrain.turn_to_gyro(90))
-        self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to_gyro(180))
-        self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to_gyro(270))
-        self.controller.buttonB.pressed(lambda: self.log_and_print("Toggling clamp") or self.mobile_goal_clamp.toggle_clamp())
+        self.controller.buttonUp.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(0)))
+        self.controller.buttonLeft.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(90)))
+        self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(180)))
+        self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(270)))
+        self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
         self.controller.buttonL1.pressed(self.scoring_mechanism.intake)
         self.controller.buttonL1.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
-        self.controller.buttonL2.released(lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.3) or self.scoring_mechanism.stop_motor())
+        self.controller.buttonL2.released(self.scoring_mechanism.back_off)
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
         self.controller.buttonR2.pressed(self.wall_stake_mechanism.previous_state)
-        self.controller.buttonY.pressed(lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_corner_mechanism())
+        self.controller.buttonY.pressed(
+            lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_corner_mechanism())
