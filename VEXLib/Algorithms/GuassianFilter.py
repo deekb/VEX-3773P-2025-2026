@@ -21,7 +21,6 @@ class RealTimeGaussianSmoother:
         self.kernel_size = kernel_size
         self.sigma = sigma
         self.kernel = create_gaussian_kernel(sigma, kernel_size)
-        print(self.kernel)
         self.buffer = [0] * kernel_size
         self.index = 0
 
@@ -39,26 +38,3 @@ class RealTimeGaussianSmoother:
         return smoothed_value
 
 
-import matplotlib.pyplot as plt
-import random
-
-# Initialize the Gaussian Smoother
-smoother = RealTimeGaussianSmoother(sigma=5, kernel_size=15)
-
-# Generate random data to simulate input
-raw_data = [math.sin(i / 20) + random.uniform(-0.2, 0.2) for i in range(1000)]
-smoothed_data = []
-
-# Smooth the data using the smoother
-for point in raw_data:
-    smoothed_data.append(smoother.smooth(point))
-
-# Plot the raw and smoothed data
-plt.figure(figsize=(10, 8))
-plt.plot(raw_data, label='Raw Data', alpha=0.5)
-plt.plot(smoothed_data, label='Smoothed Data')
-plt.title("Gaussian Smoothing Visualization")
-plt.xlabel("Time Steps")
-plt.ylabel("Value")
-plt.legend()
-plt.show()
