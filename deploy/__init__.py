@@ -1,144 +1,131 @@
 import argparse
-import re
-import shutil
 import sys
 import time
+from subprocess import CalledProcessError
 
 from rich.console import Console
+from rich.text import Text
 
-from .Constants import *
-from .Utils import get_removable_disks, get_available_modules, get_checksum, detect_dependencies, unmount_drive, \
-    convert_size
+from deploy.Constants import *
+from deploy.Utils import *
 
 os.chdir(PROJECT_ROOT)
 
-parser = argparse.ArgumentParser()
-# parser.add_argument("-a", "--remote-address", help="The address of the remote device connected to the brain and running the RemoteDeploy.py script from the util folder", type=str)
-# parser.add_argument("-p", "--remote-port", help="The port of the remote device connected to the brain and running the RemoteDeploy.py script from the util folder", type=int, default=5000)
-parser.parse_args()
-
-
-def exclude_from_deploy(filename):
-    # This function tells the program which files to ignore while scanning the "deploy" directory
-    return re.search(DEPLOY_EXCLUDE_REGEX, filename) is not None
-
+parser = argparse.ArgumentParser(description="VEX SD Card Deployment Tool")
+parser.add_argument("--no-unmount", action="store_true", help="Do not unmount the SD card after operations")
+parser.add_argument("--no-push-src", action="store_true", help="Skip pushing source files")
+parser.add_argument("--no-push-lib", action="store_true", help="Skip pushing library files")
+parser.add_argument("--no-push-deploy", action="store_true", help="Skip pushing deploy objects")
+parser.add_argument("--no-pull-logs", action="store_true", help="Skip pulling logs")
+parser.add_argument("--verbose", action="store_true", help="Enable verbose/debug output")
+args = parser.parse_args()
 
 console = Console()
-deployed_count = 0
-deployed_size_bytes = 0
 
 
-def copy_libraries(libraries, directory):
-    global deployed_count, deployed_size_bytes
-    for file in libraries:
-        if os.path.isfile(directory):
-            os.remove(directory)
-        if not os.path.exists(directory):
-            os.mkdir(directory)
-        file_to_copy_checksum = get_checksum(file)
-        file_to_overwrite = os.path.join(directory, (file.split(os.sep)[-1]))
-        file_to_overwrite_checksum = None
-        if os.path.isfile(file_to_overwrite):
-            file_to_overwrite_checksum = get_checksum(file_to_overwrite)
-        elif os.path.isdir(file_to_overwrite):
-            print(f"{file_to_overwrite} exists as folder, removing it")
-            os.rmdir(file_to_overwrite)
-            shutil.copy(file, directory)
-            deployed_count += 1
-            deployed_size_bytes += os.path.getsize(file)
-        if file_to_copy_checksum != file_to_overwrite_checksum:
-            if file_to_overwrite_checksum:
-                print(f"{file_to_overwrite} exists but has invalid checksum: {file_to_overwrite_checksum}, pushing")
-                os.remove(file_to_overwrite)
-            else:
-                print(f"{file_to_overwrite} does not exist, pushing")
-            shutil.copy(file, directory)
-            deployed_count += 1
-            deployed_size_bytes += os.path.getsize(file)
+def verbose_print(msg):
+    if args.verbose:
+        console.print(f"[blue][VERBOSE] {msg}")
+
+
+# Helper function to scan a directory and get all file paths
+def scan_directory(directory: str, exclude_fn=lambda path: False):
+    return [
+        str(os.path.join(root, file))
+        for root, _, files in os.walk(directory)
+        for file in files
+        if os.path.isfile(os.path.join(root, file)) and (not exclude_fn(os.path.join(root, file)))
+    ]
+
+
+# Function to handle the file copy process and update counts
+def copy_files_and_update_count(source_files, destination_folder, base_folder, update_fn):
+    verbose_print(f"Files to copy: {source_files}")
+    with console.status(f"[cyan]Copying files to {destination_folder}...") as status:
+        update_fn(*copy_if_changed(source_files, destination_folder, base_folder_to_copy_from=base_folder))
 
 
 def main():
-    failure_count = 0
-    vex_disk = None
-    with console.status("[cyan]Searching for VEX disk...") as status:
-        while failure_count < FIND_VEX_DISK_MAX_ATTEMPTS - 1:
-            for disk in get_removable_disks(POSIX_MOUNT_POINT_DIR):
-                if DRIVE_IDENTIFIER_STRING in disk.name:
-                    vex_disk = disk.path
-                    break  # Found the vex disk
-            if vex_disk is not None:
-                break
-            failure_count += 1
-            time.sleep(FIND_VEX_DISK_TIME_BETWEEN_ATTEMPTS)
+    ascii_art_text = Text(ASCII_ART, style="bold bright_blue")
+    console.print(ascii_art_text)
 
-    if failure_count >= FIND_VEX_DISK_MAX_ATTEMPTS - 1:
-        console.print(f"[red]Could not find any drive with drive identifier \"{DRIVE_IDENTIFIER_STRING}\"")
+    with console.status("[cyan]Searching for SD card...") as status:
+        vex_disk = find_vex_disk(DRIVE_IDENTIFIER_STRING, FIND_VEX_DISK_MAX_ATTEMPTS, FIND_VEX_DISK_TIME_BETWEEN_ATTEMPTS)
+
+    if not vex_disk:
+        console.print(
+            f"[bold red]Could not find any storage medium with \"{DRIVE_IDENTIFIER_STRING}\" in name[/bold red]")
         sys.exit(19)  # ENODEV No such device
 
-    available_libraries = get_available_modules(SRC_DIRECTORY)
+    vex_disk_path = vex_disk.path
+    console.print(f"[bold green]Found VEX disk at {vex_disk_path}[/bold green]")
 
-    required_libraries = ["main"]
+    total_files_deployed = 0
+    total_bytes_copied = 0
 
-    required_libraries.extend(
-        detect_dependencies(SRC_DIRECTORY, MAIN_PROGRAM, available_libraries, VEX_BUILTIN_MODULES))
+    total_files_pulled = 0
+    total_bytes_pulled = 0
 
-    print(required_libraries)
+    def update_deployed_count_and_size(deployed_count, deployed_size_bytes):
+        nonlocal total_files_deployed, total_bytes_copied
+        total_files_deployed += deployed_count
+        total_bytes_copied += deployed_size_bytes
 
-    libraries_to_copy = {}
+    def update_pulled_count_and_size(deployed_count, deployed_size_bytes):
+        nonlocal total_files_pulled, total_bytes_pulled
+        total_files_pulled += deployed_count
+        total_bytes_pulled += deployed_size_bytes
 
-    for library in required_libraries:
-        if library in available_libraries:
-            libraries_to_copy[library] = available_libraries[library]
-        else:
-            raise ModuleNotFoundError(f"Couldn't find library '{library}'")
+    start_time = time.perf_counter()
 
-    deploy_objects = []
-    library_objects = []
+    if not args.no_pull_logs:
+        log_objects = scan_directory(str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "logs")))
+        verbose_print(f"Discovered logs: {log_objects}")
+        copy_files_and_update_count(log_objects, os.path.join(PROJECT_ROOT, "logs/"),
+                                    str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "logs")),
+                                    update_pulled_count_and_size)
 
-    for root, dirs, files in os.walk(DEPLOY_DIRECTORY):
-        for file in files:
-            dependency = str(os.path.join(root, file))
-            if os.path.isfile(dependency) and not exclude_from_deploy(dependency):
-                deploy_objects.append(os.path.join(DEPLOY_DIRECTORY, dependency))
+    if not args.no_push_src:
+        src_objects = scan_directory(SRC_DIRECTORY, exclude_from_deploy)
+        copy_files_and_update_count(src_objects, str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path)), SRC_DIRECTORY,
+                                    update_deployed_count_and_size)
 
-    for root, dirs, files in os.walk(VEXLIB_DIRECTORY):
-        for file in files:
-            if exclude_from_deploy(file):
-                continue
-            to_copy = str(os.path.join(root, file))
-            target_path = os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk, "VEXLib",
-                                       os.path.relpath(to_copy, VEXLIB_DIRECTORY))
-            target_dir = os.path.dirname(target_path)
-            if not os.path.isdir(target_dir):
-                if os.path.isfile(target_dir):
-                    os.unlink(target_dir)
-                os.makedirs(target_dir)
-            if os.path.isfile(target_path):
-                if get_checksum(target_path) == get_checksum(to_copy):
-                    print("Checksum match")
+    if not args.no_push_lib:
+        library_objects = scan_directory(VEXLIB_DIRECTORY, exclude_from_deploy)
+        copy_files_and_update_count(library_objects, str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "VEXlib")),
+                                    VEXLIB_DIRECTORY, update_deployed_count_and_size)
+
+    if not args.no_push_deploy:
+        deploy_objects = scan_directory(DEPLOY_DIRECTORY, exclude_from_deploy)
+        copy_files_and_update_count(deploy_objects, str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "deploy")),
+                                    DEPLOY_DIRECTORY, update_deployed_count_and_size)
+
+    # Ensure the 'logs' directory exists
+    if not os.path.isdir(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "logs")):
+        os.mkdir(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "logs"))
+        verbose_print("[bold yellow]Created missing 'logs' directory on disk[/bold yellow]")
+
+    if not args.no_unmount:
+        with console.status("[yellow]Unmounting drive, please do not remove :warning:") as status:
+            while True:
+                try:
+                    time.sleep(0.25)
+                    unmount_drive(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path))
+                    break
+                except CalledProcessError:
+                    console.print("[bold yellow]Failed to unmount drive, retrying...[/bold yellow]")
                     continue
+            verbose_print("[green]Unmounted drive successfully[/green]")
 
-            print(f"Copying {to_copy} to {target_path}")
-            shutil.copy(to_copy, target_path)
+        console.print(f"[bold green]Completed in {round(time.perf_counter() - start_time, 2)} seconds[/bold green]")
+        console.print("[bold green]You may now remove the drive :thumbsup:[/bold green]")
+    else:
+        console.print(f"[bold green]Completed in {round(time.perf_counter() - start_time, 2)} seconds[/bold green]")
 
-    start_time = time.monotonic()
-
-    with console.status("[cyan]Copying libraries...") as status:
-        # Copy all source files (main.py and its dependencies) into the root directory
-        copy_libraries(libraries_to_copy.values(), os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk))
-
-        # Copy all deploy objects to the "deploy" directory
-        copy_libraries(deploy_objects, os.path.join(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk), "deploy"))
-
-        copy_libraries(library_objects, os.path.join(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk), "deploy"))
-
-    if not os.path.isdir(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk, "logs")):
-        os.mkdir(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk, "logs"))
-    with console.status("[cyan]Unmounting drive please wait [yellow]:warning:") as status:
-        unmount_drive(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk))
-    console.print("[green]You may now remove the drive :thumbsup:")
+    # Final stats with color
+    console.print(f"[bold red]↑ Uploaded {total_files_deployed} files ({convert_size(total_bytes_copied)})[/bold red]")
     console.print(
-        f"[green]Uploaded [bold green]{deployed_count}[reset][green] files ([bold green]{convert_size(deployed_size_bytes)}[reset][green]) in [bold green]{round(time.monotonic() - start_time, 2)}[reset][green] seconds")
+        f"[bold blue]↓ Downloaded {total_files_pulled} files ({convert_size(total_bytes_pulled)})[/bold blue]")
 
 
 if __name__ == "__main__":

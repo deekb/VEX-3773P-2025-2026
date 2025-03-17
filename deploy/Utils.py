@@ -1,43 +1,139 @@
-import ast
 import hashlib
 import math
 import os
+import re
+import shutil
 import subprocess
-from glob import glob
+import time
+from typing import Optional
+
+from deploy import (
+    POSIX_MOUNT_POINT_DIR,
+    DEPLOY_EXCLUDE_REGEX
+)
+
+__all__ = [
+    "get_checksum", "copy_if_changed", "RemovableDisk", "get_removable_disks",
+    "unmount_drive", "convert_size", "find_vex_disk", "exclude_from_deploy"
+]
 
 
-def get_checksum(file_path) -> str:
+def exclude_from_deploy(filename: str) -> bool:
     """
-    Get the MD5 checksum of a file, useful for determining if a file has changed on disk
+    Tells the program which files to ignore while scanning the 'deploy' directory.
 
     Args:
-        file_path: The path of the file
+        filename: The name of the file to check.
 
     Returns:
-        The checksum of the file
-
+        bool: True if the file should be excluded, otherwise False.
     """
-    return hashlib.md5(open(file_path, "rb").read()).hexdigest()
+    return re.search(DEPLOY_EXCLUDE_REGEX, filename) is not None
 
 
-def get_available_modules(src_directory):
-    """Scan a directory for all python files and return a dictionary relating their module names to their absolute filepaths"""
-    available_modules = {}
-    for file in glob(os.path.join(src_directory, "*.py")):
-        available_modules[os.path.basename(file.split(os.sep)[-1].split(".")[0])] = os.path.abspath(file)
-    return available_modules
+def get_checksum(file_path: str) -> str:
+    """
+    Get the MD5 checksum of a file, useful for determining if a file has changed on disk.
+
+    Args:
+        file_path: The path of the file.
+
+    Returns:
+        str: The checksum of the file.
+    """
+    with open(file_path, "rb") as file:
+        return hashlib.md5(file.read()).hexdigest()
+
+
+def copy_if_changed(
+        files_to_copy: list[str], target_directory: str, base_folder_to_copy_from: str, dry_run: bool = False
+) -> tuple[int, int]:
+    """
+    Copy files from source to target if they have changed.
+
+    Args:
+        files_to_copy: List of file paths to copy.
+        target_directory: The target directory for copying files.
+        base_folder_to_copy_from: The base folder to compare file paths against.
+        dry_run: If True, no actual copying will happen (default is False).
+
+    Returns:
+        tuple: A tuple containing two values:
+            - The number of deployed files.
+            - The total deployed size in bytes.
+    """
+    deployed_count = 0
+    deployed_size_bytes = 0
+
+    # Ensure target directory exists
+    if not os.path.exists(target_directory) and not dry_run:
+        os.makedirs(target_directory)
+
+    for file in files_to_copy:
+        relative_path = os.path.relpath(file, base_folder_to_copy_from)
+        target_path = os.path.join(target_directory, relative_path)
+        target_dir = os.path.dirname(target_path)
+
+        if not os.path.exists(target_dir) and not dry_run:
+            os.makedirs(target_dir)
+
+        if os.path.isdir(target_path):
+            print(f"{target_path} exists as a folder, removing it")
+            if not dry_run:
+                shutil.rmtree(target_path)
+
+        file_to_copy_checksum = get_checksum(file)
+        file_to_overwrite_checksum = None
+
+        if os.path.isfile(target_path):
+            file_to_overwrite_checksum = get_checksum(target_path)
+
+        if file_to_copy_checksum != file_to_overwrite_checksum:
+            if file_to_overwrite_checksum:
+                print(f"{target_path} exists but has invalid checksum: {file_to_overwrite_checksum}, pushing")
+                if not dry_run:
+                    os.remove(target_path)
+            else:
+                print(f"{target_path} does not exist, pushing")
+            if not dry_run:
+                shutil.copy(file, target_path)
+            deployed_count += 1
+            deployed_size_bytes += os.path.getsize(file)
+
+    return deployed_count, deployed_size_bytes
 
 
 class RemovableDisk:
-    path: str
-    name: str
+    """
+    A class representing a removable disk.
 
-    def __init__(self, path, name):
+    Attributes:
+        path (str): The path of the removable disk.
+        name (str): The name of the removable disk.
+    """
+
+    def __init__(self, path: str, name: str):
+        """
+        Initializes a RemovableDisk instance.
+
+        Args:
+            path: The path of the disk.
+            name: The name of the disk.
+        """
         self.path = path
         self.name = name
 
 
-def get_removable_disks(posix_mount_point_dir) -> list[RemovableDisk]:
+def get_removable_disks(posix_mount_point_dir: str) -> list[RemovableDisk]:
+    """
+    Returns a list of removable disks found in the specified mount point directory.
+
+    Args:
+        posix_mount_point_dir: The directory where removable disks are mounted.
+
+    Returns:
+        list: A list of RemovableDisk instances representing the removable disks.
+    """
     removable_drives = []
 
     if os.name == "nt":
@@ -51,65 +147,49 @@ def get_removable_disks(posix_mount_point_dir) -> list[RemovableDisk]:
         mount_points = os.listdir(posix_mount_point_dir)
         for mount_point in mount_points:
             drive_name = os.path.basename(mount_point)
-            disk_path = os.path.abspath(os.path.join(os.path.join(posix_mount_point_dir, mount_point)))
+            disk_path = os.path.abspath(os.path.join(posix_mount_point_dir, mount_point))
             removable_drives.append(RemovableDisk(disk_path, drive_name))
 
     return removable_drives
 
 
-def detect_dependencies(src_directory, file_path, available_libraries, ignored_imports, visited=None):
+def find_vex_disk(
+        drive_identifier_string: str,
+        max_attempts: int,
+        time_between_attempts: float
+) -> Optional[RemovableDisk]:
     """
-    Find the dependencies of a python file recursively (all dependencies must be in src_directory)
+    Finds the VEX disk by scanning available removable disks.
 
     Args:
-        src_directory: The directory where the source files are located, all imports must be in this directory
-        file_path: The initial file to detect dependencies of
-        available_libraries: A dictionary relating the names of the available libraries to their paths, this helps the function to resolve the imports to their respective files
-        visited: The set of previously visited files. This prevents infinite recursion and defaults to an empty set
+        drive_identifier_string: The identifier string that is part of the VEX disk name.
+        max_attempts: The maximum number of attempts to find the disk.
+        time_between_attempts: The time to wait between attempts.
 
     Returns:
-        A set with the names of all required modules that are not in ignored_imports
+        RemovableDisk: The VEX disk, or None if not found.
     """
-
-    if visited is None:
-        visited = set()
-
-    with open(file_path, "r") as file:
-        file_content = file.read()
-
-    tree = ast.parse(file_content)
-    imported_modules = set()
-
-    for node in ast.walk(tree):
-        module_names = []
-        if isinstance(node, ast.Import):
-            module_names = [name.name for name in node.names]
-        elif isinstance(node, ast.ImportFrom):
-            module_names = [node.module]
-        for module in module_names:
-            if module not in visited and module.split(".")[0] not in ignored_imports:
-                # Add the module to the visited set
-                visited.add(module)
-                # Add the module to the imported set
-                imported_modules.add(module)
-                # Ensure the imported module exists in
-                if module not in available_libraries:
-                    raise ModuleNotFoundError(
-                        f"File {file_path} references module '{module}' but, it could not be found"
-                    )
-                # Recurse until no additional modules can be found
-                imported_modules.update(
-                    detect_dependencies(
-                        src_directory, available_libraries[module], available_libraries, ignored_imports, visited
-                    )
-                )
-
-    return imported_modules
+    failure_count = 0
+    while failure_count <= max_attempts:
+        for disk in get_removable_disks(POSIX_MOUNT_POINT_DIR):
+            if drive_identifier_string in disk.name:
+                return disk
+        failure_count += 1
+        time.sleep(time_between_attempts)
+    return None
 
 
-def unmount_drive(drive_path):
+def unmount_drive(drive_path: str) -> None:
+    """
+    Unmount the specified drive.
+
+    Args:
+        drive_path: The path of the drive to unmount.
+
+    Raises:
+        subprocess.CalledProcessError: If the unmount command fails.
+    """
     if os.name == "nt":
-        # This is really sketchy and doesn't work half the time, but im not sure how to do it better
         eject_command = f"powershell $driveEject = New-Object -comObject Shell.Application;" \
                         f"$driveEject.Namespace(17).ParseName('''{drive_path}''').InvokeVerb('''Eject''')"
     else:
@@ -118,11 +198,20 @@ def unmount_drive(drive_path):
     subprocess.run(eject_command, check=True)
 
 
-def convert_size(size_bytes):
-    if size_bytes == 0:
-        return "0 B"
+def convert_size(size_bytes: int) -> str:
+    """
+    Convert a size in bytes to a human-readable format.
+
+    Args:
+        size_bytes: The size in bytes.
+
+    Returns:
+        str: The size in a human-readable format (e.g., KB, MB, GB).
+    """
     size_name = ("B", "KB", "MB", "GB", "TB", "PB", "ZB", "YB")
-    i = int(math.floor((math.log(size_bytes, 1024))))
+    if size_bytes == 0:
+        return f"0 {size_name[0]}"
+    i = int(math.floor(math.log(size_bytes, 1024)))
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
-    return f"{s}, {size_name[i]}"
+    return f"{s} {size_name[i]}"

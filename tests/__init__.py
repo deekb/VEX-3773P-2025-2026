@@ -13,3 +13,4 @@ from .TestTickBasedRobot import TestNewTickBasedRobot
 from .TestTankOdometry import TestTankOdometry
 from .TestSlewRateLimiter import TestSlewRateLimiter
 from .TestGravitationalFeedforward import TestGravitationalFeedforward
+from .TestGuassianFilter import TestRealTimeGaussianSmoother
