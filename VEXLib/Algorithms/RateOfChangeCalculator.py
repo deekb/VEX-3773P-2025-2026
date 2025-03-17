@@ -4,7 +4,7 @@ class RateOfChangeCalculator:
     with a minimum sample time to prevent repeated calculations.
     """
 
-    def __init__(self, minimum_sample_time: float = 0.05):
+    def __init__(self, minimum_sample_time: float = 0.075):
         """
         Initializes the RateOfChangeCalculator.
 
@@ -32,7 +32,7 @@ class RateOfChangeCalculator:
         # Calculate time difference
         delta_time = current_time - self.previous_time
 
-        if delta_time < self.min_sample_time:
+        if not self.ready_for_sample:
             # Not enough time has elapsed, return the last calculated rate
             return self.last_rate
 
@@ -48,6 +48,16 @@ class RateOfChangeCalculator:
         self.last_rate = rate_of_change
 
         return rate_of_change
+
+    def ready_for_sample(self, current_time: float):
+        if self.previous_value is None or self.previous_time is None:
+            return True
+        # Calculate time difference
+        delta_time = current_time - self.previous_time
+
+        if delta_time < self.min_sample_time:
+            return False
+        return True
 
     def reset(self):
         """

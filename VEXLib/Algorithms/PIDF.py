@@ -13,7 +13,7 @@ class PIDFController(PIDController):
             ki: float = 0.0,
             kd: float = 0.0,
             kf: float = 0.0,  # New feedforward term
-            t: float = 0.05,
+            t: float = 1e-5,
             integral_limit: float = 1.0,
     ):
         """
