@@ -17,7 +17,7 @@ class ControlStyles:
 class DefaultPreferences:
     CONTROL_STYLE = ControlStyles.TANK
     CUBIC_FILTER_LINEARITY = 1
-    MAX_MOTOR_VOLTAGE = 12
+    MOVE_SPEED = 1
     TURN_SPEED = 1
     COLOR_SORT = False
     MEASURE_DRIVETRAIN_PROPERTIES_ON_STARTUP = False
@@ -79,7 +79,10 @@ class GearRatios:
 
 class DrivetrainProperties:
     TURN_TIMEOUT_SECONDS = 2
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.9
     TURNING_THRESHOLD = Rotation2d.from_degrees(3)
+    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
+    MOVEMENT_MAX_EXTRA_TIME = 0.5
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.6)
     MOTOR_TO_WHEEL_GEAR_RATIO = (36 / 60)
     WHEEL_DIAMETER = Distance.from_inches(3.235)
