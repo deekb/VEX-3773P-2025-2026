@@ -2,7 +2,8 @@
   <configuration default="false" name="Compile docs" type="StardustRunConfiguration" factoryName="save-as-zip">
     <option name="folderPath" value="$PROJECT_DIR$" />
     <option name="instanceId" value="vl" />
-    <option name="instanceName" value="VEXLib Documentation" />
+    <option name="instanceName" value="VEXLib" />
+    <option name="moduleName" value="Writerside" />
     <method v="2" />
   </configuration>
 </component>
