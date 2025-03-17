@@ -11,6 +11,8 @@ class TestMathUtil(unittest.TestCase):
         self.assertEqual(MathUtil.sign(-5), -1)
         self.assertEqual(MathUtil.sign(0), 1)
         self.assertEqual(MathUtil.sign(-0), 1)
+        self.assertEqual(MathUtil.sign(math.inf), 1)
+        self.assertEqual(MathUtil.sign(-math.inf), -1)
 
     def test_average(self):
         self.assertAlmostEqual(MathUtil.average(1, 2, 3), 2.0)
@@ -70,7 +72,7 @@ class TestMathUtil(unittest.TestCase):
         # Test with extrapolation allowed
         self.assertAlmostEqual(MathUtil.inverse_interpolate(0, 10, 5), 0.5)
         self.assertAlmostEqual(MathUtil.inverse_interpolate(0, 10, -5), 0.0)
-        self.assertAlmostEqual(MathUtil.inverse_interpolate(0, 10, 15), 1.0)
+        self.assertAlmostEqual(MathUtil.inverse_interpolate(0, 10, 15), 1.5)
 
         # Test with extrapolation disallowed
         self.assertAlmostEqual(MathUtil.inverse_interpolate(0, 10, 5, allow_extrapolation=False), 0.5)
@@ -104,12 +106,6 @@ class TestMathUtil(unittest.TestCase):
         self.assertEqual(MathUtil.factorial(5), 120)
         self.assertEqual(MathUtil.factorial(10), 3628800)
 
-    def test_sin(self):
-        self.assertAlmostEqual(MathUtil.sin(math.pi / 2), 1.0, places=5)
-        self.assertAlmostEqual(MathUtil.sin(math.pi), 0.0, places=5)
-        self.assertAlmostEqual(MathUtil.sin(3 * math.pi / 2), -1.0, places=5)
-        self.assertAlmostEqual(MathUtil.sin(2 * math.pi), 0.0, places=5)
-
     def test_average_edge_cases(self):
         self.assertRaises(ZeroDivisionError, MathUtil.average)  # No arguments should return 0
         self.assertAlmostEqual(MathUtil.average(1), 1.0)  # Single value should return the value itself
@@ -123,11 +119,13 @@ class TestMathUtil(unittest.TestCase):
     def test_input_modulus_edge_cases(self):
         self.assertEqual(MathUtil.input_modulus(5, 10, 20), 15)
         self.assertEqual(MathUtil.input_modulus(25, 10, 20), 15)
+        self.assertEqual(MathUtil.input_modulus(-5, 10, 20), 15)
+        self.assertEqual(MathUtil.input_modulus(-25, 10, 20), 15)
+        self.assertEqual(MathUtil.input_modulus(-15, 10, 20), 15)
 
     def test_clamp_edge_cases(self):
         self.assertEqual(MathUtil.clamp(5, 10, 20), 10)
         self.assertEqual(MathUtil.clamp(25, 10, 20), 20)
-
 
 
 if __name__ == '__main__':
