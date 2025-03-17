@@ -1,5 +1,9 @@
 def main(brain, robot_id):
-    from Robot import Robot
+
+    if robot_id == "drivebase_test":
+        from DrivetrainOnlyRobot import Robot
+    else:
+        from Robot import Robot
 
     robot = Robot(brain)
 
