@@ -6,6 +6,27 @@ from VEXLib.Util import time
 from vex import Brain
 
 
+"""
+Here's how I determine log level:
+
+For whom am I writing the log line?
+    If Developers:
+        Do I need to log states of variables?
+            Yes → DEBUG
+            No → TRACE
+    If System operators:
+        Do I log because of an unwanted state?
+            No → INFO
+            Yes:
+                Can the process continue with the unwanted state?
+                    Yes → WARN
+                    No:
+                        Can the application continue with the unwanted state?
+                            Yes → ERROR
+                            No → FATAL
+"""
+
+
 class LogLevel:
     TRACE = "TRACE"
     DEBUG = "DEBUG"
@@ -13,6 +34,7 @@ class LogLevel:
     WARN = "WARN"
     ERROR = "ERROR"
     FATAL = "FATAL"
+
 
 def file_exists(filename):
     if sys.platform == "linux":
@@ -178,11 +200,11 @@ class TimeSeriesLogger:
 def format_time(seconds):
     millis = int((seconds % 1) * 1000)
     seconds = int(seconds)
-    minutes, secs = divmod(seconds, 60)
+    minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
-    return "{:02}:{:02}:{:02}.{:03}".format(hours, minutes, secs, millis)
+    return "{:02}:{:02}:{:02}.{:03}".format(hours, minutes, seconds, millis)
 
 
-t = TimeSeriesLogger("/home/derek/PycharmProjects/VEXlib/logs/CONSTANTS.csv")
+# t = TimeSeriesLogger("/home/derek/PycharmProjects/VEXlib/logs/CONSTANTS.csv")
 
-print(t.read_data())
+# print(t.read_data())
