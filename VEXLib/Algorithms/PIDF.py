@@ -1,5 +1,12 @@
+from .PID import PIDGains
 from ..Algorithms.PID import PIDController
 from VEXLib.Util import time
+
+
+class PIDFGains(PIDGains):
+    def __init__(self, *args, kf=0.0):
+        super().__init__(*args)
+        self.kf = kf
 
 
 class PIDFController(PIDController):
@@ -9,10 +16,7 @@ class PIDFController(PIDController):
 
     def __init__(
             self,
-            kp: float = 1.0,
-            ki: float = 0.0,
-            kd: float = 0.0,
-            kf: float = 0.0,  # New feedforward term
+            pidf_gains: PIDFGains,
             t: float = 1e-5,
             integral_limit: float = 1.0,
     ):
@@ -20,17 +24,12 @@ class PIDFController(PIDController):
         Initializes a PIDFController instance.
 
         Args:
-            kp: Kp value for the PID.
-            ki: Ki value for the PID.
-            kd: Kd value for the PID.
-            kf: Kf value for the feedforward.
+            pidf_gains: Gain values for the PIDF.
             t: Minimum time between update calls. All calls made before this amount of time has passed since the last calculation will be ignored.
             integral_limit: The maximum absolute value for the integral term to prevent windup.
         """
         # Call the constructor of the base class (PIDController)
-        super().__init__(kp, ki, kd, t, integral_limit)
-        # Additional initialization for feedforward term
-        self.kf = kf
+        super().__init__(pid_gains=pidf_gains, t=t, integral_limit=integral_limit)
 
     def update(self, current_value: float) -> float:
         """
@@ -45,7 +44,7 @@ class PIDFController(PIDController):
         # Call the update method of the base class (PIDController)
         pid_output = super().update(current_value)
         # Calculate the feedforward component
-        feedforward_output = self.kf * self.setpoint
+        feedforward_output = self.pid_gains.kf * self.setpoint
         # Combine PID and feedforward outputs
         total_output = pid_output + feedforward_output
         return total_output

@@ -1,7 +1,15 @@
 from vex import Thread, wait, PERCENT, RPM, SECONDS
+from .PIDF import PIDFGains
 from ..Math import MathUtil
 from VEXLib.Units import Units
 from ..Util import time as time
+
+
+class PIDGains:
+    def __init__(self, kp: float, ki: float, kd: float):
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
 
 
 class PIDMotorController:
@@ -63,24 +71,18 @@ class PIDMotorController:
 
 
 class PIDController:
-    def __init__(self, kp: float = 1.0,
-                 ki: float = 0.0,
-                 kd: float = 0.0,
-                 t: float = 0.05,
+    def __init__(self, pid_gains: PIDGains | PIDFGains,
+                 t: float = 0.01,
                  integral_limit: float = 1.0):
         """
         Initializes a PIDController instance.
 
         Args:
-            kp: Kp value for the PID.
-            ki: Ki value for the PID.
-            kd: Kd value for the PID.
+            pid_gains: Gain values for the PID.
             t: Minimum time between update calls. All calls made before this amount of time has passed since the last calculation will be ignored.
             integral_limit: The maximum absolute value for the integral term to prevent windup.
         """
-        self.kp = kp
-        self.ki = ki
-        self.kd = kd
+        self.pid_gains = pid_gains
         self.time_step = t
         self._previous_time = time.time()
         self._current_value = 0.0
@@ -116,15 +118,15 @@ class PIDController:
         # current_error = self._calculate_continuous_error(current_error)
 
         self._error_integral += current_error * delta_time
-        if self.ki != 0:
+        if self.pid_gains.ki != 0:
             self._error_integral = MathUtil.clamp(self._error_integral, -self._integral_limit, self._integral_limit)
-        if self.kd != 0:
+        if self.pid_gains.kd != 0:
             error_derivative = (current_error - self._previous_error) / delta_time
         else:
             error_derivative = 0.0
 
         self._control_output = (
-                self.kp * current_error + self.ki * self._error_integral + self.kd * error_derivative
+                self.pid_gains.kp * current_error + self.pid_gains.ki * self._error_integral + self.pid_gains.kd * error_derivative
         )
         self._previous_error = current_error
         return self._control_output
@@ -133,7 +135,6 @@ class PIDController:
         return abs(self._previous_error) <= threshold
 
     def reset(self):
-        print("RESET PID")
         self._current_value = 0
         self._previous_error = 0
         self._error_integral = 0
