@@ -1,3 +1,5 @@
+from VEXLib.Algorithms.PID import PIDGains
+from VEXLib.Algorithms.PIDF import PIDFGains
 from VEXLib.Geometry.GeometryUtil import circle_circumference
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance
@@ -78,11 +80,19 @@ class GearRatios:
 
 
 class DrivetrainProperties:
+    # PID gains
+    LEFT_PIDF_GAINS = PIDFGains(0.15, 0, 0, 0.576953 * 1.1)
+    RIGHT_PIDF_GAINS = PIDFGains(0.15, 0, 0, 0.5742773 * 1.1)
+
+    POSITION_PID_GAINS = PIDGains(5, 0.1, 0)
+    ROTATION_PID_GAINS = PIDGains(0.9, 0.0, 0.04)
+
+    ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     TURN_TIMEOUT_SECONDS = 2
     TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.9
     TURNING_THRESHOLD = Rotation2d.from_degrees(3)
-    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
-    MOVEMENT_MAX_EXTRA_TIME = 0.5
+    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.1)
+    MOVEMENT_MAX_EXTRA_TIME = 1
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.6)
     MOTOR_TO_WHEEL_GEAR_RATIO = (36 / 60)
     WHEEL_DIAMETER = Distance.from_inches(3.235)
@@ -90,14 +100,8 @@ class DrivetrainProperties:
 
 
 class WallStakeMechanismProperties:
-    PID_TUNINGS = {
-        "kp": 50,
-        "ki": 0,
-        "kd": 1
-    }
-    FEEDFORWARD_TUNINGS = {
-        "kg": 0.9
-    }
+    PID_GAINS = PIDGains(kp=50, ki=0, kd=1)
+    FEEDFORWARD_GAIN = 0.9
     DOCKED_POSITION = Rotation2d.from_degrees(-100)
     POSITIONAL_TOLERANCE = Rotation2d.from_degrees(2)
     LOADING_POSITION = Rotation2d.from_degrees(-80)
