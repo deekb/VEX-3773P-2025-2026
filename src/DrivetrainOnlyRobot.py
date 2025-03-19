@@ -1,6 +1,7 @@
 from Constants import *
 from Drivetrain import Drivetrain
 from VEXLib import Util
+from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Motor import Motor
 from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
@@ -51,12 +52,28 @@ class Robot(RobotBase):
     def start(self):
         self.on_setup()
 
+    def auto_routine(robot):
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(60.0, -0.0), use_back=True)
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(103.925, 33.1))
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(63.993, 3.009), use_back=True)
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(63.993, 68.009))
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(103.993, 68.009))
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(-1.007, 68.009), use_back=True)
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(-43.433, 110.435))
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(-29.291, 96.293), use_back=True)
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(-50.504, 117.507))
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(-15.149, 82.151), use_back=True)
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(-15.149, -37.849))
+        robot.drivetrain.move_to_point(Translation2d.from_centimeters(-15.149, -67.849))
+
+
     @main_log.logged
     def on_setup(self):
         self.calibrate_sensors()
         self.main_log.info("Setup complete")
+        self.auto_routine()
 
-        self.drivetrain.measure_properties()
+        # self.drivetrain.measure_properties()
 
         # self.drivetrain.determine_speed_pid_constants()
 
