@@ -12,12 +12,12 @@ class TestGravitationalFeedforward(unittest.TestCase):
     def test_update_horizontal(self):
         gf = GravitationalFeedforward(kg=1.0)
         output = gf.update(0.0)
-        self.assertAlmostEqual(output, 1.0, places=5)
+        self.assertAlmostEqual(output, 0.0, places=5)
 
     def test_update_vertical(self):
         gf = GravitationalFeedforward(kg=1.0)
         output = gf.update(90.0)
-        self.assertAlmostEqual(output, 0.0, places=5)
+        self.assertAlmostEqual(output, 1.0, places=5)
 
     def test_update_midway(self):
         gf = GravitationalFeedforward(kg=1.0)
@@ -26,12 +26,12 @@ class TestGravitationalFeedforward(unittest.TestCase):
 
     def test_update_wrap_around(self):
         gf = GravitationalFeedforward(kg=1.0)
-        output = gf.update(180.0)
+        output = gf.update(270)
         self.assertAlmostEqual(output, -1.0, places=5)
 
     def test_update_with_gain(self):
         gf = GravitationalFeedforward(kg=2.0)
-        output = gf.update(0.0)
+        output = gf.update(90)
         self.assertAlmostEqual(output, 2.0, places=5)
 
 
