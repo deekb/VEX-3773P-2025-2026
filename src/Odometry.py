@@ -3,6 +3,7 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance, Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 import VEXLib.Math.MathUtil as MathUtil
+from Constants import DrivetrainProperties
 from vex import DEGREES, Inertial, TurnType
 
 
@@ -59,10 +60,12 @@ class TankOdometry:
         # Update the robot's orientation by subtracting the zero rotation (the rotation to be considered zero) from the measured pose
         self.pose.rotation = inertial_sensor_rotation - self.zero_rotation
 
+        field_relative_rotation = self.pose.rotation + DrivetrainProperties.ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION
+
         # Update the robot's 2D position based on forward distance and orientation
         self.pose.translation += Translation2d(
-            forward_distance * self.pose.rotation.cos(),
-            forward_distance * self.pose.rotation.sin()
+            forward_distance * field_relative_rotation.cos(),
+            forward_distance * field_relative_rotation.sin()
         )
 
     def get_pose(self) -> Pose2d:
