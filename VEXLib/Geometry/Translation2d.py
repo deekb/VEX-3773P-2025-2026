@@ -211,7 +211,7 @@ class Translation2d:
 
     def angle(self):
         """
-        Returns the angle (counterclockwise) that this translation forms with the positive X axis.
+        Returns the angle (positive counterclockwise) that this translation forms with the positive X axis.
 
         Returns:
             The angle of the translation
