@@ -1,6 +1,6 @@
 from VEXLib.Util import time
 from VEXLib.Util.Logging import TimeSeriesLogger
-from vex import TorqueUnits, PERCENT, PowerUnits
+from vex import TorqueUnits, PERCENT, PowerUnits, VoltageUnits, FORWARD, VOLT
 
 
 def get_motor_data(motor):
@@ -39,7 +39,7 @@ def collect_power_relationship_data(filename, motor_list, step_delay=0.05, power
     logger = TimeSeriesLogger(filename, list(get_motor_data(motor_list[0]).keys()) + ["input_power (% of rated)"])
 
     for motor in motor_list:
-        motor.set(0)
+        motor.spin(FORWARD, 0, VOLT)
 
     print("Starting power ramp and data collection...")
 
@@ -47,7 +47,7 @@ def collect_power_relationship_data(filename, motor_list, step_delay=0.05, power
         print("Applying power: {}".format(input_power))
         # Apply power to all motors
         for motor in motor_list:
-            motor.set(input_power)
+            motor.spin(FORWARD, input_power * 12, VOLT)
 
         # Wait for the drivetrain to respond
         time.sleep(step_delay)
@@ -79,4 +79,4 @@ def collect_power_relationship_data(filename, motor_list, step_delay=0.05, power
 
     # Stop the motor group
     for motor in motor_list:
-        motor.set(0.0)
+        motor.spin(FORWARD, 0, VOLT)
