@@ -1,11 +1,9 @@
-from .PID import PIDGains
-from ..Algorithms.PID import PIDController
-from VEXLib.Util import time
+from VEXLib.Algorithms.PID import PIDGains, PIDController
 
 
 class PIDFGains(PIDGains):
-    def __init__(self, *args, kf=0.0):
-        super().__init__(*args)
+    def __init__(self, kp, ki, kd, kf=0.0):
+        super().__init__(kp, ki, kd)
         self.kf = kf
 
 

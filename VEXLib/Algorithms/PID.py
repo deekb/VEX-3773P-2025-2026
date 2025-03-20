@@ -1,8 +1,7 @@
 from vex import Thread, wait, PERCENT, RPM, SECONDS
-from .PIDF import PIDFGains
-from ..Math import MathUtil
+from VEXLib.Math import MathUtil
 from VEXLib.Units import Units
-from ..Util import time as time
+from VEXLib.Util import time as time
 
 
 class PIDGains:
@@ -71,7 +70,7 @@ class PIDMotorController:
 
 
 class PIDController:
-    def __init__(self, pid_gains: PIDGains | PIDFGains,
+    def __init__(self, pid_gains: PIDGains,
                  t: float = 0.01,
                  integral_limit: float = 1.0):
         """
