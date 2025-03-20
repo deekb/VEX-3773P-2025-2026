@@ -34,10 +34,10 @@ class Drivetrain:
         self.right_motors = right_motors
 
         self.odometry = TankOdometry(inertial_sensor)
-        self.log.debug(f"Odometry initialized with inertial_sensor: {inertial_sensor}")
+        self.log.debug("Odometry initialized with inertial_sensor:", inertial_sensor)
 
         self.ANGLE_DIRECTION = 1
-        self.log.debug(f"ANGLE_DIRECTION set to {self.ANGLE_DIRECTION}")
+        self.log.debug("ANGLE_DIRECTION set to", self.ANGLE_DIRECTION)
 
         self.left_drivetrain_PID = PIDFController(DrivetrainProperties.LEFT_PIDF_GAINS, t=1e-5)
         self.right_drivetrain_PID = PIDFController(DrivetrainProperties.RIGHT_PIDF_GAINS, t=1e-5)
@@ -58,10 +58,10 @@ class Drivetrain:
         self.log.debug("Trapezoidal profile initialized")
 
         self.TURNING_THRESHOLD = DrivetrainProperties.TURNING_THRESHOLD
-        self.log.debug(f"Turning threshold set to {self.TURNING_THRESHOLD}")
+        self.log.debug("Turning threshold set to ", self.TURNING_THRESHOLD)
 
         self.target_pose = Pose2d(Translation2d(), self.odometry.zero_rotation)
-        self.log.debug(f"Target pose initialized to {self.target_pose}")
+        self.log.debug("Target pose initialized to", self.target_pose)
 
     def set_angles_inverted(self, inverted):
         self.log.debug("Set angles to inverted: ", inverted)
@@ -84,7 +84,7 @@ class Drivetrain:
         return delta_translation.length(), delta_translation.angle() - DrivetrainProperties.ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION
 
     def set_powers(self, left_power, right_power):
-        self.log.trace("Entering set_powers")
+        # self.log.trace("Entering set_powers")
         for motor in self.left_motors:
             motor.set(left_power)
         for motor in self.right_motors:
@@ -130,12 +130,10 @@ class Drivetrain:
         return GeometryUtil.arc_length_from_rotation(DrivetrainProperties.WHEEL_CIRCUMFERENCE, wheel_rotation)
 
     def set_speed_zero_to_one(self, left_speed, right_speed):
-        self.log.trace("Entering set_speed_zero_to_one")
         self.set_speed(DrivetrainProperties.MAX_ACHIEVABLE_SPEED * left_speed,
                        DrivetrainProperties.MAX_ACHIEVABLE_SPEED * right_speed)
 
     def set_speed(self, left_speed: Velocity1d, right_speed: Velocity1d):
-        self.log.debug("Entering set_speed")
         self.left_drivetrain_PID.setpoint = left_speed.to_meters_per_second()
         self.right_drivetrain_PID.setpoint = right_speed.to_meters_per_second()
 
@@ -262,9 +260,9 @@ class Drivetrain:
     def measure_properties(self):
         self.log.trace("Entering measure_properties")
         self.log.info("Measuring drivetrain properties...")
-        collect_power_relationship_data("logs/left_drivetrain.csv", self.left_motors)
+        collect_power_relationship_data("logs/left_drivetrain.csv", self.left_motors, step_delay=0.1)
         self.log.info("Measured left drivetrain properties...")
-        collect_power_relationship_data("logs/right_drivetrain.csv", self.right_motors)
+        collect_power_relationship_data("logs/right_drivetrain.csv", self.right_motors, step_delay=0.1)
         self.log.info("Measured right drivetrain properties...")
 
     def debug(self, imperial=False):
@@ -316,6 +314,14 @@ class Drivetrain:
             self.update_powers()
             data = self.debug()
             speed_logger.write_data(data)
+        self.log.debug("Setting speeds to +/+160 cm/sec for 3 seconds")
+        self.set_speed(Velocity1d.from_centimeters_per_second(160), Velocity1d.from_centimeters_per_second(160))
+        start_time = time.time()
+        while time.time() - start_time < 3:
+            self.update_odometry()
+            self.update_powers()
+            data = self.debug()
+            speed_logger.write_data(data)
         self.set_speed(Velocity1d.from_centimeters_per_second(0), Velocity1d.from_centimeters_per_second(0))
         self.update_odometry()
         self.set_powers(0, 0)
@@ -353,7 +359,7 @@ class Drivetrain:
 
         # # Determine kP by analyzing the error
         best_kp = 0
-        best_error = float('inf')
+        best_error = float("inf")
         for kp in [i / 100 for i in range(101)]:
             total_error = 0
             for i in range(len(data_left["input_power"])):
