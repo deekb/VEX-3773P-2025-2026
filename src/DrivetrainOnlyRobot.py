@@ -1,14 +1,18 @@
+import io
+import sys
+
 from Constants import *
 from Drivetrain import Drivetrain
 from VEXLib import Util
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Motor import Motor
+from VEXLib.Network.Telemetry import SerialCommunication
 from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Sensors.Controller import Controller
 from VEXLib.Util import time
 from VEXLib.Util.Logging import Logger
-from vex import Competition, PRIMARY, FontType, Inertial
+from vex import Competition, PRIMARY, FontType, Inertial, Thread
 
 main_log = Logger(Brain().sdcard, Brain().screen, MAIN_LOG_FILENAME)
 debug_log = Logger(Brain().sdcard, Brain().screen, DEBUG_LOG_FILENAME)
@@ -17,6 +21,8 @@ debug_log = Logger(Brain().sdcard, Brain().screen, DEBUG_LOG_FILENAME)
 class Robot(RobotBase):
     def __init__(self, brain):
         super().__init__(brain)
+        self.serial_communication = SerialCommunication("/dev/port19", "/dev/port20")
+
         self.brain.screen.set_font(FontType.MONO12)
         self.controller = Controller(PRIMARY)
 
@@ -50,7 +56,16 @@ class Robot(RobotBase):
         print(message)
 
     def start(self):
-        self.on_setup()
+        try:
+            self.on_setup()
+        except Exception as e:
+            exception_buffer = io.StringIO()
+            sys.print_exception(e, exception_buffer)
+            self.serial_communication.send(str(exception_buffer.getvalue()))
+
+            for log_entry in exception_buffer.getvalue().split("\n"):
+                main_log.fatal(str(log_entry))
+            raise e
 
     def auto_routine(robot):
         robot.drivetrain.move_to_point(Translation2d.from_centimeters(60.0, -0.0), use_back=True)
@@ -66,12 +81,13 @@ class Robot(RobotBase):
         robot.drivetrain.move_to_point(Translation2d.from_centimeters(-15.149, -37.849))
         robot.drivetrain.move_to_point(Translation2d.from_centimeters(-15.149, -67.849))
 
-
     @main_log.logged
     def on_setup(self):
-        self.calibrate_sensors()
+        # self.calibrate_sensors()
         self.main_log.info("Setup complete")
-        self.auto_routine()
+
+        raise Exception("OH NO!")
+        # self.auto_routine()
 
         # self.drivetrain.measure_properties()
 
