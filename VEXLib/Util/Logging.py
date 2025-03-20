@@ -87,7 +87,6 @@ class Logger:
         end_time = time.time()
 
         elapsed_time = end_time - start_time
-        print("Log entry written in", elapsed_time, "seconds")
 
     def trace(self, *parts, end="\n"):
         self.log(*parts, end=end, log_level=LogLevel.TRACE)
