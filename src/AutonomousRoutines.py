@@ -1,4 +1,3 @@
-import WallStakeMechanism as WallStakeMechanism
 from VEXLib.Algorithms.TrapezoidProfile import TrapezoidProfile, Constraints
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d
@@ -29,8 +28,8 @@ def stop_and_sleep(robot, time_to_sleep):
 
 
 def bonk(robot):
-    robot.wall_stake_mechanism.transition_to(WallStakeMechanism.WallStakeState.HIGH_SCORING)
-    robot.wall_stake_mechanism.transition_to(WallStakeMechanism.WallStakeState.DOCKED)
+    robot.wall_stake_mechanism.transition_to(WallStakeState.HIGH_SCORING)
+    robot.wall_stake_mechanism.transition_to(WallStakeState.DOCKED)
 
 
 def unload_if_didnt_score(robot):
