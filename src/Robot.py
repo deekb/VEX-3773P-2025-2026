@@ -1,13 +1,17 @@
+import io
+import sys
+
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
 from Constants import *
-from CornerMechanism import CornerMechanism
+from CornerMechanism import CornerMechanism, Sides
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
 from ScoringMechanism import ScoringMechanism
 from VEXLib import Util
 from VEXLib.Kinematics import desaturate_wheel_speeds
 from VEXLib.Motor import Motor
+from VEXLib.Network.Telemetry import SerialCommunication
 from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Sensors.Controller import DoublePressHandler, Controller
@@ -18,12 +22,13 @@ from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, D
     Inertial
 
 main_log = Logger(Brain().sdcard, Brain().screen, MAIN_LOG_FILENAME)
-debug_log = Logger(Brain().sdcard, Brain().screen, DEBUG_LOG_FILENAME)
 
 
 class Robot(RobotBase):
     def __init__(self, brain):
         super().__init__(brain)
+        self.serial_communication = SerialCommunication("/dev/port6", "/dev/port7")
+
         self.brain.screen.set_font(FontType.MONO12)
 
         self.controller = Controller(PRIMARY)
@@ -39,7 +44,6 @@ class Robot(RobotBase):
 
         self.screen = ScrollBufferedScreen(max_lines=20)
         self.main_log = main_log
-        self.debug_log = debug_log
         self.alliance_color = None
 
         self.mobile_goal_clamp = MobileGoalClamp(ThreeWirePorts.MOBILE_GOAL_CLAMP_PISTON)
@@ -66,6 +70,8 @@ class Robot(RobotBase):
         self.autonomous = pass_function
         self.competition = Competition(self.on_driver_control, self.on_autonomous)
         self.color_sort_tick_thread = None
+        
+        self.setup_complete = False
 
     def log_and_print(self, *parts):
         self.brain.screen.set_font(FontType.MONO15)
@@ -81,6 +87,17 @@ class Robot(RobotBase):
         print(message)
 
     def on_autonomous(self):
+        while not self.setup_complete:
+            time.sleep_ms(20)
+        if self.alliance_color == "red":
+            self.main_log.debug("Alliance color is", self.alliance_color)
+            self.main_log.debug("Using left side corner mechanism")
+            self.corner_mechanism.active_side = Sides.LEFT
+        elif self.alliance_color == "blue":
+            self.main_log.debug("Alliance color is", self.alliance_color)
+            self.main_log.debug("Using right side corner mechanism")
+            self.corner_mechanism.active_side = Sides.RIGHT
+
         self.main_log.debug("Executing chosen autonomous routine:", str(self.autonomous))
         self.main_log.debug("Starting color_sort_tick_thread")
         self.scoring_mechanism.log.info("Starting color_sort_tick_thread")
@@ -95,7 +112,7 @@ class Robot(RobotBase):
         autonomous_type = self.controller.get_selection(["red", "blue", "skills_alliance_stake"])
         self.main_log.debug("Autonomous type:", autonomous_type)
         self.alliance_color = {"red": "red", "blue": "blue", "skills_alliance_stake": "red"}[autonomous_type]
-
+        
         if "skills" in autonomous_type:
             self.drivetrain.set_angles_inverted(False)
             self.main_log.trace("set_angles_inverted: False")
@@ -112,7 +129,16 @@ class Robot(RobotBase):
         return autonomous_type + " " + auto
 
     def start(self):
-        self.on_setup()
+        try:
+            self.on_setup()
+        except Exception as e:
+            exception_buffer = io.StringIO()
+            sys.print_exception(e, exception_buffer)
+            self.serial_communication.send(str(exception_buffer.getvalue()))
+
+            for log_entry in exception_buffer.getvalue().split("\n"):
+                main_log.fatal(str(log_entry))
+            raise e
 
     @main_log.logged
     def on_setup(self):
@@ -121,8 +147,9 @@ class Robot(RobotBase):
         self.align_robot()
         self.select_autonomous_and_drive_style()
         self.main_log.info("Setup complete")
+        self.main_log.debug("Unlocking setup lock")
+        self.setup_complete = True
 
-    @debug_log.logged
     def calibrate_sensors(self):
         self.main_log.info("Calibrating sensors")
         # Set initial sensor positions and calibrate mechanisms.
@@ -252,6 +279,8 @@ class Robot(RobotBase):
                 self.log_and_print(message)
 
     def on_driver_control(self):
+        while not self.setup_complete and self.competition.is_driver_control():
+            time.sleep_ms(20)
         if self.color_sort_tick_thread:
             self.color_sort_tick_thread.stop()
         while True:
@@ -259,7 +288,6 @@ class Robot(RobotBase):
             time.sleep_ms(20)
 
     def driver_control_periodic(self):
-        # (Driver control logic remains unchanged)
         left_speed = right_speed = 0
         if self.user_preferences.CONTROL_STYLE == ControlStyles.TANK:
             left_speed = self.controller.left_stick_y()
