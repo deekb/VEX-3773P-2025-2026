@@ -7,6 +7,8 @@ from Constants import *
 from CornerMechanism import CornerMechanism, Sides
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
+from RingRushMechanism import RingRushMechanism
+from RingDescorer import RingDescorer
 from ScoringMechanism import ScoringMechanism
 from VEXLib import Util
 from VEXLib.Kinematics import desaturate_wheel_speeds
@@ -18,6 +20,7 @@ from VEXLib.Sensors.Controller import DoublePressHandler, Controller
 from VEXLib.Util import time, pass_function
 from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism, WallStakeState
+import AutonomousRoutinesPointBased
 from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, Thread, FontType, \
     Inertial
 
@@ -47,7 +50,9 @@ class Robot(RobotBase):
         self.alliance_color = None
 
         self.mobile_goal_clamp = MobileGoalClamp(ThreeWirePorts.MOBILE_GOAL_CLAMP_PISTON)
-        self.corner_mechanism = CornerMechanism(DigitalOut(ThreeWirePorts.DOINKER_PISTON))
+        self.ring_rush_mechanism = RingRushMechanism(ThreeWirePorts.RING_RUSH_MECHANISM_PISTON)
+        self.ring_descorer = RingDescorer(ThreeWirePorts.RING_DESCORER_PISTON)
+        self.corner_mechanism = CornerMechanism(DigitalOut(ThreeWirePorts.LEFT_DOINKER_PISTON), DigitalOut(ThreeWirePorts.RIGHT_DOINKER_PISTON))
 
         self.scoring_mechanism = ScoringMechanism(
             Motor(Ports.PORT1, GearSetting.RATIO_18_1, False),
@@ -66,7 +71,7 @@ class Robot(RobotBase):
             lambda: self.wall_stake_mechanism.transition_to(WallStakeState.DOCKED))
 
         self.user_preferences = DefaultPreferences
-        self.autonomous_mappings = {str(function)[10:-14]: function for function in AutonomousRoutines.available_autos}
+        self.autonomous_mappings = {str(function)[10:-14]: function for function in AutonomousRoutines.available_autos + AutonomousRoutinesPointBased.available_autos}
         self.autonomous = pass_function
         self.competition = Competition(self.on_driver_control, self.on_autonomous)
         self.color_sort_tick_thread = None
@@ -332,6 +337,10 @@ class Robot(RobotBase):
         self.log_and_print("Setting up Dirk Preferences")
         self.controller.buttonB.pressed(
             lambda: [self.log_and_print("Toggling clamp"), self.mobile_goal_clamp.toggle_clamp()])
+
+        self.controller.buttonA.pressed(
+            lambda: [self.log_and_print("Toggling descorer"), self.ring_descorer.toggle_descorer()])
+
         self.controller.buttonL2.pressed(lambda: [self.log_and_print("Outtake"), self.scoring_mechanism.outtake()])
         self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonR2.pressed(lambda: [self.log_and_print("Intake"), self.scoring_mechanism.intake()])
@@ -339,7 +348,9 @@ class Robot(RobotBase):
         self.controller.buttonL1.pressed(self.double_press_handler.press)
         self.controller.buttonR2.released(
             lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
-        self.controller.buttonY.pressed(self.corner_mechanism.toggle_corner_mechanism)
+        
+        self.controller.buttonRight.pressed(self.corner_mechanism.toggle_left_corner_mechanism)
+        self.controller.buttonY.pressed(self.corner_mechanism.toggle_right_corner_mechanism)
 
     def setup_derek_preferences(self):
         self.log_and_print("Setting up Derek Preferences")
@@ -348,6 +359,8 @@ class Robot(RobotBase):
         self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(180)))
         self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(270)))
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
+        self.controller.buttonA.pressed(
+            lambda: [self.log_and_print("Toggling descorer"), self.ring_descorer.toggle_descorer()])
         self.controller.buttonL1.pressed(self.scoring_mechanism.intake)
         self.controller.buttonL1.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
@@ -355,4 +368,4 @@ class Robot(RobotBase):
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
         self.controller.buttonR2.pressed(self.wall_stake_mechanism.previous_state)
         self.controller.buttonY.pressed(
-            lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_corner_mechanism())
+            lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_left_corner_mechanism())
