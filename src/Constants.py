@@ -44,7 +44,7 @@ class DefaultPreferences:
 class DirkPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
-    TURN_SPEED = 0.7
+    TURN_SPEED = 1
     COLOR_SORT = True
 
 
@@ -87,7 +87,10 @@ class ThreeWirePorts:
     """Scoring Mechanism"""
     brain = Brain()
     MOBILE_GOAL_CLAMP_PISTON = brain.three_wire_port.c
-    DOINKER_PISTON = brain.three_wire_port.b
+    RING_DESCORER_PISTON = brain.three_wire_port.a
+    LEFT_DOINKER_PISTON = brain.three_wire_port.b
+    RIGHT_DOINKER_PISTON = brain.three_wire_port.d
+    RING_RUSH_MECHANISM_PISTON = brain.three_wire_port.e
 
 
 class GearRatios:
