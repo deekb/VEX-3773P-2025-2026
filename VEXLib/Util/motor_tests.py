@@ -1,6 +1,6 @@
 from VEXLib.Util import time
 from VEXLib.Util.Logging import TimeSeriesLogger
-from vex import TorqueUnits, PERCENT, PowerUnits, VoltageUnits, FORWARD, VOLT
+from vex import TorqueUnits, PERCENT, PowerUnits, FORWARD, VOLT
 
 
 def get_motor_data(motor):
@@ -35,6 +35,7 @@ def collect_power_relationship_data(filename, motor_list, step_delay=0.05, power
         speed_function: The function to get the speed of the motor.
         data_collection_interval: Time (in seconds) between data collections.
         data_points_per_step: Number of data points to collect per power step.
+        speed_unit: The unit to display for the speed parameter
     """
     logger = TimeSeriesLogger(filename, list(get_motor_data(motor_list[0]).keys()) + ["input_power (% of rated)"])
 

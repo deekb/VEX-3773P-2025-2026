@@ -14,7 +14,6 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d, Distance
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Geometry.Velocity1d import Velocity1d
-from VEXLib.Math import is_near
 from VEXLib.Motor import Motor
 from VEXLib.Units import Units
 from VEXLib.Util import ContinuousTimer, time
@@ -33,7 +32,7 @@ class Drivetrain:
         self.left_motors = left_motors
         self.right_motors = right_motors
 
-        self.odometry = TankOdometry(inertial_sensor)
+        self.odometry = TankOdometry(inertial_sensor, DrivetrainProperties.ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION)
         self.log.debug("Odometry initialized with inertial_sensor:", inertial_sensor)
 
         self.ANGLE_DIRECTION = 1
@@ -371,7 +370,7 @@ class Drivetrain:
                 best_error = total_error
                 best_kp = kp
 
-    def log_translation_discrepancy(self):
+    def log_translation_discrepancy(self, imperial=False, tolerance=Translation1d.from_centimeters(5)):
         actual_translation = self.odometry.get_translation()
         target_translation = self.target_pose.translation
 

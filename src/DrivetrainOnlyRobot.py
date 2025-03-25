@@ -12,7 +12,7 @@ from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Sensors.Controller import Controller
 from VEXLib.Util import time
 from VEXLib.Util.Logging import Logger
-from vex import Competition, PRIMARY, FontType, Inertial, Thread
+from vex import Competition, PRIMARY, FontType, Inertial
 
 main_log = Logger(Brain().sdcard, Brain().screen, MAIN_LOG_FILENAME)
 debug_log = Logger(Brain().sdcard, Brain().screen, DEBUG_LOG_FILENAME)

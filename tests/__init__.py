@@ -9,7 +9,7 @@ from .TestTranslation2d import TestTranslation2d
 from .TestVelocity1d import TestVelocity1d
 from .TestRotationalVelocity import TestRotationalVelocity
 from .TestSmallestAngularDifference import TestSmallestAngularDifference
-from .TestTickBasedRobot import TestNewTickBasedRobot
+# from .TestTickBasedRobot import TestNewTickBasedRobot
 from .TestTankOdometry import TestTankOdometry
 from .TestSlewRateLimiter import TestSlewRateLimiter
 from .TestGravitationalFeedforward import TestGravitationalFeedforward

@@ -2,7 +2,6 @@ import unittest
 import hashlib
 from VEXLib.Util.MD5sum import md5sum
 
-# Assuming the provided md5sum function is already available as md5sum
 
 class TestMD5Functions(unittest.TestCase):
 
