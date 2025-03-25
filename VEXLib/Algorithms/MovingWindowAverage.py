@@ -1,4 +1,5 @@
 from VEXLib.Math import MathUtil
+from VEXLib.Util.CircularBuffer import CircularBuffer
 
 
 class MovingWindowAverage:
@@ -6,16 +7,11 @@ class MovingWindowAverage:
     A class to handle moving window average operations.
     """
 
-    def __init__(self, window_size):
+    def __init__(self, buffer: CircularBuffer):
         """
-        Initializes the MovingWindowAverage with a specified window size.
-
-        :param window_size: The number of elements in the moving window.
+        Initializes the MovingWindowAverage with a buffer to hold the values.
         """
-        self.window_size = window_size
-        self.values = [0] * window_size
-        self.index = 0
-        self.count = 0
+        self.buffer = buffer
 
     def add_value(self, value):
         """
@@ -24,28 +20,19 @@ class MovingWindowAverage:
         :param value: The new value to add to the window.
         :return: The current smoothed average based on the window.
         """
-        self.values[self.index] = value
-        self.index = (self.index + 1) % self.window_size
-        if self.count < self.window_size:
-            self.count += 1
-
+        self.buffer.add(value)
         return self.get_average()
 
     def get_average(self):
         """
         Calculates the average of the current window.
 
-        :return: The average of the current window, or 0 if the window is empty.
+        :return: The average of the current window
         """
-        if self.count == 0:
-            return 0
-
-        return MathUtil.average_iterable(self.values[:self.count])
+        return MathUtil.average_iterable(self.buffer.get())
 
     def reset(self):
         """
         Resets the values in the window for reuse.
         """
-        self.values = [0] * self.window_size
-        self.index = 0
-        self.count = 0
+        self.buffer.clear()
