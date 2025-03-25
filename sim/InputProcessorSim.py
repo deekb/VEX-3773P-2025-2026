@@ -1,31 +1,15 @@
 import matplotlib.pyplot as plt
 
 from VEXLib.Math import apply_deadband, cubic_filter
+from VEXLib.Sensors.Controller import InputProcessor
 
 
-class InputProcessor:
+class GraphedInputProcessor(InputProcessor):
     def __init__(self):
         """
         Initialize the input processor with an empty pipeline.
         """
-        self.pipeline = []
-
-    def add_step(self, function):
-        """
-        Add a processing step to the pipeline.
-        :param function: A callable function that takes input and returns processed output.
-        """
-        self.pipeline.append(function)
-
-    def process(self, input_value):
-        """
-        Process the input through the pipeline.
-        :param input_value: The initial input value to process.
-        :return: The processed output.
-        """
-        for step in self.pipeline:
-            input_value = step(input_value)
-        return input_value
+        super().__init__()
 
     def visualize_pipeline(self, input_values):
         """
@@ -55,7 +39,7 @@ class InputProcessor:
 
 
 # Initialize an InputProcessor
-processor = InputProcessor()
+processor = GraphedInputProcessor()
 
 # Add processing steps
 processor.add_step(lambda x: cubic_filter(x, 0))
