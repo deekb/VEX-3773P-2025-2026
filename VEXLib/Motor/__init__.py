@@ -1,5 +1,3 @@
-import math
-
 import vex
 from .Constants import *
 
