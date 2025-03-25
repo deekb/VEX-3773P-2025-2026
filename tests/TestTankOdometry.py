@@ -19,7 +19,7 @@ class TestTankOdometry(unittest.TestCase):
         self.mock_inertial.rotation.return_value = 0  # Default mock value for sensor rotation
 
         # Initialize a fresh TankOdometry object for each test
-        self.odometry = TankOdometry(self.mock_inertial)
+        self.odometry = TankOdometry(self.mock_inertial, Rotation2d.from_degrees(90))
 
     def test_initialization(self):
         """
