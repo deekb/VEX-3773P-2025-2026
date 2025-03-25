@@ -1,5 +1,4 @@
 from HolonomicOdometry import Odometry
-from VEXLib.Math import MathUtil
 import math
 
 x_axis = Constants.ControllerAxis.x_axis
