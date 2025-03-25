@@ -96,9 +96,9 @@ def main():
                                     VEXLIB_DIRECTORY, update_deployed_count_and_size)
 
     if not args.no_push_deploy:
-        deploy_objects = scan_directory(DEPLOY_DIRECTORY, exclude_from_deploy)
+        deploy_objects = scan_directory(ASSETS_DIRECTORY, exclude_from_deploy)
         copy_files_and_update_count(deploy_objects, str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "deploy")),
-                                    DEPLOY_DIRECTORY, update_deployed_count_and_size)
+                                    ASSETS_DIRECTORY, update_deployed_count_and_size)
 
     # Ensure the 'logs' directory exists
     if not os.path.isdir(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "logs")):
