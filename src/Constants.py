@@ -48,6 +48,10 @@ class DirkPreferences(DefaultPreferences):
     COLOR_SORT = True
 
 
+class DirkPreferencesNoColorSort(DirkPreferences):
+    COLOR_SORT = False
+
+
 class DerekPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 0.7
@@ -134,7 +138,7 @@ class ScoringMechanismProperties:
     BLACK_HALF_ROTATION_DISTANCE = 1080
     WHITE_HALF_ROTATION_DISTANCE = 1050
 
-    AVERAGE_HALF_ROTATION = (BLACK_HALF_ROTATION_DISTANCE + WHITE_HALF_ROTATION_DISTANCE) / 2
+    AVERAGE_HALF_ROTATION = (BLACK_HALF_ROTATION_DISTANCE + WHITE_HALF_ROTATION_DISTANCE) / 3
 
     HOOK_DISTANCE = 100
     RING_DISTANCE = 50

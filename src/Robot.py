@@ -10,14 +10,14 @@ from MobileGoalClamp import MobileGoalClamp
 from RingRushMechanism import RingRushMechanism
 from RingDescorer import RingDescorer
 from ScoringMechanism import ScoringMechanism
-from VEXLib import Util
 from VEXLib.Kinematics import desaturate_wheel_speeds
 from VEXLib.Motor import Motor
 from VEXLib.Network.Telemetry import SerialCommunication
 from VEXLib.Robot.RobotBase import RobotBase
-from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
+from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import DoublePressHandler, Controller
 from VEXLib.Util import time, pass_function
+from VEXLib.Util.CircularBuffer import CircularBuffer
 from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism, WallStakeState
 import AutonomousRoutinesPointBased
@@ -45,7 +45,7 @@ class Robot(RobotBase):
             Inertial(SmartPorts.INERTIAL_SENSOR),
             self.log_and_print)
 
-        self.screen = ScrollBufferedScreen(max_lines=20)
+        self.screen = ScrollingScreen(self.brain.screen, CircularBuffer(20).initialize(0))
         self.main_log = main_log
         self.alliance_color = None
 
@@ -81,13 +81,7 @@ class Robot(RobotBase):
     def log_and_print(self, *parts):
         self.brain.screen.set_font(FontType.MONO15)
         message = " ".join(map(str, parts))
-        self.screen.add_line(message)
-
-        for row, line in Util.enumerate(self.screen.get_screen_content()):
-            self.brain.screen.set_cursor(row, 1)
-            self.brain.screen.clear_row(row)
-            self.brain.screen.print(line)
-
+        self.screen.print(message)
         self.main_log.log(message)
         print(message)
 
@@ -267,11 +261,14 @@ class Robot(RobotBase):
         autonomous_routine = self.select_autonomous_routine()
         self.log_and_print("Selected autonomous routine:", autonomous_routine)
 
-        drive_style = self.controller.get_selection(["Dirk", "Derek"])
+        drive_style = self.controller.get_selection(["Dirk", "Dirk No color sort", "Derek"])
         self.log_and_print("Selected drive style:", drive_style)
 
         if drive_style == "Dirk":
             self.user_preferences = DirkPreferences
+            self.setup_dirk_preferences()
+        elif drive_style == "Dirk No color sort":
+            self.user_preferences = DirkPreferencesNoColorSort
             self.setup_dirk_preferences()
         elif drive_style == "Derek":
             self.user_preferences = DerekPreferences
