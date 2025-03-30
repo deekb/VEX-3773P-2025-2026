@@ -1,51 +1,61 @@
 from VEXLib.Util import enumerate
+from VEXLib.Util.CircularBuffer import CircularBuffer
 from vex import FontType
 
 
-class ScrollBufferedScreen:
-    def __init__(self, screen, max_lines=12):
+class ScrollingScreen:
+    def __init__(self, screen, buffer: CircularBuffer):
         """
-        Initialize the ScrollBufferedScreen with a specified maximum number of lines.
+        Initialize the ScrollingScreen with a specified buffer.
 
-        :param max_lines: The maximum number of lines to keep in the buffer (default is 12).
+        Args:
+            screen: The screen object to display the text.
+            buffer: An instance of CircularBuffer to store the lines of text.
         """
         self.screen = screen
-        self.max_lines = max_lines
-        self.buffer = []
+        self.buffer = buffer
 
     def add_line_to_buffer(self, line):
         """
-        Add a new line of text to the screen. Oldest lines are discarded once the limit is reached.
+        Add a new line of text to the buffer. Oldest lines are discarded once the buffer limit is reached.
 
-        :param line: The new line to add (string).
+        Args:
+            line: The new line to add (string).
         """
-        self.buffer.append(line)
-        # Keep only the most recent `max_lines` lines
-        if len(self.buffer) > self.max_lines:
-            self.buffer.pop(0)
+        self.buffer.add(line)
 
     def get_buffer_content(self):
         """
-        Retrieve the current screen content as a list of lines.
+        Retrieve the current buffer content as a list of lines.
 
-        :return: A list of strings representing the current content of the screen buffer.
+        Returns:
+             A list of strings representing the current content of the buffer.
         """
-        return self.buffer
+        return self.buffer.get()
 
     def clear_buffer(self):
         """
-        Clear all lines from the screen buffer.
+        Clear all lines from the buffer.
         """
-        self.buffer = []
+        self.buffer.clear()
 
     def print(self, *parts):
+        """
+        Print a message composed of the given parts to the screen and add it to the buffer.
+
+        Args:
+            parts: Parts of the message to print (strings).
+        """
         self.screen.set_font(FontType.MONO15)
         message = " ".join(map(str, parts))
         self.add_line_to_buffer(message)
         self.render_screen_contents()
 
     def render_screen_contents(self):
-        for row, line in enumerate(self.screen.get_screen_content()):
+        """
+        Render the current contents of the buffer to the screen.
+        """
+        for row, line in enumerate(self.buffer.get()):
             self.screen.set_cursor(row, 1)
             self.screen.clear_row(row)
             self.screen.print(line)
