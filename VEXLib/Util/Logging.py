@@ -1,7 +1,6 @@
 import json
 import sys
 
-from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Util import time
 from vex import Brain
 
@@ -49,7 +48,6 @@ class Logger:
 
     def __init__(self, sd_card, brain_screen: Brain.Lcd, log_name_prefix):
         self.sd_card = sd_card
-        self.scroll_buffer = ScrollBufferedScreen(max_lines=20)
         self.brain_screen = brain_screen
         self.log_name_prefix = log_name_prefix
 
