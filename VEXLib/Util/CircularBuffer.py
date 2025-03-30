@@ -10,6 +10,7 @@ class CircularBuffer:
         else:
             self.buffer[self.index] = data
         self.index = (self.index + 1) % self.length
+        return self
 
     def get(self):
         return self.buffer
@@ -17,7 +18,9 @@ class CircularBuffer:
     def clear(self):
         self.buffer = []
         self.index = 0
+        return self
 
     def initialize(self, value):
         self.buffer = [value] * self.length
         self.index = 0
+        return self
