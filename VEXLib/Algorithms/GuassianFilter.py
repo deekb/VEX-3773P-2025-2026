@@ -36,5 +36,3 @@ class RealTimeGaussianSmoother:
             smoothed_value += self.buffer[buffer_index] * self.kernel[i]
 
         return smoothed_value
-
-

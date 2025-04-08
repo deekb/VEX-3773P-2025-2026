@@ -11,6 +11,8 @@ from .TestRotationalVelocity import TestRotationalVelocity
 from .TestSmallestAngularDifference import TestSmallestAngularDifference
 # from .TestTickBasedRobot import TestNewTickBasedRobot
 from .TestTankOdometry import TestTankOdometry
+from .TestKinematicsUtil import TestGenericOdometry
 from .TestSlewRateLimiter import TestSlewRateLimiter
 from .TestGravitationalFeedforward import TestGravitationalFeedforward
 from .TestGuassianFilter import TestRealTimeGaussianSmoother
+from .TestVelocity2d import TestVelocity2d

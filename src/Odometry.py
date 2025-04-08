@@ -24,11 +24,11 @@ class TankOdometry:
         self.inertial_sensor.set_turn_type(TurnType.LEFT)
 
         # Tracks the last recorded left and right wheel positions
-        self.last_left_position = Distance()
-        self.last_right_position = Distance()
+        self.last_left_position = Distance.from_meters(0)
+        self.last_right_position = Distance.from_meters(0)
 
         # Stores the current pose of the robot (position and orientation)
-        self.pose = Pose2d()
+        self.pose = Pose2d.from_zero()
 
         # Rotation offset to align the inertial sensor's initial orientation with the robot's coordinate system
         self.zero_rotation = Rotation2d()
@@ -50,9 +50,7 @@ class TankOdometry:
         self.last_right_position = right_rotation
 
         # Calculate the average forward distance traveled by the two sides of the robot
-        forward_distance = Distance.from_meters(
-            MathUtil.average(left_distance.to_meters(), right_distance.to_meters())
-        )
+        forward_distance = Translation1d.from_meters(MathUtil.average(left_distance.to_meters(), right_distance.to_meters()))
 
         inertial_sensor_rotation = Rotation2d.from_degrees(self.inertial_sensor.rotation(DEGREES))
 
@@ -62,9 +60,9 @@ class TankOdometry:
         field_relative_rotation = self.pose.rotation
 
         # Update the robot's 2D position based on forward distance and orientation
-        self.pose.translation += Translation2d(
-            forward_distance * field_relative_rotation.cos(),
-            forward_distance * field_relative_rotation.sin()
+        self.pose.translation += Translation2d.from_meters(
+            forward_distance.to_meters() * field_relative_rotation.cos(),
+            forward_distance.to_meters() * field_relative_rotation.sin()
         )
 
     def get_pose(self) -> Pose2d:

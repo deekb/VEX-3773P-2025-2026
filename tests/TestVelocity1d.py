@@ -1,5 +1,6 @@
 import unittest
 from VEXLib.Geometry.Velocity1d import Velocity1d, Speed
+from VEXLib.Geometry.Constants import VELOCITY1D_IDENTIFIER
 
 
 class TestVelocity1d(unittest.TestCase):
@@ -61,10 +62,21 @@ class TestVelocity1d(unittest.TestCase):
 
     def test_str(self):
         v = Velocity1d(5.0)
-        self.assertEqual(str(v), "5.0 m/s")
+        self.assertEqual(f"Velocity1d<{v.to_meters_per_second()} m/s>", str(v))
 
     def test_speed_alias(self):
         v = Speed.from_meters_per_second(5)
+        self.assertEqual(v.magnitude, 5)
+
+    def test_to_bytestring(self):
+        v = Velocity1d(5)
+        bytestring = v.to_bytestring()
+        expected_bytestring = VELOCITY1D_IDENTIFIER + b'0x1.4000000000000p+2'
+        self.assertEqual(bytestring, expected_bytestring)
+
+    def test_from_bytestring(self):
+        bytestring = VELOCITY1D_IDENTIFIER + b'0x1.4000000000000p+2'
+        v = Velocity1d.from_bytestring(bytestring)
         self.assertEqual(v.magnitude, 5)
 
 

@@ -1,3 +1,4 @@
+from VEXLib.Geometry.Constants import TRANSLATION2D_IDENTIFIER, SEPERATOR
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d, Distance
 import VEXLib.Geometry.GeometryUtil as GeometryUtil
@@ -32,6 +33,10 @@ class Translation2d:
         """
         return Translation2d(self.x_component + other.x_component, self.y_component + other.y_component)
 
+    def __radd__(self, other):
+        """Add two Translation2d objects."""
+        return self.__add__(other)
+
     def __sub__(self, other):
         """Subtract two Translation2d objects.
 
@@ -43,16 +48,9 @@ class Translation2d:
         """
         return Translation2d(self.x_component - other.x_component, self.y_component - other.y_component)
 
-    def __eq__(self, other):
-        """Check if two Translation2d objects are equal.
-
-        Args:
-            other (Translation2d): The other Translation2d object to compare.
-
-        Returns:
-            bool: True if the x and y coordinates are equal, False otherwise.
-        """
-        return self.x_component == other.x_component and self.y_component == other.y_component
+    def __rsub__(self, other):
+        """Reverse subtract two Translation2d objects."""
+        return Translation2d(other.x_component - self.x_component, other.y_component - self.y_component)
 
     def __mul__(self, scalar):
         """Multiply Translation2d by a scalar.
@@ -64,6 +62,36 @@ class Translation2d:
             Translation2d: A new Translation2d object with the scaled coordinates.
         """
         return Translation2d(self.x_component * scalar, self.y_component * scalar)
+
+    def __rmul__(self, scalar):
+        """Reverse multiply Translation2d by a scalar."""
+        return self.__mul__(scalar)
+
+    def __truediv__(self, scalar):
+        """Divide Translation2d by a scalar.
+
+        Args:
+            scalar (float): The scalar to divide with.
+
+        Returns:
+            Translation2d: A new Translation2d object with the scaled coordinates.
+        """
+        return Translation2d(self.x_component / scalar, self.y_component / scalar)
+
+    def __rtruediv__(self, scalar):
+        """Reverse divide Translation2d by a scalar."""
+        return Translation2d(scalar / self.x_component, scalar / self.y_component)
+
+    def __eq__(self, other):
+        """Check if two Translation2d objects are equal.
+
+        Args:
+            other (Translation2d): The other Translation2d object to compare.
+
+        Returns:
+            bool: True if the x and y coordinates are equal, False otherwise.
+        """
+        return self.x_component == other.x_component and self.y_component == other.y_component
 
     def __str__(self):
         """Return the string representation of Translation2d.
@@ -93,8 +121,8 @@ class Translation2d:
         elif not isinstance(angle, Rotation2d):
             raise ValueError("Angle must be a Rotation2d object")
 
-        return cls(translation_x=distance*angle.cos(),
-                   translation_y=distance*angle.sin())
+        return cls(translation_x=distance * angle.cos(),
+                   translation_y=distance * angle.sin())
 
     @classmethod
     def from_meters(cls, x_meters, y_meters):
@@ -218,3 +246,19 @@ class Translation2d:
         """
 
         return Rotation2d.from_translation2d(self)
+
+    def to_bytestring(self, include_identifier=True):
+        """Return a compressed bytestring representing the Velocity2d in meters per second."""
+        x_bytes = self.x_component.to_bytestring(include_identifier=False)
+        y_bytes = self.y_component.to_bytestring(include_identifier=False)
+        return (TRANSLATION2D_IDENTIFIER if include_identifier else b"") + x_bytes + SEPERATOR + y_bytes
+
+    @classmethod
+    def from_bytestring(cls, bytestring):
+        """Create a Velocity2d object from a compressed bytestring."""
+        if not bytestring.startswith(TRANSLATION2D_IDENTIFIER):
+            raise ValueError("Invalid bytestring for Translation2d, must start with " + str(TRANSLATION2D_IDENTIFIER))
+        x_str, y_str = bytestring[len(TRANSLATION2D_IDENTIFIER):].split(SEPERATOR)
+        x_magnitude = Translation1d.from_bytestring(x_str, include_identifier=False)
+        y_magnitude = Translation1d.from_bytestring(y_str, include_identifier=False)
+        return cls(x_magnitude, y_magnitude)

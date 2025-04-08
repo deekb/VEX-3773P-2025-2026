@@ -33,6 +33,7 @@ class DefaultPreferences:
     CUBIC_FILTER_LINEARITY = 1
     MOVE_SPEED = 1
     TURN_SPEED = 1
+    DO_TURN_DECAY = False
     COLOR_SORT = False
     MEASURE_DRIVETRAIN_PROPERTIES_ON_STARTUP = False
     USE_PIDF_CONTROL = False
@@ -44,7 +45,8 @@ class DefaultPreferences:
 class DirkPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
-    TURN_SPEED = 1
+    DO_TURN_DECAY = True
+    TURN_SPEED = 0.7
     COLOR_SORT = True
 
 

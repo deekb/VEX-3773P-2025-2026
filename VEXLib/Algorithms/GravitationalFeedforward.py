@@ -1,5 +1,6 @@
 import math
 
+
 class GravitationalFeedforward:
     """
     A feedforward used to combat gravity.

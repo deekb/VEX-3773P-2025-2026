@@ -1,5 +1,4 @@
 from VEXLib.Math import MathUtil
-from VEXLib.Util.CircularBuffer import CircularBuffer
 
 
 class MovingWindowAverage:
@@ -7,7 +6,7 @@ class MovingWindowAverage:
     A class to handle moving window average operations.
     """
 
-    def __init__(self, buffer: CircularBuffer):
+    def __init__(self, buffer):
         """
         Initializes the MovingWindowAverage with a buffer to hold the values.
         """

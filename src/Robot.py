@@ -17,7 +17,7 @@ from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import DoublePressHandler, Controller
 from VEXLib.Util import time, pass_function
-from VEXLib.Util.CircularBuffer import CircularBuffer
+from VEXLib.Util.Buffer import Buffer
 from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism, WallStakeState
 import AutonomousRoutinesPointBased
@@ -30,7 +30,7 @@ main_log = Logger(Brain().sdcard, Brain().screen, MAIN_LOG_FILENAME)
 class Robot(RobotBase):
     def __init__(self, brain):
         super().__init__(brain)
-        self.serial_communication = SerialCommunication("/dev/port6", "/dev/port7")
+        # self.serial_communication = SerialCommunication("/dev/port6", "/dev/port7")
 
         self.brain.screen.set_font(FontType.MONO12)
 
@@ -45,7 +45,7 @@ class Robot(RobotBase):
             Inertial(SmartPorts.INERTIAL_SENSOR),
             self.log_and_print)
 
-        self.screen = ScrollingScreen(self.brain.screen, CircularBuffer(20).initialize(0))
+        self.screen = ScrollingScreen(self.brain.screen, Buffer(20).initialize(0))
         self.main_log = main_log
         self.alliance_color = None
 
@@ -56,10 +56,10 @@ class Robot(RobotBase):
 
         self.scoring_mechanism = ScoringMechanism(
             Motor(Ports.PORT1, GearSetting.RATIO_18_1, False),
-            Motor(Ports.PORT4, GearSetting.RATIO_18_1, True),
+            Motor(Ports.PORT7, GearSetting.RATIO_18_1, True),
             Rotation(Ports.PORT18),
             Optical(Ports.PORT10),
-            Distance(Ports.PORT5),
+            Distance(Ports.PORT4),
             self.brain.screen)
 
         self.wall_stake_mechanism = WallStakeMechanism(
@@ -133,8 +133,8 @@ class Robot(RobotBase):
         except Exception as e:
             exception_buffer = io.StringIO()
             sys.print_exception(e, exception_buffer)
-            self.serial_communication.send(str(exception_buffer.getvalue()))
-
+        #     self.serial_communication.send(str(exception_buffer.getvalue()))
+        #
             for log_entry in exception_buffer.getvalue().split("\n"):
                 main_log.fatal(str(log_entry))
             raise e
@@ -299,13 +299,25 @@ class Robot(RobotBase):
         elif self.user_preferences.CONTROL_STYLE in [ControlStyles.ARCADE, ControlStyles.SPLIT_ARCADE]:
             forward_speed = self.controller.left_stick_y()
             if self.user_preferences.CONTROL_STYLE == ControlStyles.ARCADE:
-                turn_speed = self.controller.left_stick_x() * self.user_preferences.TURN_SPEED
+                target_turn_speed = self.controller.left_stick_x() * self.user_preferences.TURN_SPEED
+                target_turn_speed = -MathUtil.apply_deadband(target_turn_speed)
             else:
-                turn_speed = self.controller.right_stick_x() * self.user_preferences.TURN_SPEED
+                target_turn_speed = self.controller.right_stick_x() * self.user_preferences.TURN_SPEED
+                target_turn_speed = -MathUtil.apply_deadband(target_turn_speed)
+            if self.user_preferences.DO_TURN_DECAY:
+                # scale speeds to -1 to 1
+                speeds_scaled = list(
+                    map(lambda speed: speed.to_meters_per_second() / DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(), self.drivetrain.get_speeds()))
+                current_turn = speeds_scaled[0] - speeds_scaled[1]
+                turn_correction = (target_turn_speed - current_turn) * 1
+
+                left_speed = forward_speed - turn_correction
+                right_speed = forward_speed + turn_correction
+            else:
+                left_speed = forward_speed - target_turn_speed
+                right_speed = forward_speed + target_turn_speed
             forward_speed = MathUtil.apply_deadband(forward_speed)
-            turn_speed = -MathUtil.apply_deadband(turn_speed)
-            left_speed = forward_speed - turn_speed
-            right_speed = forward_speed + turn_speed
+
         else:
             self.log_and_print("Invalid controller bindings style:", self.user_preferences.CONTROL_STYLE)
 
@@ -327,7 +339,7 @@ class Robot(RobotBase):
 
         self.drivetrain.update_odometry()
 
-        if self.user_preferences.COLOR_SORT and (not self.controller.buttonRight.pressing()):
+        if self.user_preferences.COLOR_SORT and (not self.controller.buttonDown.pressing()):
             self.scoring_mechanism.tick(self.alliance_color)
 
     def setup_dirk_preferences(self):

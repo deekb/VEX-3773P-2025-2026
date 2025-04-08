@@ -1,16 +1,15 @@
 from VEXLib.Util import enumerate
-from VEXLib.Util.CircularBuffer import CircularBuffer
 from vex import FontType
 
 
 class ScrollingScreen:
-    def __init__(self, screen, buffer: CircularBuffer):
+    def __init__(self, screen, buffer):
         """
         Initialize the ScrollingScreen with a specified buffer.
 
         Args:
             screen: The screen object to display the text.
-            buffer: An instance of CircularBuffer to store the lines of text.
+            buffer: An buffer to store the lines of text.
         """
         self.screen = screen
         self.buffer = buffer

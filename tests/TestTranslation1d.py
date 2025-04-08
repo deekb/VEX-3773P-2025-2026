@@ -1,5 +1,6 @@
 import unittest
 from VEXLib.Geometry.Translation1d import Translation1d, Distance
+from VEXLib.Geometry.Constants import TRANSLATION1D_IDENTIFIER
 
 
 class TestTranslation1d(unittest.TestCase):
@@ -70,6 +71,22 @@ class TestTranslation1d(unittest.TestCase):
     def test_str(self):
         t1 = Translation1d(3.0)
         self.assertEqual(str(t1), "3.0m")
+
+    def test_inverse(self):
+        t1 = Translation1d(3)
+        result = t1.inverse()
+        self.assertEqual(result.magnitude, -3)
+
+    def test_to_bytestring(self):
+        t1 = Translation1d(3)
+        bytestring = t1.to_bytestring()
+        expected_bytestring = TRANSLATION1D_IDENTIFIER + b'0x1.8000000000000p+1'
+        self.assertEqual(bytestring, expected_bytestring)
+
+    def test_from_bytestring(self):
+        bytestring = TRANSLATION1D_IDENTIFIER + b'0x1.8000000000000p+1'
+        t1 = Translation1d.from_bytestring(bytestring)
+        self.assertEqual(t1.magnitude, 3)
 
 
 if __name__ == '__main__':

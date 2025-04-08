@@ -186,7 +186,6 @@ class ScoringMechanism:
             alliance_color (str): The color of the alliance ('red' or 'blue').
         """
         # Check if the mechanism is currently ejecting a ring
-
         if self.ejecting_ring:
             self.log.debug("state: ejecting_ring")
             # If the current position is greater than the ejection position, outtake the ring
@@ -204,21 +203,20 @@ class ScoringMechanism:
             # If a ring has already been found, do nothing
             if self.found_ring:
                 return
-            self.log.debug("state: found a new ring")
 
             # Get the color of the detected ring
             ring_color = self.get_ring_color()
             if not ring_color:
-                self.log.debug("state: ring color could not be detected")
+                self.log.warn("Ring color could not be detected")
                 # If no color is detected, show black on the screen
                 self.show_ring_color(Color.BLACK)
                 return
             if ring_color == "red":
-                self.log.debug("state: detected red ring")
+                self.log.debug("Detected red ring")
                 # If the ring is red, show red on the screen
                 self.show_ring_color(Color.RED)
             elif ring_color == "blue":
-                self.log.debug("state: detected blue ring")
+                self.log.debug("Detected blue ring")
                 # If the ring is blue, show blue on the screen
                 self.show_ring_color(Color.BLUE)
 
@@ -226,7 +224,7 @@ class ScoringMechanism:
             # If the ring color does not match the alliance color, eject the ring
             if ring_color != alliance_color:
                 self.eject_ring()
-                self.log.debug("state: transitioning to eject_ring")
+                self.log.debug("Starting to eject ring")
 
             print(self.get_ring_color())
         else:
