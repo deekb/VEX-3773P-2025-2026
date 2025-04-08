@@ -45,7 +45,7 @@ class Robot(RobotBase):
             Inertial(SmartPorts.INERTIAL_SENSOR),
             self.log_and_print)
 
-        self.screen = ScrollingScreen(self.brain.screen, Buffer(20).initialize(0))
+        self.screen = ScrollingScreen(self.brain.screen, Buffer(20))
         self.main_log = main_log
         self.alliance_color = None
 
@@ -236,7 +236,7 @@ class Robot(RobotBase):
 
             self.brain.screen.print(display_text)
 
-            if min_abs_error < 0.1:
+            if min_abs_error < 0.25:
                 self.brain.screen.set_cursor(3, 3)
                 self.brain.screen.print("Lined Up :)")
             else:

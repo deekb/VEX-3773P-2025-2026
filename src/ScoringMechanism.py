@@ -139,10 +139,7 @@ class ScoringMechanism:
         """
         self.log.trace("intake_until_no_ring")
         self.intake()
-        wait_until()
-        while not self.ring_is_near():
-            pass
-
+        wait_until(self.ring_is_near)
         self.stop_motor()
         self.log.debug("intake_until_ring done, found {} ring".format(self.get_ring_color()))
 

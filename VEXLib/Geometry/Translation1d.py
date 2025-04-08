@@ -181,7 +181,7 @@ class Translation1d:
         Returns:
             str: The string representation of the magnitude.
         """
-        return f"{self.magnitude}m"
+        return str(self.magnitude) + "m"
 
     @classmethod
     def from_zero(cls):
@@ -319,7 +319,7 @@ class Translation1d:
         """
         if include_identifier:
             if not bytestring.startswith(TRANSLATION1D_IDENTIFIER):
-                raise ValueError(f"Invalid bytestring for Translation1d, must start with {TRANSLATION1D_IDENTIFIER}")
+                raise ValueError("Invalid bytestring for Translation1d, must start with " + str(TRANSLATION1D_IDENTIFIER.decode()))
             bytestring = bytestring[len(TRANSLATION1D_IDENTIFIER):]
         magnitude = float.fromhex(bytestring.decode())
         return cls(magnitude)

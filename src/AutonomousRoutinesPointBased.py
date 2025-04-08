@@ -482,4 +482,5 @@ def test_autonomous_point_based(robot):
     robot.drivetrain.move_to_point(Translation2d.from_centimeters(100.0, 100.0))
 
 
-available_autos = [new_skills_alliance_stake_point_based, win_point_states_point_based, third_win_point_states_point_based, win_point_point_based, negative_4_rings_and_touch_point_based, negative_full_mobile_goal_point_based]
+# available_autos = [new_skills_alliance_stake_point_based, win_point_states_point_based, third_win_point_states_point_based, win_point_point_based, negative_4_rings_and_touch_point_based, negative_full_mobile_goal_point_based, test_autonomous_point_basednew_skills_alliance_stake_point_based, win_point_states_point_based, third_win_point_states_point_based, win_point_point_based, negative_4_rings_and_touch_point_based, negative_full_mobile_goal_point_based, test_autonomous_point_based]
+available_autos = []
