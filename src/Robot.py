@@ -86,23 +86,23 @@ class Robot(RobotBase):
         print(message)
 
     def on_autonomous(self):
-        while not self.setup_complete:
-            time.sleep_ms(20)
-        if self.alliance_color == "red":
-            self.main_log.debug("Alliance color is", self.alliance_color)
-            self.main_log.debug("Using left side corner mechanism")
-            self.corner_mechanism.active_side = Sides.LEFT
-        elif self.alliance_color == "blue":
-            self.main_log.debug("Alliance color is", self.alliance_color)
-            self.main_log.debug("Using right side corner mechanism")
-            self.corner_mechanism.active_side = Sides.RIGHT
+        # while not self.setup_complete:
+        #     time.sleep_ms(20)
+        # if self.alliance_color == "red":
+        #     self.main_log.debug("Alliance color is", self.alliance_color)
+        #     self.main_log.debug("Using left side corner mechanism")
+        #     self.corner_mechanism.active_side = Sides.LEFT
+        # elif self.alliance_color == "blue":
+        #     self.main_log.debug("Alliance color is", self.alliance_color)
+        #     self.main_log.debug("Using right side corner mechanism")
+        #     self.corner_mechanism.active_side = Sides.RIGHT
 
-        self.main_log.debug("Executing chosen autonomous routine:", str(self.autonomous))
-        self.main_log.debug("Starting color_sort_tick_thread")
-        self.scoring_mechanism.log.info("Starting color_sort_tick_thread")
-        self.color_sort_tick_thread = Thread(self.scoring_mechanism.loop, (self.alliance_color,))
-        self.main_log.debug("Started color_sort_tick_thread")
-        self.scoring_mechanism.log.info("Started color_sort_tick_thread")
+        # self.main_log.debug("Executing chosen autonomous routine:", str(self.autonomous))
+        # self.main_log.debug("Starting color_sort_tick_thread")
+        # self.scoring_mechanism.log.info("Starting color_sort_tick_thread")
+        # self.color_sort_tick_thread = Thread(self.scoring_mechanism.loop, (self.alliance_color,))
+        # self.main_log.debug("Started color_sort_tick_thread")
+        # self.scoring_mechanism.log.info("Started color_sort_tick_thread")
         self.autonomous(self)
 
     def select_autonomous_routine(self):
@@ -287,7 +287,7 @@ class Robot(RobotBase):
             self.color_sort_tick_thread.stop()
         while True:
             self.driver_control_periodic()
-            time.sleep_ms(20)
+            time.sleep_ms(2)
 
     def driver_control_periodic(self):
         left_speed = right_speed = 0

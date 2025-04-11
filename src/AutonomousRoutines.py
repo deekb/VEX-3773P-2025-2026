@@ -258,24 +258,37 @@ def negative_full_mobile_goal(robot):
 
 
 def worlds_win_point(robot: Robot):
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.5, 1.5))
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
     robot.mobile_goal_clamp.release_mobile_goal()
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(0.0, 100.0))
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-5.0, 105.0))
-    robot.corner_mechanism.lower_right_corner_mechanism()
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-5.0, 105.0))
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-10.0, 105.0))
+    robot.corner_mechanism.lower_left_corner_mechanism()
+    stop_and_sleep(robot, 0.25)
     robot.scoring_mechanism.spin_lower_intake(100)
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-15.0, 95.0))
-    robot.corner_mechanism.raise_right_corner_mechanism()
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-25.0, 98.0), use_back=True)
+    robot.drivetrain.turn_to(Rotation2d.from_degrees(70))
+    robot.corner_mechanism.raise_left_corner_mechanism()
+    stop_and_sleep(robot, 0.5)
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-25.0, 90.0))
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 1.5))
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-60.0, 95.0), use_back=True)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
     robot.mobile_goal_clamp.clamp_mobile_goal()
     robot.scoring_mechanism.set_speed(100)
+    robot.drivetrain.turn_to(Rotation2d.from_degrees(60))
+    stop_and_sleep(robot, 0.5)
+    robot.mobile_goal_clamp.release_mobile_goal()
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 1.5))
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-95.0, 77.0), use_back=True)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
+    robot.scoring_mechanism.set_speed(0)
+    robot.mobile_goal_clamp.clamp_mobile_goal()
+    schedule_function(0.5, lambda: robot.scoring_mechanism.set_speed(100))
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(0.0, -25.0))
+
 
 
 def test_autonomous(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_meters(1), 0)
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_meters(1), 90)
-
 
 
 available_autos = [skills, win_point_states, negative_4_rings_and_touch, negative_full_mobile_goal, worlds_win_point]

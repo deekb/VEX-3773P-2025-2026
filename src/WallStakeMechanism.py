@@ -58,21 +58,21 @@ class WallStakeMechanism:
         self.tick_thread = Thread(self.loop)
 
     def update_motor_voltage(self):
-        self.log.trace("Entering update_motor_voltage")
+        # self.log.trace("Entering update_motor_voltage")
         current_rotation = Rotation2d.from_degrees(self.rotation_sensor.position(DEGREES))
         feedforward_output = self.gravitational_feedforward.update(current_rotation.to_degrees())
         pid_output = self.pid.update(current_rotation.normalize().to_revolutions())
 
-        self.log.debug("Current rotation: {} degrees".format(current_rotation.to_degrees()))
-        self.log.debug("Feedforward output: {}, PID output: {}".format(feedforward_output, pid_output))
+        # self.log.debug("Current rotation: {} degrees".format(current_rotation.to_degrees()))
+        # self.log.debug("Feedforward output: {}, PID output: {}".format(feedforward_output, pid_output))
 
         if self.state == WallStakeState.DOCKED and self.at_setpoint():
             self.motor.spin(FORWARD, 0, VOLT)
-            self.log.info("Motor stopped as the mechanism is docked and at setpoint")
+            # self.log.info("Motor stopped as the mechanism is docked and at setpoint")
             return
 
         self.motor.spin(FORWARD, feedforward_output - pid_output, VOLT)
-        self.log.debug("Motor voltage set to: {} VOLT".format(feedforward_output - pid_output))
+        # self.log.debug("Motor voltage set to: {} VOLT".format(feedforward_output - pid_output))
 
     @wall_stake_mechanism_logger.logged
     def transition_to(self, new_state):
@@ -109,7 +109,7 @@ class WallStakeMechanism:
         self.log.info("Transitioned to previous state:", self.state)
 
     def tick(self):
-        self.log.trace("Entering tick")
+        # self.log.trace("Entering tick")
         if self.state == WallStakeState.DOCKED:
             self.gravitational_feedforward.kg = self.FEEDFORWARD_GAIN * -1
         else:
@@ -118,12 +118,12 @@ class WallStakeMechanism:
         self.update_motor_voltage()
 
     def loop(self):
-        self.log.trace("Entering loop")
+        # self.log.trace("Entering loop")
         while True:
             self.tick()
             time.sleep_ms(10)
 
     def at_setpoint(self):
         at_setpoint = self.pid.at_setpoint(self.POSITIONAL_TOLERANCE.to_revolutions())
-        self.log.debug("At setpoint:", at_setpoint)
+        # self.log.debug("At setpoint:", at_setpoint)
         return at_setpoint

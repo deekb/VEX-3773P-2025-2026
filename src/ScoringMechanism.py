@@ -161,6 +161,8 @@ class ScoringMechanism:
         """
         self.ejecting_ring = True
         self.eject_ring_at_position = math.ceil(self.get_position())
+        self.log.debug("current position {}".format(self.get_position()))
+        self.log.debug("Will eject ring at position {}".format(self.eject_ring_at_position))
 
     def show_ring_color(self, color):
         """
@@ -169,7 +171,7 @@ class ScoringMechanism:
         Args:
             color (Color): The color to display on the screen.
         """
-        self.log.trace("show_")
+        self.log.trace("show_ring_color")
         self.screen.clear_screen()
         self.screen.set_fill_color(color)
         self.screen.set_pen_color(color)
@@ -184,14 +186,13 @@ class ScoringMechanism:
         """
         # Check if the mechanism is currently ejecting a ring
         if self.ejecting_ring:
-            self.log.debug("state: ejecting_ring")
+            # self.log.debug("state: ejecting_ring")
             # If the current position is greater than the ejection position, outtake the ring
             if self.get_position() > self.eject_ring_at_position:
                 self.outtake()
-                time.sleep(0.1)
-                self.stop_motor()
                 time.sleep(0.25)
                 self.intake()
+                self.log.debug("ejecting: current position {}".format(self.get_position()))
                 self.ejecting_ring = False
             return
 
@@ -221,9 +222,6 @@ class ScoringMechanism:
             # If the ring color does not match the alliance color, eject the ring
             if ring_color != alliance_color:
                 self.eject_ring()
-                self.log.debug("Starting to eject ring")
-
-            print(self.get_ring_color())
         else:
             # If no ring is near, reset the found_ring flag
             self.found_ring = False
