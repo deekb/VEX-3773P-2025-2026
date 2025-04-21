@@ -24,7 +24,7 @@ import AutonomousRoutinesPointBased
 from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, Thread, FontType, \
     Inertial
 
-main_log = Logger(Brain().sdcard, Brain().screen, MAIN_LOG_FILENAME)
+main_log = Logger(Brain().sdcard, Brain().screen, "robot")
 
 
 class Robot(RobotBase):

@@ -1,5 +1,4 @@
 from math import log, ceil, floor
-from CRC import crc_bytes
 
 
 class FrameType:

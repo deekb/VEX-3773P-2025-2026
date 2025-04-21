@@ -5,7 +5,7 @@ from VEXLib.Geometry.Pose2d import Pose2d
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance
 from VEXLib.Geometry.Translation2d import Translation2d
-from src.Odometry import TankOdometry
+from VEXLib.Kinematics.TankOdometry import TankOdometry
 from vex import Inertial
 
 

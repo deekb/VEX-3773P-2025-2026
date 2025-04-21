@@ -7,7 +7,7 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance
 from VEXLib.Geometry.Translation2d import Translation2d
 from vex import Inertial
-from VEXLib.Util.KinematicsUtil import GenericOdometry
+from VEXLib.Kinematics import GenericOdometry
 
 
 class TestGenericOdometry(unittest.TestCase):

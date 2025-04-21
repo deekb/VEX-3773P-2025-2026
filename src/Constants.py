@@ -5,9 +5,6 @@ from VEXLib.Geometry.Velocity1d import Velocity1d
 from CornerMechanism import Sides
 from vex import Ports, GearSetting, Brain
 
-MAIN_LOG_FILENAME = "main"
-DEBUG_LOG_FILENAME = "debug"
-
 
 class PIDGains:
     def __init__(self, kp, ki, kd):
