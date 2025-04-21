@@ -7,10 +7,6 @@ Welcome to the VEXLib Framework!
 This project brings together simulation tools, a really cool code push and log sync tool, comprehensive unit & integration testing, log visualization,
 and lots of utilities to make VEX V5 robot development easier and more fun.
 
-Docs are [here](https://deekb.github.io/VEXlib/)
-
-Really cool dependency analysis: [here](https://deekb.github.io/VEXlib/dependency_analysis.html)
-
 ---
 
 ## 📂 Project Structure
@@ -32,7 +28,19 @@ Here's a quick tour of what's included:
 
 ## 🚀 Getting Started
 
-Getting started with VEXLib and Pycharm, I HIGHLY recommend PyCharm for this project, it integrates very nicely, from the preconfigured run configurations to the in-IDE graph display. (You can even get the professional version for <a href="https://www.jetbrains.com/shop/eform/students">free</a> if you are a student or a teacher)
+<tabs group="IDE">
+    <tab id="PYCHARM" title="Pycharm (Pro or Community)" group-key="PYCHARM">
+        Getting started with VEXLib and Pycharm, I HIGHLY recommend PyCharm for this project, it integrates very nicely, from the preconfigured run configurations to the in-IDE graph display. (You can even get the professional version for <a href="https://www.jetbrains.com/shop/eform/students">free</a> if you are a student or a teacher)
+        <img src="PyCharm Run Configurations.png" alt="PyCharm run configurations" height="400"/>
+        <img src="Graph Visualization.png" alt="PyCharm Graph Visualization" height="400"/>
+    </tab>
+    <tab id="VSCODE" title="Visual studio code" group-key="VSCODE">
+        Getting Started with VEXLib and Visual studio code, While I dislike VSCode, it is a very popular IDE, and I have included some basic instructions for getting started with it.
+    </tab>
+    <tab id="NONE" title="No IDE! give me the raw terminal" group-key="NONE">
+        Getting started with VEXLib and no IDE
+    </tab>
+</tabs>
 
 
 1. **Clone the repository:**
