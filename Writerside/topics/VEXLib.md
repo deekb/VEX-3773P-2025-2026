@@ -1,7 +1,7 @@
 # VEXlib
 
 
-![License](https://img.shields.io/badge/license-MIT-green.svg) ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue) ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)  ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange)
+![License](https://img.shields.io/badge/license-MIT-green.svg) ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue) ![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Welcome to the VEXLib Framework!  
 This project brings together simulation tools, a really cool code push and log sync tool, comprehensive unit & integration testing, log visualization,
@@ -126,10 +126,12 @@ Feel free to open Issues or submit Pull Requests!
 ## TODOs / Future Improvements
 
 - [x] Add `README.md`
-- [ ] Generate `requirements.txt`
+- [x] Generate `requirements.txt`
+- [ ] Clean up stale code
+- [ ] Full test coverage for /VEXLib
+- [ ] Fully documented
 - [ ] Polish documentation styling
-- [ ] Create a script to auto-render the simulation logo animation
-- [ ] Expand the simulation world with obstacles and goals
+- [ ] Usability testing and improvements
 
 ---
 

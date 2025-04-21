@@ -119,10 +119,12 @@ Feel free to open Issues or submit Pull Requests!
 ## TODOs / Future Improvements
 
 - [x] Add `README.md`
-- [ ] Generate `requirements.txt`
+- [x] Generate `requirements.txt`
+- [ ] Clean up stale code
+- [ ] Full test coverage for /VEXLib
+- [ ] Fully documented
 - [ ] Polish documentation styling
-- [ ] Create a script to auto-render the simulation logo animation
-- [ ] Expand the simulation world with obstacles and goals
+- [ ] Usability testing and improvements
 
 ---
 
