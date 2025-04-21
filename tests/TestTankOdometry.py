@@ -61,5 +61,6 @@ class TestTankOdometry(unittest.TestCase):
         odometry.update(Distance.from_meters(-1e6), Distance.from_meters(-1e6))
         self.assertPoseAlmostEqual(odometry.get_pose(), Pose2d(Translation2d.from_meters(-1e6, 0.0), Rotation2d.from_degrees(0)))  # Allow a larger delta for the very large movement
 
+
 if __name__ == '__main__':
     unittest.main()
