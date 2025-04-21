@@ -34,7 +34,7 @@ class GraphedInputProcessor(InputProcessor):
         plt.title("Pipeline Visualization")
         plt.legend()
         plt.grid(True)
-        plt.gca().set_aspect('equal', adjustable='box')  # Force square aspect ratio
+        plt.gca().set_aspect("equal", adjustable="box")  # Force square aspect ratio
         plt.show()
 
 

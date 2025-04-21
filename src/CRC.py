@@ -40,14 +40,14 @@ def _update_crc(crc, byte):
     Returns:
         int: The updated CRC value.
     """
-    byte = 0xff & byte  # Mask the byte to ensure it is 8 bits
+    byte = 0xFF & byte  # Mask the byte to ensure it is 8 bits
 
     # XOR the higher byte of the CRC with the new byte
     tmp = (crc >> 8) ^ byte
-    crc = (crc << 8) ^ crc_lookup_table[tmp & 0xff]  # Lookup table for speed
+    crc = (crc << 8) ^ crc_lookup_table[tmp & 0xFF]  # Lookup table for speed
 
     # Ensure CRC stays within 16 bits
-    crc = crc & 0xffff
+    crc = crc & 0xFFFF
     return crc
 
 

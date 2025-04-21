@@ -35,7 +35,7 @@ def split_int_to_bytes(bytes_, length=16):
     output_bytes = bytes()
 
     for _ in range(0, floor(quad_count(bytes_))):
-        quad = bytes_ & 0xff
+        quad = bytes_ & 0xFF
         output_bytes = bytes([quad]) + output_bytes
         bytes_ >>= 8
     return output_bytes
@@ -46,12 +46,15 @@ def hex_format(bytes_):
 
 
 class Frame:
-    def __init__(self, frame_header=None,
-                 frame_type=None,
-                 data_length=None,
-                 frame_id=None,
-                 data=None,
-                 crc_function=None):
+    def __init__(
+        self,
+        frame_header=None,
+        frame_type=None,
+        data_length=None,
+        frame_id=None,
+        data=None,
+        crc_function=None,
+    ):
         self.frame_header = frame_header
         self._frame_type = frame_type
         self._data_length = data_length
@@ -65,15 +68,17 @@ class Frame:
         self._update_crc()
 
     def _update_frame_format(self):
-        frame_format_int = ((self._frame_type & 0xf) << 12) | (self._data_length & 0xfff)
+        frame_format_int = ((self._frame_type & 0xF) << 12) | (
+            self._data_length & 0xFFF
+        )
 
         self._frame_format_bytes = split_int_to_bytes(frame_format_int)
 
     def _update_data_length(self):
-        self._data_length = self._frame_format_int & 0xfff
+        self._data_length = self._frame_format_int & 0xFFF
 
     def _update_frame_type(self):
-        self._frame_type = (self._frame_format_int >> 12) & 0xf
+        self._frame_type = (self._frame_format_int >> 12) & 0xF
 
     @property
     def frame_format(self):
@@ -122,6 +127,7 @@ class Frame:
         # print()
 
         return output
+
 
 #
 # message = "this is my random message"

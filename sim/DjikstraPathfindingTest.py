@@ -1,8 +1,9 @@
-from VEXLib.Algorithms.DijkstraPathfinding import DijkstraPathfinding
-import time
-import pygame
 import os
+import time
 
+import pygame
+
+from VEXLib.Algorithms.DijkstraPathfinding import DijkstraPathfinding
 
 resources_directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources")
 

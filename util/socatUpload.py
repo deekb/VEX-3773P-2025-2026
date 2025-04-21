@@ -1,9 +1,10 @@
 import socket
 import time
+
 from src.SerialFrame import SerialFrame, FrameType
 
 # Constants
-HOST = 'raspberrypi.local'  # Replace with the IP address of the robot
+HOST = "raspberrypi.local"  # Replace with the IP address of the robot
 PORT = 3773  # The port number used for communication
 CHUNK_SIZE = 1024  # Size of each data chunk sent
 TIMEOUT = 2  # Timeout in seconds for waiting for an ACK
@@ -13,10 +14,7 @@ def send_data_frame(s, frame_id, data):
     """Send a data frame and wait for ACK."""
     # Create a SerialFrame for the data
     data_frame = SerialFrame(
-        frame_id=frame_id,
-        frame_type=FrameType.DATA,
-        data_type='text',
-        data=data
+        frame_id=frame_id, frame_type=FrameType.DATA, data_type="text", data=data
     )
 
     # Send the data frame
@@ -40,7 +38,10 @@ def send_data_frame(s, frame_id, data):
             try:
                 ack_frame = SerialFrame.from_bytes(accumulated_data)
                 # Check if the received frame is an ACK for the correct frame_id
-                if ack_frame.frame_type == FrameType.ACKNOWLEDGE and ack_frame.frame_id == frame_id:
+                if (
+                    ack_frame.frame_type == FrameType.ACKNOWLEDGE
+                    and ack_frame.frame_id == frame_id
+                ):
                     print("ACK received for frame ID:", frame_id)
                     break  # ACK received, exit the loop
             except ValueError:

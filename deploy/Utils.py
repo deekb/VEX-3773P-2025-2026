@@ -7,14 +7,17 @@ import subprocess
 import time
 from typing import Optional
 
-from deploy import (
-    POSIX_MOUNT_POINT_DIR,
-    DEPLOY_EXCLUDE_REGEX
-)
+from deploy import POSIX_MOUNT_POINT_DIR, DEPLOY_EXCLUDE_REGEX
 
 __all__ = [
-    "get_checksum", "copy_if_changed", "RemovableDisk", "get_removable_disks",
-    "unmount_drive", "convert_size", "find_vex_disk", "exclude_from_deploy"
+    "get_checksum",
+    "copy_if_changed",
+    "RemovableDisk",
+    "get_removable_disks",
+    "unmount_drive",
+    "convert_size",
+    "find_vex_disk",
+    "exclude_from_deploy",
 ]
 
 
@@ -46,7 +49,10 @@ def get_checksum(file_path: str) -> str:
 
 
 def copy_if_changed(
-        files_to_copy: list[str], target_directory: str, base_folder_to_copy_from: str, dry_run: bool = False
+    files_to_copy: list[str],
+    target_directory: str,
+    base_folder_to_copy_from: str,
+    dry_run: bool = False,
 ) -> tuple[int, int]:
     """
     Copy files from source to target if they have changed.
@@ -138,25 +144,30 @@ def get_removable_disks(posix_mount_point_dir: str) -> list[RemovableDisk]:
 
     if os.name == "nt":
         import psutil, win32api
+
         disks = psutil.disk_partitions()
         for disk in disks:
             if disk.fstype:
-                removable_drives.append(RemovableDisk(win32api.GetVolumeInformation(disk.device)[0], disk.mountpoint))
+                removable_drives.append(
+                    RemovableDisk(
+                        win32api.GetVolumeInformation(disk.device)[0], disk.mountpoint
+                    )
+                )
 
     elif os.name == "posix":
         mount_points = os.listdir(posix_mount_point_dir)
         for mount_point in mount_points:
             drive_name = os.path.basename(mount_point)
-            disk_path = os.path.abspath(os.path.join(posix_mount_point_dir, mount_point))
+            disk_path = os.path.abspath(
+                os.path.join(posix_mount_point_dir, mount_point)
+            )
             removable_drives.append(RemovableDisk(disk_path, drive_name))
 
     return removable_drives
 
 
 def find_vex_disk(
-        drive_identifier_string: str,
-        max_attempts: int,
-        time_between_attempts: float
+    drive_identifier_string: str, max_attempts: int, time_between_attempts: float
 ) -> Optional[RemovableDisk]:
     """
     Finds the VEX disk by scanning available removable disks.
@@ -190,8 +201,10 @@ def unmount_drive(drive_path: str) -> None:
         subprocess.CalledProcessError: If the unmount command fails.
     """
     if os.name == "nt":
-        eject_command = f"powershell $driveEject = New-Object -comObject Shell.Application;" \
-                        f"$driveEject.Namespace(17).ParseName('''{drive_path}''').InvokeVerb('''Eject''')"
+        eject_command = (
+            f"powershell $driveEject = New-Object -comObject Shell.Application;"
+            f"$driveEject.Namespace(17).ParseName('''{drive_path}''').InvokeVerb('''Eject''')"
+        )
     else:
         eject_command = ["umount", drive_path]
 

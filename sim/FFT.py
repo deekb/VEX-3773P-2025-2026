@@ -1,5 +1,6 @@
 import math
 import random
+
 import matplotlib.pyplot as plt
 
 
@@ -31,7 +32,10 @@ def fft(signal):
 
     result = [0] * n
     for k in range(n // 2):
-        t = complex(math.cos(-2 * math.pi * k / n), math.sin(-2 * math.pi * k / n)) * odd_fft[k]
+        t = (
+            complex(math.cos(-2 * math.pi * k / n), math.sin(-2 * math.pi * k / n))
+            * odd_fft[k]
+        )
         result[k] = even_fft[k] + t
         result[k + n // 2] = even_fft[k] - t
 
@@ -53,7 +57,10 @@ def ifft(freq_data):
 
     result = [0] * n
     for k in range(n // 2):
-        t = complex(math.cos(2 * math.pi * k / n), math.sin(2 * math.pi * k / n)) * odd_ifft[k]
+        t = (
+            complex(math.cos(2 * math.pi * k / n), math.sin(2 * math.pi * k / n))
+            * odd_ifft[k]
+        )
         result[k] = (even_ifft[k] + t) / 2  # Normalize
         result[k + n // 2] = (even_ifft[k] - t) / 2  # Normalize
 
@@ -80,7 +87,10 @@ def notch_filter(fft_data, sample_rate, notch_freq, bandwidth=1):
     for i in range(n):
         freq = i * freq_resolution
         # If the frequency is within the notch range, zero it out
-        if abs(freq - notch_freq) < bandwidth or abs(freq - (sample_rate - notch_freq)) < bandwidth:
+        if (
+            abs(freq - notch_freq) < bandwidth
+            or abs(freq - (sample_rate - notch_freq)) < bandwidth
+        ):
             fft_data[i] = 0  # Remove the frequency component
 
     return fft_data
@@ -94,10 +104,10 @@ signal_length = 500  # Samples
 # Simulating a signal with 50 Hz noise
 def generate_signal_with_50hz_noise(length=100, sample_rate=100):
     return [
-        math.sin(2 * math.pi * 5 * t / sample_rate) +  # 5 Hz component
-        0.1 * math.sin(2 * math.pi * 20 * t / sample_rate) +  # 20 Hz component
-        0.4 * math.sin(2 * math.pi * 50 * t / sample_rate) +  # 50 Hz noise
-        0.2 * (random.uniform(-1, 1))  # Random noise
+        math.sin(2 * math.pi * 5 * t / sample_rate)  # 5 Hz component
+        + 0.1 * math.sin(2 * math.pi * 20 * t / sample_rate)  # 20 Hz component
+        + 0.4 * math.sin(2 * math.pi * 50 * t / sample_rate)  # 50 Hz noise
+        + 0.2 * (random.uniform(-1, 1))  # Random noise
         for t in range(length)
     ]
 
@@ -109,7 +119,9 @@ signal = generate_signal_with_50hz_noise(length=signal_length, sample_rate=sampl
 fft_result = fft(signal)
 
 # Apply Notch Filter to remove 50 Hz noise
-notch_filtered_fft = notch_filter(fft_result[:], sample_rate, notch_freq=140, bandwidth=130)
+notch_filtered_fft = notch_filter(
+    fft_result[:], sample_rate, notch_freq=140, bandwidth=130
+)
 
 # Compute IFFT to reconstruct the filtered signal
 filtered_signal = ifft(notch_filtered_fft)
@@ -138,7 +150,7 @@ plt.legend()
 
 # Time-domain filtered signal
 plt.subplot(2, 3, 2)
-plt.plot(filtered_signal, label="Filtered Signal", color='red')
+plt.plot(filtered_signal, label="Filtered Signal", color="red")
 plt.xlabel("Sample Index")
 plt.ylabel("Amplitude")
 plt.title("Filtered Signal (Time Domain)")
@@ -154,7 +166,7 @@ plt.legend()
 
 # Frequency spectrum after filtering
 plt.subplot(2, 3, 5)
-plt.plot(frequencies, magnitude_after, label="Filtered Spectrum", color='red')
+plt.plot(frequencies, magnitude_after, label="Filtered Spectrum", color="red")
 plt.xlabel("Frequency (Hz)")
 plt.ylabel("Magnitude")
 plt.title("FFT Spectrum (After Filtering)")
@@ -162,8 +174,8 @@ plt.legend()
 
 # Overlay: Original and Filtered signals in the rightmost column (Time Domain)
 plt.subplot(2, 3, 3)
-plt.plot(signal, label="Original Signal", color='blue', alpha=0.7)
-plt.plot(filtered_signal, label="Filtered Signal", color='red', linestyle='--')
+plt.plot(signal, label="Original Signal", color="blue", alpha=0.7)
+plt.plot(filtered_signal, label="Filtered Signal", color="red", linestyle="--")
 plt.xlabel("Sample Index")
 plt.ylabel("Amplitude")
 plt.title("Original vs Filtered Signal (Overlay)")
@@ -171,8 +183,12 @@ plt.legend()
 
 # Overlay: Original and Filtered frequency spectra in the rightmost column (Frequency Domain)
 plt.subplot(2, 3, 6)
-plt.plot(frequencies, magnitude_before, label="Original Spectrum", color='blue', alpha=0.7)
-plt.plot(frequencies, magnitude_after, label="Filtered Spectrum", color='red', linestyle='--')
+plt.plot(
+    frequencies, magnitude_before, label="Original Spectrum", color="blue", alpha=0.7
+)
+plt.plot(
+    frequencies, magnitude_after, label="Filtered Spectrum", color="red", linestyle="--"
+)
 plt.xlabel("Frequency (Hz)")
 plt.ylabel("Magnitude")
 plt.title("Original vs Filtered Spectrum (Overlay)")

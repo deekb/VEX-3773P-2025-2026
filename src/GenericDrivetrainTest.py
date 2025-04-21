@@ -38,7 +38,7 @@ class DrivetrainProperties:
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.5)
     MOVEMENT_MAX_EXTRA_TIME = 1
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.6)
-    MOTOR_TO_WHEEL_GEAR_RATIO = (36 / 60)
+    MOTOR_TO_WHEEL_GEAR_RATIO = 36 / 60
     WHEEL_DIAMETER = Distance.from_inches(3.235)
     WHEEL_CIRCUMFERENCE = circle_circumference(WHEEL_DIAMETER / 2)
 
@@ -59,10 +59,15 @@ class Robot(RobotBase):
                     Motor(Ports.PORT2),
                     Rotation2d.from_degrees(0),
                     lambda: self.left_speed_calculator.calculate_rate(
-                        arc_length_from_rotation(DrivetrainProperties.WHEEL_CIRCUMFERENCE, Rotation2d.from_revolutions(
-                            Motor(Ports.PORT2).position(TURNS))).to_meters(), time.time()
+                        arc_length_from_rotation(
+                            DrivetrainProperties.WHEEL_CIRCUMFERENCE,
+                            Rotation2d.from_revolutions(
+                                Motor(Ports.PORT2).position(TURNS)
+                            ),
+                        ).to_meters(),
+                        time.time(),
                     ),
-                    PIDFController(DrivetrainProperties.LEFT_PIDF_GAINS)
+                    PIDFController(DrivetrainProperties.LEFT_PIDF_GAINS),
                 )
-            ]
+            ],
         )

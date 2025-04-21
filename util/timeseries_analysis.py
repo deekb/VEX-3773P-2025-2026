@@ -1,8 +1,8 @@
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 BASENAME = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(BASENAME)

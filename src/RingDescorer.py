@@ -11,7 +11,9 @@ class RingDescorer:
         self.log = ring_descorer_log
 
     def _update_state(self):
-        self.log.trace("_update_state: setting state to {}".format(self.ring_descorer_state))
+        self.log.trace(
+            "_update_state: setting state to {}".format(self.ring_descorer_state)
+        )
         self.ring_descorer_piston.set(self.ring_descorer_state)
 
     def descore_ring(self):
@@ -25,6 +27,10 @@ class RingDescorer:
         self._update_state()
 
     def toggle_descorer(self):
-        self.log.trace("Toggling descorer from {} to {}".format(self.ring_descorer_state, not self.ring_descorer_state))
+        self.log.trace(
+            "Toggling descorer from {} to {}".format(
+                self.ring_descorer_state, not self.ring_descorer_state
+            )
+        )
         self.ring_descorer_state = not self.ring_descorer_state
         self._update_state()

@@ -73,8 +73,11 @@ class ErrorHandledRobot(TickBasedRobot):
             exception_buffer = io.StringIO()
             sys.print_exception(e, exception_buffer)
             while True:
-                self.serial_communication.send(str(exception_buffer.getvalue())[:-1] + "".join(
-                    [str(hex(random.randint(0, 16))) for _ in range(16)]) + "\n")
+                self.serial_communication.send(
+                    str(exception_buffer.getvalue())[:-1]
+                    + "".join([str(hex(random.randint(0, 16))) for _ in range(16)])
+                    + "\n"
+                )
                 wait(1000, MSEC)
 
 
@@ -119,8 +122,12 @@ class Robot(ErrorHandledRobot):
                 files_hashes = get_file_hashes(files)
                 print(files_hashes)
                 print("Sending hashes")
-                self.serial_communication.tx_port.write(("HASHES " + json.dumps(files_hashes)[:100]).encode())
-                self.serial_communication.tx_port.write((json.dumps(files_hashes)[100:] + "\n").encode())
+                self.serial_communication.tx_port.write(
+                    ("HASHES " + json.dumps(files_hashes)[:100]).encode()
+                )
+                self.serial_communication.tx_port.write(
+                    (json.dumps(files_hashes)[100:] + "\n").encode()
+                )
                 self.serial_communication.receives = []
 
             elif data.startswith("UPLOAD"):

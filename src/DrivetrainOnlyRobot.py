@@ -1,6 +1,8 @@
 import io
 import sys
 
+from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
+
 from Constants import *
 from Drivetrain import Drivetrain
 from VEXLib import Util
@@ -8,14 +10,13 @@ from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Motor import Motor
 from VEXLib.Network.Telemetry import SerialCommunication
 from VEXLib.Robot.RobotBase import RobotBase
-from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
 from VEXLib.Sensors.Controller import Controller
 from VEXLib.Util import time
 from VEXLib.Util.Logging import Logger
 from vex import Competition, PRIMARY, FontType, Inertial
 
-main_log = Logger(Brain().sdcard, Brain().screen, MAIN_LOG_FILENAME)
-debug_log = Logger(Brain().sdcard, Brain().screen, DEBUG_LOG_FILENAME)
+main_log = Logger(Brain().sdcard, Brain().screen, "main")
+debug_log = Logger(Brain().sdcard, Brain().screen, "debug")
 
 
 class Robot(RobotBase):

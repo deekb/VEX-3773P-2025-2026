@@ -36,9 +36,10 @@ Usage Examples:
 
 import os.path
 import re
+
 from rich.console import Console
-from rich.text import Text
 from rich.panel import Panel
+from rich.text import Text
 
 console = Console()
 
@@ -49,10 +50,11 @@ log_levels = {
     "INFO": "green",
     "WARN": "yellow",
     "ERROR": "red",
-    "FATAL": "bold red"
+    "FATAL": "bold red",
 }
 
 log_levels_order = ["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"]
+
 
 def read_logs(file_path):
     """
@@ -64,10 +66,18 @@ def read_logs(file_path):
     Returns:
         list: A list of log entries (lines).
     """
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         return file.readlines()
 
-def filter_logs(logs, levels=None, regex=None, comparison="leq", case_insensitive=False, show_all=False):
+
+def filter_logs(
+    logs,
+    levels=None,
+    regex=None,
+    comparison="leq",
+    case_insensitive=False,
+    show_all=False,
+):
     """
     Filter the logs based on the specified log levels and regex pattern.
 
@@ -95,6 +105,7 @@ def filter_logs(logs, levels=None, regex=None, comparison="leq", case_insensitiv
         filtered_logs.append(log)
     return filtered_logs
 
+
 def display_log_info(logs, filtered_logs, file_path, levels, comparison, show_all):
     """
     Display information about the filtered logs.
@@ -107,13 +118,16 @@ def display_log_info(logs, filtered_logs, file_path, levels, comparison, show_al
         comparison (str): The comparison type for log levels.
         show_all (bool): Whether to show all log levels.
     """
-    os.system('clear||cls')
+    os.system("clear||cls")
     log_info = f"Showing: {len(filtered_logs)} / {len(logs)} entries\n"
     levels = _prepare_levels(levels, show_all)
     log_levels_count = _count_log_levels(filtered_logs)
-    log_levels_display = _format_log_levels_display(log_levels_count, levels, comparison, show_all)
+    log_levels_display = _format_log_levels_display(
+        log_levels_count, levels, comparison, show_all
+    )
     log_info += "\n".join(log_levels_display)
     console.print(Panel(log_info, title=os.path.basename(file_path), expand=False))
+
 
 def display_logs(logs):
     """
@@ -123,10 +137,13 @@ def display_logs(logs):
         logs (list): The list of log entries.
     """
     if not logs:
-        console.print("No log entries found for the specified criteria.", style="bold red")
+        console.print(
+            "No log entries found for the specified criteria.", style="bold red"
+        )
         return
     for log in logs:
         _print_log(log)
+
 
 def _prepare_levels(levels, show_all):
     """
@@ -143,8 +160,11 @@ def _prepare_levels(levels, show_all):
         levels = [level.upper() for level in levels]
         for level in levels:
             if level not in log_levels_order:
-                raise ValueError(f"Invalid log level: {level}. Valid log levels are: {', '.join(log_levels_order)}")
+                raise ValueError(
+                    f"Invalid log level: {level}. Valid log levels are: {', '.join(log_levels_order)}"
+                )
     return levels
+
 
 def _get_log_level(log):
     """
@@ -157,6 +177,7 @@ def _get_log_level(log):
         str: The log level, or None if not found.
     """
     return next((lvl for lvl in log_levels if log.startswith(f"<{lvl}>")), None)
+
 
 def _should_include_log(log_level, levels, comparison, show_all):
     """
@@ -182,6 +203,7 @@ def _should_include_log(log_level, levels, comparison, show_all):
         return any(log_levels_order.index(lvl) <= log_level_index for lvl in levels)
     return False
 
+
 def _matches_regex(log, regex, case_insensitive):
     """
     Check if a log entry matches a regex pattern.
@@ -196,6 +218,7 @@ def _matches_regex(log, regex, case_insensitive):
     """
     flags = re.IGNORECASE if case_insensitive else 0
     return re.search(regex, log, flags=flags)
+
 
 def _count_log_levels(filtered_logs):
     """
@@ -213,6 +236,7 @@ def _count_log_levels(filtered_logs):
         if log_level:
             log_levels_count[log_level] += 1
     return log_levels_count
+
 
 def _format_log_levels_display(log_levels_count, levels, comparison, show_all):
     """
@@ -239,12 +263,17 @@ def _format_log_levels_display(log_levels_count, levels, comparison, show_all):
                 log_level_index = log_levels_order.index(log_level)
                 if comparison == "eq" and log_level not in levels:
                     continue
-                elif comparison == "leq" and all(log_levels_order.index(lvl) > log_level_index for lvl in levels):
+                elif comparison == "leq" and all(
+                    log_levels_order.index(lvl) > log_level_index for lvl in levels
+                ):
                     continue
-                elif comparison == "heq" and all(log_levels_order.index(lvl) < log_level_index for lvl in levels):
+                elif comparison == "heq" and all(
+                    log_levels_order.index(lvl) < log_level_index for lvl in levels
+                ):
                     continue
         log_levels_display.append(f"[{color}]<{log_level}>: {count}[/]")
     return log_levels_display
+
 
 def _print_log(log):
     """
@@ -259,10 +288,13 @@ def _print_log(log):
             console.print(text)
             break
 
+
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Log Viewer - A tool to view and filter log files with rich formatting.")
+    parser = argparse.ArgumentParser(
+        description="Log Viewer - A tool to view and filter log files with rich formatting."
+    )
     parser.add_argument("file", help="Path to the log file to be viewed.")
     parser.add_argument("--trace", action="store_true", help="Show TRACE level logs.")
     parser.add_argument("--debug", action="store_true", help="Show DEBUG level logs.")
@@ -271,9 +303,17 @@ if __name__ == "__main__":
     parser.add_argument("--error", action="store_true", help="Show ERROR level logs.")
     parser.add_argument("--fatal", action="store_true", help="Show FATAL level logs.")
     parser.add_argument("--all", action="store_true", help="Show all log levels.")
-    parser.add_argument("--comparison", default="HEQ", help="Comparison type for log levels: EQ: equal to the specified level, LEQ: lower than (more verbose) or equal to the specified level, or HEQ: higher than (less verbose) or equal to the specified level. Default is HEQ.")
+    parser.add_argument(
+        "--comparison",
+        default="HEQ",
+        help="Comparison type for log levels: EQ: equal to the specified level, LEQ: lower than (more verbose) or equal to the specified level, or HEQ: higher than (less verbose) or equal to the specified level. Default is HEQ.",
+    )
     parser.add_argument("--regex", help="Filter logs by a regex pattern.")
-    parser.add_argument("--case-insensitive", action="store_true", help="Make the regex pattern case insensitive.")
+    parser.add_argument(
+        "--case-insensitive",
+        action="store_true",
+        help="Make the regex pattern case insensitive.",
+    )
     args = parser.parse_args()
 
     levels = []
@@ -292,8 +332,22 @@ if __name__ == "__main__":
 
     try:
         logs = read_logs(args.file)
-        filtered_logs = filter_logs(logs, levels=levels, regex=args.regex, comparison=args.comparison, case_insensitive=args.case_insensitive, show_all=args.all)
-        display_log_info(logs, filtered_logs, file_path=args.file, levels=levels, comparison=args.comparison, show_all=args.all)
+        filtered_logs = filter_logs(
+            logs,
+            levels=levels,
+            regex=args.regex,
+            comparison=args.comparison,
+            case_insensitive=args.case_insensitive,
+            show_all=args.all,
+        )
+        display_log_info(
+            logs,
+            filtered_logs,
+            file_path=args.file,
+            levels=levels,
+            comparison=args.comparison,
+            show_all=args.all,
+        )
         display_logs(filtered_logs)
     except ValueError as e:
         console.print(str(e), style="bold red")

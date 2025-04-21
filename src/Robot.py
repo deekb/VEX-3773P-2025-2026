@@ -2,17 +2,17 @@ import io
 import sys
 
 import AutonomousRoutines
+import AutonomousRoutinesPointBased
 import VEXLib.Math.MathUtil as MathUtil
 from Constants import *
-from CornerMechanism import CornerMechanism, Sides
+from CornerMechanism import CornerMechanism
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
-from RingRushMechanism import RingRushMechanism
 from RingDescorer import RingDescorer
+from RingRushMechanism import RingRushMechanism
 from ScoringMechanism import ScoringMechanism
 from VEXLib.Kinematics import desaturate_wheel_speeds
 from VEXLib.Motor import Motor
-from VEXLib.Network.Telemetry import SerialCommunication
 from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import DoublePressHandler, Controller
@@ -20,8 +20,7 @@ from VEXLib.Util import time, pass_function
 from VEXLib.Util.Buffer import Buffer
 from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism, WallStakeState
-import AutonomousRoutinesPointBased
-from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, Thread, FontType, \
+from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, FontType, \
     Inertial
 
 main_log = Logger(Brain().sdcard, Brain().screen, "robot")

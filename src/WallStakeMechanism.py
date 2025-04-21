@@ -14,7 +14,9 @@ class WallStakeState:
     LOW_SCORING = 4
 
 
-wall_stake_mechanism_logger = Logger(Brain().sdcard, Brain().screen, "WallStakeMechanism")
+wall_stake_mechanism_logger = Logger(
+    Brain().sdcard, Brain().screen, "WallStakeMechanism"
+)
 
 
 class WallStakeMechanism:
@@ -59,8 +61,12 @@ class WallStakeMechanism:
 
     def update_motor_voltage(self):
         # self.log.trace("Entering update_motor_voltage")
-        current_rotation = Rotation2d.from_degrees(self.rotation_sensor.position(DEGREES))
-        feedforward_output = self.gravitational_feedforward.update(current_rotation.to_degrees())
+        current_rotation = Rotation2d.from_degrees(
+            self.rotation_sensor.position(DEGREES)
+        )
+        feedforward_output = self.gravitational_feedforward.update(
+            current_rotation.to_degrees()
+        )
         pid_output = self.pid.update(current_rotation.normalize().to_revolutions())
 
         # self.log.debug("Current rotation: {} degrees".format(current_rotation.to_degrees()))
@@ -95,7 +101,9 @@ class WallStakeMechanism:
     def next_state(self):
         self.log.trace("Entering next_state")
         if self.state == 4:
-            self.log.warn("Already in the highest state, cannot transition to next state")
+            self.log.warn(
+                "Already in the highest state, cannot transition to next state"
+            )
             return
         self.transition_to(self.state + 1)
         self.log.info("Transitioned to next state:", self.state)
@@ -103,7 +111,9 @@ class WallStakeMechanism:
     def previous_state(self):
         self.log.trace("Entering previous_state")
         if self.state == 1:
-            self.log.warn("Already in the lowest state, cannot transition to previous state")
+            self.log.warn(
+                "Already in the lowest state, cannot transition to previous state"
+            )
             return
         self.transition_to(self.state - 1)
         self.log.info("Transitioned to previous state:", self.state)

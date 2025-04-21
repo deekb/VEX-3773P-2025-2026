@@ -4,10 +4,10 @@ I gave up and decided to just use an SD card to transfer programs (hence the dep
 into a full project, please contact me and I will help
 """
 
+import binascii
 
 import serial
 import serial.tools.list_ports
-import binascii
 
 
 class DeviceNotFound(serial.SerialException):

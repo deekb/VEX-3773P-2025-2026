@@ -11,7 +11,9 @@ class MobileGoalClamp:
         self.log = mobile_goal_clamp_log
 
     def _update_state(self):
-        self.log.trace("_update_state: setting state to {}".format(self.mobile_goal_clamp_state))
+        self.log.trace(
+            "_update_state: setting state to {}".format(self.mobile_goal_clamp_state)
+        )
         self.mobile_goal_clamp_piston.set(self.mobile_goal_clamp_state)
 
     def clamp_mobile_goal(self):
@@ -25,6 +27,10 @@ class MobileGoalClamp:
         self._update_state()
 
     def toggle_clamp(self):
-        self.log.trace("Toggling clamp from {} to {}".format(self.mobile_goal_clamp_state, not self.mobile_goal_clamp_state))
+        self.log.trace(
+            "Toggling clamp from {} to {}".format(
+                self.mobile_goal_clamp_state, not self.mobile_goal_clamp_state
+            )
+        )
         self.mobile_goal_clamp_state = not self.mobile_goal_clamp_state
         self._update_state()

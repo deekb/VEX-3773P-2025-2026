@@ -1,11 +1,22 @@
 import math
 
-from VEXLib.Math import is_near_continuous
 import VEXLib.Util.time as time
+from Constants import ScoringMechanismProperties
+from VEXLib.Math import is_near_continuous
 from VEXLib.Util.Logging import Logger
 from VEXLib.Util.time import wait_until, wait_until_not
-from vex import VOLT, FORWARD, LedStateType, PERCENT, Rotation, DEGREES, Distance, MM, Brain, Color
-from Constants import ScoringMechanismProperties
+from vex import (
+    VOLT,
+    FORWARD,
+    LedStateType,
+    PERCENT,
+    Rotation,
+    DEGREES,
+    Distance,
+    MM,
+    Brain,
+    Color,
+)
 
 scoring_mechanism_log = Logger(Brain().sdcard, Brain().screen, "scoring_mechanism")
 
@@ -26,7 +37,15 @@ class ScoringMechanism:
         found_ring (bool): Flag to indicate if a ring is found.
     """
 
-    def __init__(self, lower_intake_motor, upper_intake_motor, rotation_sensor: Rotation, optical_sensor, distance_sensor: Distance, screen: Brain.Lcd):
+    def __init__(
+        self,
+        lower_intake_motor,
+        upper_intake_motor,
+        rotation_sensor: Rotation,
+        optical_sensor,
+        distance_sensor: Distance,
+        screen: Brain.Lcd,
+    ):
         """
         Constructs an instance of the scoring mechanism object.
 
@@ -131,7 +150,10 @@ class ScoringMechanism:
         Returns:
             bool: True if a ring is near, False otherwise.
         """
-        return self.distance_sensor.object_distance(MM) < ScoringMechanismProperties.RING_DISTANCE
+        return (
+            self.distance_sensor.object_distance(MM)
+            < ScoringMechanismProperties.RING_DISTANCE
+        )
 
     def intake_until_ring(self):
         """
@@ -141,8 +163,9 @@ class ScoringMechanism:
         self.intake()
         wait_until(self.ring_is_near)
         self.stop_motor()
-        self.log.debug("intake_until_ring done, found {} ring".format(self.get_ring_color()))
-
+        self.log.debug(
+            "intake_until_ring done, found {} ring".format(self.get_ring_color())
+        )
 
     def intake_until_no_ring(self):
         """
@@ -153,7 +176,9 @@ class ScoringMechanism:
         wait_until_not(lambda: self.ring_is_near(), 100)
         time.sleep(0.25)
         self.stop_motor()
-        self.log.debug("intake_until_no_ring done, found {} ring".format(self.get_ring_color()))
+        self.log.debug(
+            "intake_until_no_ring done, found {} ring".format(self.get_ring_color())
+        )
 
     def eject_ring(self):
         """
@@ -162,7 +187,9 @@ class ScoringMechanism:
         self.ejecting_ring = True
         self.eject_ring_at_position = math.ceil(self.get_position())
         self.log.debug("current position {}".format(self.get_position()))
-        self.log.debug("Will eject ring at position {}".format(self.eject_ring_at_position))
+        self.log.debug(
+            "Will eject ring at position {}".format(self.eject_ring_at_position)
+        )
 
     def show_ring_color(self, color):
         """
@@ -192,7 +219,9 @@ class ScoringMechanism:
                 self.outtake()
                 time.sleep(0.25)
                 self.intake()
-                self.log.debug("ejecting: current position {}".format(self.get_position()))
+                self.log.debug(
+                    "ejecting: current position {}".format(self.get_position())
+                )
                 self.ejecting_ring = False
             return
 
@@ -230,13 +259,21 @@ class ScoringMechanism:
         """
         Calibrates the scoring mechanism.
         """
-        while self.distance_sensor.object_distance(MM) > ScoringMechanismProperties.HOOK_DISTANCE:
+        while (
+            self.distance_sensor.object_distance(MM)
+            > ScoringMechanismProperties.HOOK_DISTANCE
+        ):
             self.spin_upper_intake(40)
         self.spin_upper_intake(-20)
         time.sleep(0.25)
-        while self.distance_sensor.object_distance(MM) > ScoringMechanismProperties.HOOK_DISTANCE:
+        while (
+            self.distance_sensor.object_distance(MM)
+            > ScoringMechanismProperties.HOOK_DISTANCE
+        ):
             self.spin_upper_intake(20)
-        self.rotation_sensor.set_position(ScoringMechanismProperties.CALIBRATION_OFFSET, DEGREES)
+        self.rotation_sensor.set_position(
+            ScoringMechanismProperties.CALIBRATION_OFFSET, DEGREES
+        )
         self.stop_motor()
         target_end_position = math.ceil(self.get_position()) - 0.3
         while self.get_position() < target_end_position:
@@ -252,7 +289,10 @@ class ScoringMechanism:
         Returns:
             float: The current position of the rotation sensor.
         """
-        return self.rotation_sensor.position(DEGREES) / ScoringMechanismProperties.AVERAGE_HALF_ROTATION
+        return (
+            self.rotation_sensor.position(DEGREES)
+            / ScoringMechanismProperties.AVERAGE_HALF_ROTATION
+        )
 
     def tick(self, alliance_color):
         """

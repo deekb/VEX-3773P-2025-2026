@@ -1,6 +1,7 @@
-from PIL import Image
 import configparser
 import os
+
+from PIL import Image
 
 # Load constants from config
 config = configparser.ConfigParser()
@@ -51,7 +52,9 @@ length_list = []
 max_length = 2 ** (8 * BYTES_FOR_SIZE)
 
 if x_size > max_length:
-    raise ValueError(f"X size: {x_size} overflows the {BYTES_FOR_SIZE} bytes reserved for size, maximum size for {BYTES_FOR_SIZE} bytes is {max_length}")
+    raise ValueError(
+        f"X size: {x_size} overflows the {BYTES_FOR_SIZE} bytes reserved for size, maximum size for {BYTES_FOR_SIZE} bytes is {max_length}"
+    )
 
 
 for i in range(BYTES_FOR_SIZE):

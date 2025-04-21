@@ -1,10 +1,21 @@
-from vex import Color
 from VEXLib.Robot.TickBasedRobot import TickBasedRobot
+from vex import Color
 
 
 class Button:
-    def __init__(self, screen, x: int, y: int, width: int, height: int, text="", image=None, text_color=Color.BLACK,
-                 fill_color=Color.BLUE, is_visible=True):
+    def __init__(
+        self,
+        screen,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        text="",
+        image=None,
+        text_color=Color.BLACK,
+        fill_color=Color.BLUE,
+        is_visible=True,
+    ):
         self.screen = screen
         self.x = x
         self.y = y
@@ -30,8 +41,11 @@ class Button:
 
                 # Draw the button text or image
                 if self.image:
-                    self.screen.draw_image_from_file(self.image, self.x + self.width // 2 - 10,
-                                                     self.y + self.height // 2 - 10)
+                    self.screen.draw_image_from_file(
+                        self.image,
+                        self.x + self.width // 2 - 10,
+                        self.y + self.height // 2 - 10,
+                    )
                 if self.text:
                     self.screen.set_pen_color(self.text_color)
                     text_width = self.screen.get_string_width(self.text)
@@ -89,9 +103,30 @@ class Graphics:
         self.screen = screen
         self.buttons = []
 
-    def create_button(self, x, y, width, height, text="", image=None, text_color=Color.WHITE, fill_color=Color.BLUE,
-                      is_visible=True):
-        button = Button(self.screen, x, y, width, height, text, image, text_color, fill_color, is_visible)
+    def create_button(
+        self,
+        x,
+        y,
+        width,
+        height,
+        text="",
+        image=None,
+        text_color=Color.WHITE,
+        fill_color=Color.BLUE,
+        is_visible=True,
+    ):
+        button = Button(
+            self.screen,
+            x,
+            y,
+            width,
+            height,
+            text,
+            image,
+            text_color,
+            fill_color,
+            is_visible,
+        )
         self.buttons.append(button)
         button.draw()  # Initial draw
         return button
@@ -124,19 +159,26 @@ class Robot(TickBasedRobot):
 
     def on_setup(self):
         # self.screen.draw_image_from_file("deploy/background.png", 0, 0)
-        self.restart_button = self.graphics.create_button(0, 0, 100, 40, text="Restart", fill_color=Color.PURPLE)
-        self.back_button = self.graphics.create_button(380, 0, 100, 40, text="Back", fill_color=Color.ORANGE)
+        self.restart_button = self.graphics.create_button(
+            0, 0, 100, 40, text="Restart", fill_color=Color.PURPLE
+        )
+        self.back_button = self.graphics.create_button(
+            380, 0, 100, 40, text="Back", fill_color=Color.ORANGE
+        )
         self.restart_button.set_released_callback(self.trigger_restart)
         self.select_team()
 
     def select_team(self):
-        self.red_button = self.graphics.create_button(0, 40, 240, 200, text="Red", fill_color=Color.RED)
-        self.blue_button = self.graphics.create_button(240, 40, 240, 200, text="Blue", fill_color=Color.BLUE)
+        self.red_button = self.graphics.create_button(
+            0, 40, 240, 200, text="Red", fill_color=Color.RED
+        )
+        self.blue_button = self.graphics.create_button(
+            240, 40, 240, 200, text="Blue", fill_color=Color.BLUE
+        )
         self.red_button.set_released_callback(lambda: print("Red Release"))
-        self.back_button.set_released_callback(lambda: (self.red_button.hide(),
-                                                        self.blue_button.hide(),
-                                                        self.on_setup())
-                                               )
+        self.back_button.set_released_callback(
+            lambda: (self.red_button.hide(), self.blue_button.hide(), self.on_setup())
+        )
 
     def periodic(self):
         # pass

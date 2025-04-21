@@ -516,17 +516,22 @@ current_translation = Translation2d()
 
 for line in relative_code.splitlines():
     if "move_distance_towards_direction_trap" in line:
-        match = re.search(r"robot\.drivetrain\.move_distance_towards_direction_trap\((.*)\)", line)
+        match = re.search(
+            r"robot\.drivetrain\.move_distance_towards_direction_trap\((.*)\)", line
+        )
         if match:
             arguments = match.group(1).split(", ")
             translation1d = Translation1d()
             exec("translation1d = " + arguments[0])
-            translation = Translation2d.from_polar(translation1d, Rotation2d.from_degrees(float(arguments[1])))
+            translation = Translation2d.from_polar(
+                translation1d, Rotation2d.from_degrees(float(arguments[1]))
+            )
             current_translation += translation
             going_backwards = translation1d.to_meters() < 0
 
-
-            print(f"\trobot.drivetrain.move_to_point(Translation2d.from_centimeters({round(current_translation.x_component.to_centimeters(), 3)}, {round(current_translation.y_component.to_centimeters(), 3)}){', use_back=True' if going_backwards else ''})")
+            print(
+                f"\trobot.drivetrain.move_to_point(Translation2d.from_centimeters({round(current_translation.x_component.to_centimeters(), 3)}, {round(current_translation.y_component.to_centimeters(), 3)}){', use_back=True' if going_backwards else ''})"
+            )
     else:
         if "def" in line:
             current_translation = Translation2d()

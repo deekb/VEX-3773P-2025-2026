@@ -1,19 +1,23 @@
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # Define the path to the CSV file
-left_drivetrain_file_path = '/home/derek/PycharmProjects/VEXlib/logs/left_drivetrain.csv'
-right_drivetrain_file_path = '/home/derek/PycharmProjects/VEXlib/logs/right_drivetrain.csv'
+left_drivetrain_file_path = (
+    "/home/derek/PycharmProjects/VEXlib/logs/left_drivetrain.csv"
+)
+right_drivetrain_file_path = (
+    "/home/derek/PycharmProjects/VEXlib/logs/right_drivetrain.csv"
+)
 
 # Read the CSV file into a DataFrame
 df_left = pd.read_csv(left_drivetrain_file_path)
 df_right = pd.read_csv(right_drivetrain_file_path)
 
 # Extracting time and speed values
-left_time_values = df_left['time (s)']
-right_time_values = df_right['time (s)']
-left_speed_values = df_left['speed (% of rated)']
-right_speed_values = df_right['speed (% of rated)']
+left_time_values = df_left["time (s)"]
+right_time_values = df_right["time (s)"]
+left_speed_values = df_left["speed (% of rated)"]
+right_speed_values = df_right["speed (% of rated)"]
 
 # Normalize the times to start at the same timestamp and make it zero
 left_time_values -= left_time_values.min()

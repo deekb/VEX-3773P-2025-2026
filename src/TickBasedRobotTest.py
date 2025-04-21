@@ -6,6 +6,7 @@ class Robot(TickBasedRobot):
     This is the basic representation of a robot
     It has methods to be called when it is enabled and disabled
     """
+
     def __init__(self, brain, autonomous):
         super().__init__(brain)
 

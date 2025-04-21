@@ -11,7 +11,9 @@ class RingRushMechanism:
         self.log = ring_rush_mechanism_log
 
     def _update_state(self):
-        self.log.trace("_update_state: setting state to {}".format(self.ring_rush_mechanism_state))
+        self.log.trace(
+            "_update_state: setting state to {}".format(self.ring_rush_mechanism_state)
+        )
         self.ring_rush_mechanism_piston.set(self.ring_rush_mechanism_state)
 
     def lower_ring_rush_mechanism(self):
@@ -25,6 +27,10 @@ class RingRushMechanism:
         self._update_state()
 
     def toggle_ring_rush_mechanism(self):
-        self.log.trace("Toggling ring rush mechanism from {} to {}".format(self.ring_rush_mechanism_state, not self.ring_rush_mechanism_state))
+        self.log.trace(
+            "Toggling ring rush mechanism from {} to {}".format(
+                self.ring_rush_mechanism_state, not self.ring_rush_mechanism_state
+            )
+        )
         self.ring_rush_mechanism_state = not self.ring_rush_mechanism_state
         self._update_state()

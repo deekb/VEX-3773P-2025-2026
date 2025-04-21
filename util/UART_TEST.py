@@ -18,8 +18,11 @@ class NetworkHandler:
 
     def attempt_connection(self, retry_on_failure=True):
         if self.attempting_socket_connection:
-            print("[attempt_connection]: Warning: Another thread is already attempting to reconnect the socket")
+            print(
+                "[attempt_connection]: Warning: Another thread is already attempting to reconnect the socket"
+            )
             return
+
         self.attempting_socket_connection = True
         first_try = True
         while (first_try or retry_on_failure) and not self.shutdown_triggered:
@@ -29,8 +32,15 @@ class NetworkHandler:
                 self.socket.settimeout(1)
                 self.socket.connect((self.host, self.port))
                 break
-            except (ConnectionRefusedError, ConnectionAbortedError, socket.gaierror, OSError):
-                print(f"Reconnect attempt failed, retrying in {SOCKET_RECONNECT_INTERVAL_IN_SECONDS} seconds")
+            except (
+                ConnectionRefusedError,
+                ConnectionAbortedError,
+                socket.gaierror,
+                OSError,
+            ):
+                print(
+                    f"Reconnect attempt failed, retrying in {SOCKET_RECONNECT_INTERVAL_IN_SECONDS} seconds"
+                )
                 time.sleep(SOCKET_RECONNECT_INTERVAL_IN_SECONDS)
             first_try = False
         if self.shutdown_triggered:
@@ -59,7 +69,9 @@ class NetworkHandler:
             self.socket.sendall((str(message) + str(end)).encode())
         except (ConnectionResetError, BrokenPipeError):
             if not self.attempting_socket_connection:
-                print("[send_message]: Robot socket disconnected, attempting reconnect...")
+                print(
+                    "[send_message]: Robot socket disconnected, attempting reconnect..."
+                )
                 self.attempt_connection()
 
     def get_message(self):
@@ -67,15 +79,23 @@ class NetworkHandler:
             received = self.socket.recv(1024)
             if not received:
                 if not self.attempting_socket_connection:
-                    print("[get_messages]: Got no data, assuming robot socket disconnected, attempting reconnect...")
+                    print(
+                        "[get_messages]: Got no data, assuming robot socket disconnected, attempting reconnect..."
+                    )
                     self.attempt_connection()
             return received.decode().split("\n")
         except socket.timeout:
             pass
-        except (ConnectionResetError, BrokenPipeError, OSError,) as e:
+        except (
+            ConnectionResetError,
+            BrokenPipeError,
+            OSError,
+        ) as e:
             print(f"get_messages failed: {e}")
             if not self.attempting_socket_connection:
-                print("[get_messages]: Robot socket disconnected, attempting reconnect...")
+                print(
+                    "[get_messages]: Robot socket disconnected, attempting reconnect..."
+                )
                 self.attempt_connection()
 
     def shutdown(self):

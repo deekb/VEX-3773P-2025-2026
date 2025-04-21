@@ -5,7 +5,7 @@ from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Util import time
 from WallStakeMechanism import WallStakeState
 
-from vex import PERCENT, DEGREES, Thread
+from vex import DEGREES, Thread
 
 # noinspection PyUnreachableCode
 # For autocomplete only (would cause circular import)
