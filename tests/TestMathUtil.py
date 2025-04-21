@@ -54,8 +54,12 @@ class TestMathUtil(unittest.TestCase):
         self.assertAlmostEqual(MathUtil.interpolate(0, 10, 0.5), 5.0)
         self.assertAlmostEqual(MathUtil.interpolate(0, 10, 1.5), 15.0)
         self.assertAlmostEqual(MathUtil.interpolate(0, 10, -0.5), -5)
-        self.assertAlmostEqual(MathUtil.interpolate(0, 10, 1.5, allow_extrapolation=False), 10.0)
-        self.assertAlmostEqual(MathUtil.interpolate(0, 10, -0.5, allow_extrapolation=False), 0.0)
+        self.assertAlmostEqual(
+            MathUtil.interpolate(0, 10, 1.5, allow_extrapolation=False), 10.0
+        )
+        self.assertAlmostEqual(
+            MathUtil.interpolate(0, 10, -0.5, allow_extrapolation=False), 0.0
+        )
 
     def test_interpolate_2d(self):
         # Test with extrapolation allowed
@@ -64,9 +68,15 @@ class TestMathUtil(unittest.TestCase):
         self.assertAlmostEqual(MathUtil.interpolate_2d(0, 10, 0, 10, 15), 15.0)
 
         # Test with extrapolation disallowed
-        self.assertAlmostEqual(MathUtil.interpolate_2d(0, 10, 0, 10, 5, allow_extrapolation=False), 5.0)
-        self.assertAlmostEqual(MathUtil.interpolate_2d(0, 10, 0, 10, -5, allow_extrapolation=False), 0.0)
-        self.assertAlmostEqual(MathUtil.interpolate_2d(0, 10, 0, 10, 15, allow_extrapolation=False), 10.0)
+        self.assertAlmostEqual(
+            MathUtil.interpolate_2d(0, 10, 0, 10, 5, allow_extrapolation=False), 5.0
+        )
+        self.assertAlmostEqual(
+            MathUtil.interpolate_2d(0, 10, 0, 10, -5, allow_extrapolation=False), 0.0
+        )
+        self.assertAlmostEqual(
+            MathUtil.interpolate_2d(0, 10, 0, 10, 15, allow_extrapolation=False), 10.0
+        )
 
     def test_inverse_interpolate(self):
         # Test with extrapolation allowed
@@ -75,9 +85,15 @@ class TestMathUtil(unittest.TestCase):
         self.assertAlmostEqual(MathUtil.inverse_interpolate(0, 10, 15), 1.5)
 
         # Test with extrapolation disallowed
-        self.assertAlmostEqual(MathUtil.inverse_interpolate(0, 10, 5, allow_extrapolation=False), 0.5)
-        self.assertAlmostEqual(MathUtil.inverse_interpolate(0, 10, -5, allow_extrapolation=False), 0.0)
-        self.assertAlmostEqual(MathUtil.inverse_interpolate(0, 10, 15, allow_extrapolation=False), 1.0)
+        self.assertAlmostEqual(
+            MathUtil.inverse_interpolate(0, 10, 5, allow_extrapolation=False), 0.5
+        )
+        self.assertAlmostEqual(
+            MathUtil.inverse_interpolate(0, 10, -5, allow_extrapolation=False), 0.0
+        )
+        self.assertAlmostEqual(
+            MathUtil.inverse_interpolate(0, 10, 15, allow_extrapolation=False), 1.0
+        )
 
     def test_is_near(self):
         self.assertTrue(MathUtil.is_near(5.0, 5.1, 0.2))
@@ -98,8 +114,12 @@ class TestMathUtil(unittest.TestCase):
 
     def test_distance_from_point_to_line(self):
         self.assertAlmostEqual(MathUtil.distance_from_point_to_line((0, 0), 1, 0), 0.0)
-        self.assertAlmostEqual(MathUtil.distance_from_point_to_line((1, 1), -1, 0), math.sqrt(2))
-        self.assertAlmostEqual(MathUtil.distance_from_point_to_line((1, 1), math.inf, 1), 1.0)
+        self.assertAlmostEqual(
+            MathUtil.distance_from_point_to_line((1, 1), -1, 0), math.sqrt(2)
+        )
+        self.assertAlmostEqual(
+            MathUtil.distance_from_point_to_line((1, 1), math.inf, 1), 1.0
+        )
 
     def test_factorial(self):
         self.assertEqual(MathUtil.factorial(0), 1)
@@ -107,14 +127,26 @@ class TestMathUtil(unittest.TestCase):
         self.assertEqual(MathUtil.factorial(10), 3628800)
 
     def test_average_edge_cases(self):
-        self.assertRaises(ZeroDivisionError, MathUtil.average)  # No arguments should return 0
-        self.assertAlmostEqual(MathUtil.average(1), 1.0)  # Single value should return the value itself
-        self.assertAlmostEqual(MathUtil.average(1, 1, 1, 1), 1.0)  # All values are the same
+        self.assertRaises(
+            ZeroDivisionError, MathUtil.average
+        )  # No arguments should return 0
+        self.assertAlmostEqual(
+            MathUtil.average(1), 1.0
+        )  # Single value should return the value itself
+        self.assertAlmostEqual(
+            MathUtil.average(1, 1, 1, 1), 1.0
+        )  # All values are the same
 
     def test_apply_deadband_edge_cases(self):
-        self.assertRaises(ValueError, MathUtil.apply_deadband, 0.5, 0.2, 0.1)  # Deadband smaller than input
-        self.assertAlmostEqual(MathUtil.apply_deadband(0.1, 0.1, 0.2), 0.0, 6)  # Deadband equal to input
-        self.assertAlmostEqual(MathUtil.apply_deadband(0.1, 0.2, 0.2), 0.0, 6)  # Deadband larger than input
+        self.assertRaises(
+            ValueError, MathUtil.apply_deadband, 0.5, 0.2, 0.1
+        )  # Deadband smaller than input
+        self.assertAlmostEqual(
+            MathUtil.apply_deadband(0.1, 0.1, 0.2), 0.0, 6
+        )  # Deadband equal to input
+        self.assertAlmostEqual(
+            MathUtil.apply_deadband(0.1, 0.2, 0.2), 0.0, 6
+        )  # Deadband larger than input
 
     def test_input_modulus_edge_cases(self):
         self.assertEqual(MathUtil.input_modulus(5, 10, 20), 15)
@@ -128,5 +160,5 @@ class TestMathUtil(unittest.TestCase):
         self.assertEqual(MathUtil.clamp(25, 10, 20), 20)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

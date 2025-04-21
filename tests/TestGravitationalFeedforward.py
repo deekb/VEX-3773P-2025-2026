@@ -1,5 +1,5 @@
-import unittest
 import math
+import unittest
 
 from VEXLib.Algorithms.GravitationalFeedforward import GravitationalFeedforward
 

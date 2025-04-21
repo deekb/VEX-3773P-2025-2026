@@ -1,5 +1,6 @@
-import unittest
 import hashlib
+import unittest
+
 from VEXLib.Util.MD5sum import md5sum
 
 
@@ -19,5 +20,5 @@ class TestMD5Functions(unittest.TestCase):
         self.assertEqual(custom_md5, builtin_md5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

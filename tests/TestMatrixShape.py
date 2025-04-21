@@ -1,5 +1,6 @@
 import math
 import unittest
+
 from VEXLib.Math import Shape
 
 
@@ -40,8 +41,10 @@ class TestShape(unittest.TestCase):
         self.assertRaises(ValueError, change_shape_with_invalid_size, shape, -1, 1)
         self.assertRaises(ValueError, change_shape_with_invalid_size, shape, 1, -1)
         self.assertRaises(ValueError, change_shape_with_invalid_size, shape, -1, -1)
-        self.assertRaises(ValueError, change_shape_with_invalid_size, shape, math.inf, math.inf)
+        self.assertRaises(
+            ValueError, change_shape_with_invalid_size, shape, math.inf, math.inf
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

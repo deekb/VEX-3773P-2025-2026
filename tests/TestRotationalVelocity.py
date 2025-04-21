@@ -1,4 +1,5 @@
 import unittest
+
 from VEXLib.Geometry.RotationalVelocity import RotationalVelocity, RotSpeed
 
 
@@ -37,7 +38,7 @@ class TestRotationalVelocity(unittest.TestCase):
 
     def test_from_rotations_per_second(self):
         v = RotationalVelocity.from_rotations_per_second(0.7957747163688)
-        self.assertAlmostEqual(v.velocity_radians_per_second, 5,  places=6)
+        self.assertAlmostEqual(v.velocity_radians_per_second, 5, places=6)
 
     def test_from_rotations_per_minute(self):
         v = RotationalVelocity.from_rotations_per_minute(47.74648298)  # 5 rad/s
@@ -64,5 +65,5 @@ class TestRotationalVelocity(unittest.TestCase):
         self.assertEqual(v.velocity_radians_per_second, 5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

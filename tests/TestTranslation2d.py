@@ -1,8 +1,8 @@
 import unittest
 
+from VEXLib.Geometry.Constants import TRANSLATION2D_IDENTIFIER, SEPERATOR
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation2d import Translation2d
-from VEXLib.Geometry.Constants import TRANSLATION2D_IDENTIFIER, SEPERATOR
 
 
 class TestTranslation2d(unittest.TestCase):
@@ -89,14 +89,24 @@ class TestTranslation2d(unittest.TestCase):
     def test_to_bytestring(self):
         t = Translation2d.from_meters(3, 4)
         bytestring = t.to_bytestring()
-        expected_bytestring = TRANSLATION2D_IDENTIFIER + b'0x1.8000000000000p+1' + SEPERATOR + b'0x1.0000000000000p+2'
+        expected_bytestring = (
+            TRANSLATION2D_IDENTIFIER
+            + b"0x1.8000000000000p+1"
+            + SEPERATOR
+            + b"0x1.0000000000000p+2"
+        )
         self.assertEqual(bytestring, expected_bytestring)
 
     def test_from_bytestring(self):
-        bytestring = TRANSLATION2D_IDENTIFIER + b'0x1.8000000000000p+1' + SEPERATOR + b'0x1.0000000000000p+2'
+        bytestring = (
+            TRANSLATION2D_IDENTIFIER
+            + b"0x1.8000000000000p+1"
+            + SEPERATOR
+            + b"0x1.0000000000000p+2"
+        )
         t = Translation2d.from_bytestring(bytestring)
         self.assertEqual(t.to_meters(), (3, 4))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

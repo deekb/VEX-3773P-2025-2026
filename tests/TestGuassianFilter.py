@@ -1,7 +1,9 @@
-import unittest
 import math
 import random
+import unittest
+
 import matplotlib.pyplot as plt
+
 from VEXLib.Algorithms.GuassianFilter import RealTimeGaussianSmoother, create_gaussian_kernel
 
 

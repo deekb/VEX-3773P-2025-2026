@@ -7,8 +7,8 @@ import pandas as pd
 BASENAME = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(BASENAME)
 
-pd.set_option('display.max_columns', None)  # Show all columns
-pd.set_option('display.width', 0)           # Disable automatic line wrapping
+pd.set_option("display.max_columns", None)  # Show all columns
+pd.set_option("display.width", 0)  # Disable automatic line wrapping
 
 
 class TimeSeriesAnalyzer:
@@ -36,7 +36,7 @@ class TimeSeriesAnalyzer:
         """Automatically detect the time column based on common keywords."""
         if self.data is not None:
             for col in self.data.columns:
-                if 'time' in col.lower() or '(s)' in col.lower():
+                if "time" in col.lower() or "(s)" in col.lower():
                     print(f"Detected time column: {col}")
                     return col
             print("Warning: No obvious time column detected.")
@@ -74,11 +74,15 @@ class TimeSeriesAnalyzer:
                 plt.plot(self.data[self.time_column], self.data[column], label=column)
 
         plt.xlabel(self.time_column)
-        plt.ylabel('Value')
+        plt.ylabel("Value")
         plt.title(title)
         plt.legend()
-        plt.grid(which='both', axis='x', linestyle='--')
-        plt.grid(which='both', axis='y', linestyle='--', )
+        plt.grid(which="both", axis="x", linestyle="--")
+        plt.grid(
+            which="both",
+            axis="y",
+            linestyle="--",
+        )
 
         y_min, y_max = plt.ylim()
         plt.yticks(np.arange(round(y_min, -1), round(y_max, -1), 10))
@@ -89,7 +93,7 @@ class TimeSeriesAnalyzer:
 # Example Usage
 if __name__ == "__main__":
     # Automatically detects CSV path in your project structure
-    filename = os.path.join(PROJECT_ROOT, 'logs/left_drivetrain.csv')
+    filename = os.path.join(PROJECT_ROOT, "logs/left_drivetrain.csv")
 
     # Initialize the analyzer
     analyzer = TimeSeriesAnalyzer(filename)

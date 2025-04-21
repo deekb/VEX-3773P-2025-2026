@@ -25,11 +25,11 @@ ONLINE_THRESHOLD_IN_SECONDS = 0.5
 os.chdir(os.path.abspath(os.path.dirname(__name__)))
 icon = image.load("Vex_Simulation_Logo.png")
 
-pyglet.resource.path = ['icons']
+pyglet.resource.path = ["icons"]
 pyglet.resource.reindex()
 
-pyglet.font.add_file('Aller_Rg.ttf')
-aller = pyglet.font.load('Aller', 16)
+pyglet.font.add_file("Aller_Rg.ttf")
+aller = pyglet.font.load("Aller", 16)
 
 
 def format_time(seconds):
@@ -68,7 +68,7 @@ class VexBoard:
         if name in self.widgets:
             self.widgets[name].update_value(new_value)
         else:
-            print(f"Widget \"{name}\" does not exist.")
+            print(f'Widget "{name}" does not exist.')
 
 
 class NetworkHandler:
@@ -87,7 +87,9 @@ class NetworkHandler:
 
     def attempt_connection(self, retry_on_failure=True):
         if self.attempting_socket_connection:
-            print("[attempt_connection]: Warning: Another thread is already attempting to reconnect the socket")
+            print(
+                "[attempt_connection]: Warning: Another thread is already attempting to reconnect the socket"
+            )
             return
         self.attempting_socket_connection = True
         first_try = True
@@ -98,8 +100,15 @@ class NetworkHandler:
                 self.socket.settimeout(1)
                 self.socket.connect((self.host, self.port))
                 break
-            except (ConnectionRefusedError, ConnectionAbortedError, socket.gaierror, OSError):
-                print(f"Reconnect attempt failed, retrying in {SOCKET_RECONNECT_INTERVAL_IN_SECONDS} seconds")
+            except (
+                ConnectionRefusedError,
+                ConnectionAbortedError,
+                socket.gaierror,
+                OSError,
+            ):
+                print(
+                    f"Reconnect attempt failed, retrying in {SOCKET_RECONNECT_INTERVAL_IN_SECONDS} seconds"
+                )
                 time.sleep(SOCKET_RECONNECT_INTERVAL_IN_SECONDS)
             first_try = False
         if self.shutdown_triggered:
@@ -123,18 +132,31 @@ class NetworkHandler:
                     if line.startswith(widget):
                         try:
                             if "memory" in widget.lower():
-                                vex_board.update_widget(widget, format_size(int(line[len(widget) + 1:])) + " (" + str(
-                                    round((int(line[len(widget) + 1:]) / 1024512) * 100)) + "%)")
+                                vex_board.update_widget(
+                                    widget,
+                                    format_size(int(line[len(widget) + 1 :]))
+                                    + " ("
+                                    + str(
+                                        round(
+                                            (int(line[len(widget) + 1 :]) / 1024512)
+                                            * 100
+                                        )
+                                    )
+                                    + "%)",
+                                )
                             elif "time" in widget.lower():
-                                vex_board.update_widget(widget, format_time(float(line[len(widget) + 1:])))
+                                vex_board.update_widget(
+                                    widget, format_time(float(line[len(widget) + 1 :]))
+                                )
                             else:
-                                vex_board.update_widget(widget, line[len(widget) + 1:])
+                                vex_board.update_widget(widget, line[len(widget) + 1 :])
                         except Exception as e:
                             print(e)
 
                 if "PING" in line:
                     self.last_ping_response_time_in_milliseconds = (
-                                                                           time.monotonic() - self.last_ping_send_time_in_seconds) * 1000
+                        time.monotonic() - self.last_ping_send_time_in_seconds
+                    ) * 1000
                 if "ROBOT_HEARTBEAT" in line:
                     self.last_heartbeat_time_in_seconds = time.monotonic()
 
@@ -145,7 +167,9 @@ class NetworkHandler:
             self.socket.sendall((str(message) + str(end)).encode())
         except (ConnectionResetError, BrokenPipeError):
             if not self.attempting_socket_connection:
-                print("[send_message]: Robot socket disconnected, attempting reconnect...")
+                print(
+                    "[send_message]: Robot socket disconnected, attempting reconnect..."
+                )
                 self.attempt_connection()
 
     def get_messages(self):
@@ -153,21 +177,31 @@ class NetworkHandler:
             received = self.socket.recv(1024)
             if not received:
                 if not self.attempting_socket_connection:
-                    print("[get_messages]: Got no data, assuming robot socket disconnected, attempting reconnect...")
+                    print(
+                        "[get_messages]: Got no data, assuming robot socket disconnected, attempting reconnect..."
+                    )
                     self.attempt_connection()
             return received.decode().split("\n")
         except socket.timeout:
             pass
-        except (ConnectionResetError, BrokenPipeError, OSError,) as e:
+        except (
+            ConnectionResetError,
+            BrokenPipeError,
+            OSError,
+        ) as e:
             print(f"get_messages failed: {e}")
             if not self.attempting_socket_connection:
-                print("[get_messages]: Robot socket disconnected, attempting reconnect...")
+                print(
+                    "[get_messages]: Robot socket disconnected, attempting reconnect..."
+                )
                 self.attempt_connection()
 
     def ping_robot(self):
         if self.socket is not None:
             self.send_message(PING_ROBOT_MESSAGE)
-            self.last_ping_send_time_in_seconds = time.monotonic()  # print("PING -> Robot")
+            self.last_ping_send_time_in_seconds = (
+                time.monotonic()
+            )  # print("PING -> Robot")
 
     def ping_rpi(self):
         if self.socket is not None:
@@ -190,7 +224,7 @@ class NetworkHandler:
         return not self.attempting_socket_connection
 
     def robot_is_online(self, online_threshold_in_seconds=ONLINE_THRESHOLD_IN_SECONDS):
-        time_since_heartbeat = (time.monotonic() - self.last_heartbeat_time_in_seconds)
+        time_since_heartbeat = time.monotonic() - self.last_heartbeat_time_in_seconds
         return time_since_heartbeat < online_threshold_in_seconds
 
     def robot_ping_time(self):
@@ -218,21 +252,52 @@ class VexBoardWindow(pyglet.window.Window):
         self.new_widget_position_y = self.height
         self.new_widget_position_x = 10
 
-        self.rpi_online_image = pyglet.sprite.Sprite(pyglet.resource.image("access-point-1.png"), x=0, y=64)
-        self.rpi_offline_image = pyglet.sprite.Sprite(pyglet.resource.image("access-point-off-1.png"), x=0, y=64)
+        self.rpi_online_image = pyglet.sprite.Sprite(
+            pyglet.resource.image("access-point-1.png"), x=0, y=64
+        )
+        self.rpi_offline_image = pyglet.sprite.Sprite(
+            pyglet.resource.image("access-point-off-1.png"), x=0, y=64
+        )
 
-        self.robot_online_image = pyglet.sprite.Sprite(pyglet.resource.image("robot-outline-1.png"), x=0, y=0)
-        self.robot_offline_image = pyglet.sprite.Sprite(pyglet.resource.image("robot-off-outline-1.png"), x=0, y=0)
+        self.robot_online_image = pyglet.sprite.Sprite(
+            pyglet.resource.image("robot-outline-1.png"), x=0, y=0
+        )
+        self.robot_offline_image = pyglet.sprite.Sprite(
+            pyglet.resource.image("robot-off-outline-1.png"), x=0, y=0
+        )
 
-        self.rpi_status_label = pyglet.text.Label("Offline", x=64, y=64, font_size=40, anchor_x='left',
-                                                  anchor_y='bottom', color=(255, 0, 0, 255), font_name="Aller", )
+        self.rpi_status_label = pyglet.text.Label(
+            "Offline",
+            x=64,
+            y=64,
+            font_size=40,
+            anchor_x="left",
+            anchor_y="bottom",
+            color=(255, 0, 0, 255),
+            font_name="Aller",
+        )
 
-        self.robot_status_label = pyglet.text.Label("Offline", x=64, y=0, font_size=40, anchor_x='left',
-                                                    anchor_y='bottom', color=(255, 0, 0, 255), font_name="Aller", )
+        self.robot_status_label = pyglet.text.Label(
+            "Offline",
+            x=64,
+            y=0,
+            font_size=40,
+            anchor_x="left",
+            anchor_y="bottom",
+            color=(255, 0, 0, 255),
+            font_name="Aller",
+        )
 
-        self.ping_time_label = pyglet.text.Label(f"Offline", font_size=20, x=self.width, y=self.height,
-                                                 anchor_x='right', anchor_y='top', color=(255, 0, 0, 255),
-                                                 font_name="Aller", )
+        self.ping_time_label = pyglet.text.Label(
+            f"Offline",
+            font_size=20,
+            x=self.width,
+            y=self.height,
+            anchor_x="right",
+            anchor_y="top",
+            color=(255, 0, 0, 255),
+            font_name="Aller",
+        )
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == pyglet.window.mouse.LEFT:
@@ -247,10 +312,16 @@ class VexBoardWindow(pyglet.window.Window):
             if name in self.labels:
                 self.labels[name].text = f"{widget.name}: {widget.value}"
             else:
-                self.labels[name] = (
-                    pyglet.text.Label(f"{widget.name}: {widget.value}", font_size=16, x=self.new_widget_position_x,
-                                      y=self.new_widget_position_y, anchor_x='left', anchor_y='top',
-                                      color=(255, 255, 255, 255), font_name="Aller", ))
+                self.labels[name] = pyglet.text.Label(
+                    f"{widget.name}: {widget.value}",
+                    font_size=16,
+                    x=self.new_widget_position_x,
+                    y=self.new_widget_position_y,
+                    anchor_x="left",
+                    anchor_y="top",
+                    color=(255, 255, 255, 255),
+                    font_name="Aller",
+                )
                 self.new_widget_position_y -= 30
 
     def draw_robot_status(self, online):
@@ -275,9 +346,14 @@ class VexBoardWindow(pyglet.window.Window):
 
     def draw_ping_status(self, online):
         if online:
-            self.ping_time_label.text = f"Ping: {round(self.network_handler.robot_ping_time())}ms"
-            self.ping_time_label.color = (0, 255, 0, 255) if self.network_handler.robot_ping_time() <= 100 else (
-                255, 0, 0, 255)
+            self.ping_time_label.text = (
+                f"Ping: {round(self.network_handler.robot_ping_time())}ms"
+            )
+            self.ping_time_label.color = (
+                (0, 255, 0, 255)
+                if self.network_handler.robot_ping_time() <= 100
+                else (255, 0, 0, 255)
+            )
         else:
             self.ping_time_label.text = "Offline"
             self.ping_time_label.color = (255, 0, 0, 255)
@@ -285,7 +361,9 @@ class VexBoardWindow(pyglet.window.Window):
     def draw_status(self):
 
         rpi_online = self.network_handler.communications_online()
-        robot_online = self.network_handler.robot_is_online() and rpi_online  # Robot can't be online unless rpi is
+        robot_online = (
+            self.network_handler.robot_is_online() and rpi_online
+        )  # Robot can't be online unless rpi is
 
         self.draw_ping_status(robot_online)
         self.draw_robot_status(robot_online)
@@ -297,7 +375,9 @@ class VexBoardWindow(pyglet.window.Window):
 
     def on_draw(self):
         self.clear()
-        pyglet.image.SolidColorImagePattern((30, 43, 54, 255)).create_image(self.width, self.height).blit(0, 0)
+        pyglet.image.SolidColorImagePattern((30, 43, 54, 255)).create_image(
+            self.width, self.height
+        ).blit(0, 0)
         self.update_labels()
 
         for label in self.labels.values():
@@ -310,36 +390,76 @@ class VexLogWindow(pyglet.window.Window):
         super().__init__(width, height, "VexLog")
         self.network_handler = network_handler
         self.text = ""
-        self.log_label = pyglet.text.Label(self.text, font_size=16, anchor_x='left', anchor_y='top',
-                                           color=(0, 255, 0, 255), multiline=True, width=width, font_name="Aller", )
+        self.log_label = pyglet.text.Label(
+            self.text,
+            font_size=16,
+            anchor_x="left",
+            anchor_y="top",
+            color=(0, 255, 0, 255),
+            multiline=True,
+            width=width,
+            font_name="Aller",
+        )
 
         restart_image = pyglet.resource.image("restart-1.png")
         power_cycle_image = pyglet.resource.image("power-cycle-1.png")
 
-        self.restart_robot_button = PushButton(0, self.height - 64, restart_image, restart_image)
-        self.restart_bridge_button = PushButton(0, self.height - 128, restart_image, restart_image)
-        self.restart_rpi_button = PushButton(0, self.height - 192, power_cycle_image, power_cycle_image)
+        self.restart_robot_button = PushButton(
+            0, self.height - 64, restart_image, restart_image
+        )
+        self.restart_bridge_button = PushButton(
+            0, self.height - 128, restart_image, restart_image
+        )
+        self.restart_rpi_button = PushButton(
+            0, self.height - 192, power_cycle_image, power_cycle_image
+        )
 
-        self.restart_robot_label = pyglet.text.Label("Restart robot", x=64, y=self.height, font_size=40,
-                                                     anchor_x='left', anchor_y='top', color=(255, 255, 255, 255),
-                                                     font_name="Aller", )
+        self.restart_robot_label = pyglet.text.Label(
+            "Restart robot",
+            x=64,
+            y=self.height,
+            font_size=40,
+            anchor_x="left",
+            anchor_y="top",
+            color=(255, 255, 255, 255),
+            font_name="Aller",
+        )
 
-        self.restart_bridge_label = pyglet.text.Label("Restart bridge", x=64, y=self.height - 64, font_size=40,
-                                                      anchor_x='left', anchor_y='top', color=(255, 255, 255, 255),
-                                                      font_name="Aller", )
+        self.restart_bridge_label = pyglet.text.Label(
+            "Restart bridge",
+            x=64,
+            y=self.height - 64,
+            font_size=40,
+            anchor_x="left",
+            anchor_y="top",
+            color=(255, 255, 255, 255),
+            font_name="Aller",
+        )
 
-        self.restart_rpi_label = pyglet.text.Label("Restart RPI", x=64, y=self.height - 128, font_size=40,
-                                                   anchor_x='left', anchor_y='top', color=(255, 255, 255, 255),
-                                                   font_name="Aller", )
+        self.restart_rpi_label = pyglet.text.Label(
+            "Restart RPI",
+            x=64,
+            y=self.height - 128,
+            font_size=40,
+            anchor_x="left",
+            anchor_y="top",
+            color=(255, 255, 255, 255),
+            font_name="Aller",
+        )
 
         self.push_handlers(self.restart_robot_button)
         self.push_handlers(self.restart_bridge_button)
         self.push_handlers(self.restart_rpi_button)
 
-        self.restart_robot_button.set_handler('on_press', self.network_handler.restart_robot)
-        self.restart_bridge_button.set_handler('on_press', self.network_handler.restart_rpi_bridge)
-        self.restart_rpi_button.set_handler('on_press',
-                                            self.network_handler.restart_rpi)  # self.button.set_handler('on_release', my_on_release_handler)
+        self.restart_robot_button.set_handler(
+            "on_press", self.network_handler.restart_robot
+        )
+        self.restart_bridge_button.set_handler(
+            "on_press", self.network_handler.restart_rpi_bridge
+        )
+        self.restart_rpi_button.set_handler(
+            "on_press", self.network_handler.restart_rpi
+        )  # self.button.set_handler('on_release', my_on_release_handler)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == pyglet.window.mouse.RIGHT:
@@ -349,12 +469,23 @@ class VexLogWindow(pyglet.window.Window):
 
     def on_draw(self):
         self.clear()
-        pyglet.image.SolidColorImagePattern((30, 43, 54, 255)).create_image(self.width, self.height).blit(0, 0)
+        pyglet.image.SolidColorImagePattern((30, 43, 54, 255)).create_image(
+            self.width, self.height
+        ).blit(0, 0)
         last_20 = self.text.split("\n")[-20:]
 
-        self.log_label = pyglet.text.Label("\n".join(last_20), x=0, y=self.height, font_size=16, anchor_x='left',
-                                           anchor_y='top', color=(255, 255, 255, 255), multiline=True, width=500,
-                                           font_name="Aller", )
+        self.log_label = pyglet.text.Label(
+            "\n".join(last_20),
+            x=0,
+            y=self.height,
+            font_size=16,
+            anchor_x="left",
+            anchor_y="top",
+            color=(255, 255, 255, 255),
+            multiline=True,
+            width=500,
+            font_name="Aller",
+        )
         self.log_label.draw()
         self.restart_robot_button._sprite.draw()
         self.restart_bridge_button._sprite.draw()

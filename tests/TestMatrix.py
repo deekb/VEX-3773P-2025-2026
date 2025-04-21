@@ -1,7 +1,7 @@
-import unittest
 import random
-from VEXLib.Math import Shape, Matrix
+import unittest
 
+from VEXLib.Math import Shape, Matrix
 
 MATRIX_SHAPE_3X3 = Shape(3, 3)
 

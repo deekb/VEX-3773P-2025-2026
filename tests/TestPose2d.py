@@ -1,8 +1,9 @@
-import unittest
 import math
-from VEXLib.Geometry.Translation2d import Translation2d
-from VEXLib.Geometry.Rotation2d import Rotation2d
+import unittest
+
 from VEXLib.Geometry.Pose2d import Pose2d
+from VEXLib.Geometry.Rotation2d import Rotation2d
+from VEXLib.Geometry.Translation2d import Translation2d
 
 
 class TestPose2d(unittest.TestCase):
@@ -67,5 +68,6 @@ class TestPose2d(unittest.TestCase):
         pose = Pose2d(translation, rotation)
         self.assertEqual(str(pose), f"Translation: {translation}, Rotation: {rotation}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

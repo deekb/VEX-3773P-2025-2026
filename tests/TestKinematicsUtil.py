@@ -2,12 +2,13 @@ import math
 import unittest
 from math import cos, sin
 from unittest.mock import MagicMock
+
 from VEXLib.Geometry.Pose2d import Pose2d
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance
 from VEXLib.Geometry.Translation2d import Translation2d
-from vex import Inertial
 from VEXLib.Kinematics import GenericOdometry
+from vex import Inertial
 
 
 class TestGenericOdometry(unittest.TestCase):

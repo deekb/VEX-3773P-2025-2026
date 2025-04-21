@@ -103,8 +103,16 @@ class TestRotation2d(unittest.TestCase):
 
     def test_trigonometric_functions(self):
         # Test various trigonometric functions of Rotation2d
-        functions = {'sin': math.sin, 'cos': math.cos, 'tan': math.tan, 'atan': math.atan, 'sinh': math.sinh,
-                     'cosh': math.cosh, 'tanh': math.tanh, 'asinh': math.asinh, }
+        functions = {
+            "sin": math.sin,
+            "cos": math.cos,
+            "tan": math.tan,
+            "atan": math.atan,
+            "sinh": math.sinh,
+            "cosh": math.cosh,
+            "tanh": math.tanh,
+            "asinh": math.asinh,
+        }
 
         # Notice that acosh and atanh are left out and tested below, this is because they have a limited input domain
 
@@ -116,7 +124,9 @@ class TestRotation2d(unittest.TestCase):
                     rotation = Rotation2d(angle)
                     result = getattr(rotation, func_name)()
                     expected = math_func(angle)
-                    self.assertAlmostEqual(result, expected, msg=f"{func_name} failed for angle {angle}")
+                    self.assertAlmostEqual(
+                        result, expected, msg=f"{func_name} failed for angle {angle}"
+                    )
 
     def test_trigonometric_exceptions(self):
         # Test acosh and atanh functions which have limited input domain
@@ -140,11 +150,19 @@ class TestRotation2d(unittest.TestCase):
 
         # Test linear interpolation with the allow_extrapolation flag
         r1 = Rotation2d(math.pi)
-        r2 = Rotation2d(3/2 * math.pi)
-        interpolated_with_extrapolation = r1.interpolate(r2, 3, allow_extrapolation=True)
-        interpolated_without_extrapolation = r1.interpolate(r2, 3, allow_extrapolation=False)
-        self.assertAlmostEqual(interpolated_with_extrapolation.angle_radians, 2.5 * math.pi)
-        self.assertAlmostEqual(interpolated_without_extrapolation.angle_radians, 3/2 * math.pi)
+        r2 = Rotation2d(3 / 2 * math.pi)
+        interpolated_with_extrapolation = r1.interpolate(
+            r2, 3, allow_extrapolation=True
+        )
+        interpolated_without_extrapolation = r1.interpolate(
+            r2, 3, allow_extrapolation=False
+        )
+        self.assertAlmostEqual(
+            interpolated_with_extrapolation.angle_radians, 2.5 * math.pi
+        )
+        self.assertAlmostEqual(
+            interpolated_without_extrapolation.angle_radians, 3 / 2 * math.pi
+        )
 
     def test_normalize(self):
         # Test normalization of a Rotation2d object
@@ -153,5 +171,5 @@ class TestRotation2d(unittest.TestCase):
         self.assertAlmostEqual(normalized.angle_radians, math.pi)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
