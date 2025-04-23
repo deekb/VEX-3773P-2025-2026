@@ -155,14 +155,15 @@ class ScoringMechanism:
             < ScoringMechanismProperties.RING_DISTANCE
         )
 
-    def intake_until_ring(self):
+    def intake_until_ring(self, stop = True):
         """
         Intakes until a ring is detected by the distance sensor.
         """
         self.log.trace("intake_until_no_ring")
         self.intake()
         wait_until(self.ring_is_near)
-        self.stop_motor()
+        if stop:
+            self.stop_motor()
         self.log.debug(
             "intake_until_ring done, found {} ring".format(self.get_ring_color())
         )
