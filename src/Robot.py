@@ -305,6 +305,7 @@ class Robot(RobotBase):
                 target_turn_speed = -MathUtil.apply_deadband(target_turn_speed)
             if self.user_preferences.DO_TURN_DECAY:
                 # scale speeds to -1 to 1
+                self.drivetrain.update_drivetrain_velocities()
                 speeds_scaled = list(
                     map(lambda speed: speed.to_meters_per_second() / DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(), self.drivetrain.get_speeds()))
                 current_turn = speeds_scaled[0] - speeds_scaled[1]
