@@ -3,6 +3,7 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Util import time
+from VEXLib.Util.time import wait_until
 from WallStakeMechanism import WallStakeState
 
 from vex import DEGREES, Thread
@@ -260,30 +261,40 @@ def negative_full_mobile_goal(robot):
 def worlds_win_point(robot: Robot):
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
     robot.mobile_goal_clamp.release_mobile_goal()
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-10.0, 105.0))
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-15.0, 108.0))
     robot.corner_mechanism.lower_left_corner_mechanism()
     stop_and_sleep(robot, 0.25)
     robot.scoring_mechanism.spin_lower_intake(100)
     robot.drivetrain.turn_to(Rotation2d.from_degrees(70))
     robot.corner_mechanism.raise_left_corner_mechanism()
-    stop_and_sleep(robot, 0.5)
+    stop_and_sleep(robot, 0.25)
     robot.drivetrain.move_to_point(Translation2d.from_centimeters(-25.0, 90.0))
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 1.5))
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-60.0, 95.0), use_back=True)
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-60.0, 110.0), use_back=True)
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
     robot.mobile_goal_clamp.clamp_mobile_goal()
     robot.scoring_mechanism.set_speed(100)
-    robot.drivetrain.turn_to(Rotation2d.from_degrees(60))
-    stop_and_sleep(robot, 0.5)
+    # robot.drivetrain.turn_to(Rotation2d.from_degrees(60))
+    # stop_and_sleep(robot, 0.75)
+    stop_and_sleep(robot, 1.75)
     robot.mobile_goal_clamp.release_mobile_goal()
+    stop_and_sleep(robot, 0.75)
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 1.5))
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-95.0, 77.0), use_back=True)
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-115.0, 67.0), use_back=True)
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
     robot.scoring_mechanism.set_speed(0)
     robot.mobile_goal_clamp.clamp_mobile_goal()
     schedule_function(0.5, lambda: robot.scoring_mechanism.set_speed(100))
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(0.0, -25.0))
-
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-5.0, -15.0))
+    stop_and_sleep(robot, 0.5)
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-40.0, 13.0), use_back=True, turn=False)
+    robot.wall_stake_mechanism.transition_to(WallStakeState.LOW_SCORING)
+    schedule_function(1.5, lambda: robot.wall_stake_mechanism.transition_to(WallStakeState.LOADING))
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-140.0, 13.0))
+    robot.scoring_mechanism.intake_until_ring(stop=False)
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-140.0, 0.0))
+    robot.scoring_mechanism.back_off()
+    robot.wall_stake_mechanism.transition_to(WallStakeState.LOW_SCORING)
 
 
 def test_autonomous(robot):
