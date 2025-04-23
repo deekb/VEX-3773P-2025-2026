@@ -1,6 +1,6 @@
 import json
 
-from Odometry import TankOdometry
+from VEXLib.Kinematics.TankOdometry import TankOdometry
 
 import VEXLib.Math.MathUtil as MathUtil
 from Constants import DrivetrainProperties
@@ -250,13 +250,13 @@ class Drivetrain:
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
 
-    def move_to_point(self, translation: Translation2d, use_back=False):
+    def move_to_point(self, translation: Translation2d, use_back=False, turn=True):
         self.log.trace("Entering move_to_point")
         distance, angle = self.get_distance_and_angle_from_position(translation)
         if use_back:
             angle += Rotation2d.from_revolutions(0.5)
             distance = distance.inverse()
-        self.move_distance_towards_direction_trap(distance, angle.to_degrees())
+        self.move_distance_towards_direction_trap(distance, (angle.to_degrees() if turn else Units.radians_to_degrees(self.rotation_PID.setpoint)))
 
     def move_distance_towards_direction_trap(
         self,
