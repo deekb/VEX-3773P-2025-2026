@@ -42,7 +42,7 @@ class DefaultPreferences:
 class DirkPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
-    DO_TURN_DECAY = True
+    DO_TURN_DECAY = False
     TURN_SPEED = 0.7
     COLOR_SORT = True
 
@@ -106,11 +106,11 @@ class DrivetrainProperties:
     RIGHT_PIDF_GAINS = PIDFGains(0.2, 0, 0, 0.6)
 
     POSITION_PID_GAINS = PIDGains(5, 0, 0)
-    ROTATION_PID_GAINS = PIDGains(0.8, 0.0, 0.03)
+    ROTATION_PID_GAINS = PIDGains(0.9, 0.0, 0.03)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     TURN_TIMEOUT_SECONDS = 2
-    TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.9
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 1.2
     TURNING_THRESHOLD = Rotation2d.from_degrees(3)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
     MOVEMENT_MAX_EXTRA_TIME = 1
