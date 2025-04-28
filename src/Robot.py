@@ -21,7 +21,7 @@ from VEXLib.Util.Buffer import Buffer
 from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism, WallStakeState
 from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, FontType, \
-    Inertial
+    Inertial, Thread
 
 main_log = Logger(Brain().sdcard, Brain().screen, "robot")
 
@@ -99,7 +99,7 @@ class Robot(RobotBase):
         # self.main_log.debug("Executing chosen autonomous routine:", str(self.autonomous))
         # self.main_log.debug("Starting color_sort_tick_thread")
         # self.scoring_mechanism.log.info("Starting color_sort_tick_thread")
-        # self.color_sort_tick_thread = Thread(self.scoring_mechanism.loop, (self.alliance_color,))
+        self.color_sort_tick_thread = Thread(self.scoring_mechanism.loop, (self.alliance_color,))
         # self.main_log.debug("Started color_sort_tick_thread")
         # self.scoring_mechanism.log.info("Started color_sort_tick_thread")
         self.autonomous(self)
@@ -114,7 +114,7 @@ class Robot(RobotBase):
         if "skills" in autonomous_type:
             self.drivetrain.set_angles_inverted(False)
             self.main_log.trace("set_angles_inverted: False")
-            self.autonomous = AutonomousRoutines.skills_alliance_stake
+            self.autonomous = AutonomousRoutines.skills
             self.main_log.debug("Skills routine chosen:", autonomous_type)
             return autonomous_type
 
@@ -169,6 +169,10 @@ class Robot(RobotBase):
         # Define target rotations using degrees.
         target_rotations = [
             Rotation2d.from_degrees(0),
+            Rotation2d.from_degrees(7.6),
+            Rotation2d.from_degrees(-7.6),
+            Rotation2d.from_degrees(39),
+            Rotation2d.from_degrees(-39),
             Rotation2d.from_degrees(90),
             Rotation2d.from_degrees(-90),
             Rotation2d.from_degrees(130),
@@ -368,9 +372,9 @@ class Robot(RobotBase):
         self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(180)))
         self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(270)))
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
-        self.controller.buttonA.pressed(
-            lambda: [self.log_and_print("Toggling descorer"), self.ring_descorer.toggle_descorer()])
         self.controller.buttonL1.pressed(self.scoring_mechanism.intake)
+        self.controller.buttonX.pressed(self.ring_rush_mechanism.lower_ring_rush_mechanism)
+        self.controller.buttonX.released(self.ring_rush_mechanism.raise_ring_rush_mechanism)
         self.controller.buttonL1.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
         self.controller.buttonL2.released(self.scoring_mechanism.back_off)

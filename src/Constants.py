@@ -111,7 +111,7 @@ class DrivetrainProperties:
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     TURN_TIMEOUT_SECONDS = 2
     TURN_CORRECTION_SCALAR_WHILE_MOVING = 1.2
-    TURNING_THRESHOLD = Rotation2d.from_degrees(3)
+    TURNING_THRESHOLD = Rotation2d.from_degrees(2)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
     MOVEMENT_MAX_EXTRA_TIME = 1
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.6)

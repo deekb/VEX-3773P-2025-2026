@@ -124,9 +124,13 @@ class ScoringMechanism:
         """
         Sets both intake motors to back off at a reduced speed for a short duration.
         """
-        self.log.trace("Backing off")
         self.set_speed(-35)
-        time.sleep(0.3)
+        if abs(self.upper_intake_motor.velocity(PERCENT)) < 10:
+            self.log.trace("Backing off from stopped")
+            time.sleep(0.1)
+        else:
+            self.log.trace("Backing off from moving")
+            time.sleep(0.25)
         self.stop_motor()
 
     def get_ring_color(self):

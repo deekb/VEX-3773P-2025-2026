@@ -250,13 +250,13 @@ class Drivetrain:
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
 
-    def move_to_point(self, translation: Translation2d, use_back=False, turn=True):
+    def move_to_point(self, translation: Translation2d, use_back=False, turn=True, stop_immediately=False):
         self.log.trace("Entering move_to_point")
         distance, angle = self.get_distance_and_angle_from_position(translation)
         if use_back:
             angle += Rotation2d.from_revolutions(0.5)
             distance = distance.inverse()
-        self.move_distance_towards_direction_trap(distance, (angle.to_degrees() if turn else Units.radians_to_degrees(self.rotation_PID.setpoint)))
+        self.move_distance_towards_direction_trap(distance, (angle.to_degrees() if turn else Units.radians_to_degrees(self.rotation_PID.setpoint)), stop_immediately=stop_immediately)
 
     def move_distance_towards_direction_trap(
         self,
@@ -264,6 +264,7 @@ class Drivetrain:
         direction_degrees,
         turn_first=True,
         turn_correct=True,
+        stop_immediately=False
     ):
         self.log.trace("Entering move_distance_towards_direction_trap")
         self.log.debug(
@@ -326,10 +327,15 @@ class Drivetrain:
             at_setpoint = self.position_PID.at_setpoint(
                 DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters()
             )
-            time_exceeded = (
-                elapsed_time
-                >= total_time + DrivetrainProperties.MOVEMENT_MAX_EXTRA_TIME
-            )
+
+            if stop_immediately:
+                time_exceeded = (
+                        elapsed_time >= total_time
+                )
+            else:
+                time_exceeded = (
+                    elapsed_time >= total_time + DrivetrainProperties.MOVEMENT_MAX_EXTRA_TIME
+                )
             if elapsed_time >= total_time and (at_setpoint or time_exceeded):
                 self.log.debug(
                     "Terminating movement: at_setpoint: ",
