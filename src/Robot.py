@@ -8,7 +8,6 @@ from Constants import *
 from CornerMechanism import CornerMechanism
 from Drivetrain import Drivetrain
 from MobileGoalClamp import MobileGoalClamp
-from RingDescorer import RingDescorer
 from RingRushMechanism import RingRushMechanism
 from ScoringMechanism import ScoringMechanism
 from VEXLib.Kinematics import desaturate_wheel_speeds
@@ -23,7 +22,7 @@ from WallStakeMechanism import WallStakeMechanism, WallStakeState
 from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, FontType, \
     Inertial, Thread
 
-main_log = Logger(Brain().sdcard, Brain().screen, "robot")
+# main_log = Logger(Brain().sdcard, Brain().screen, "robot")
 
 
 class Robot(RobotBase):
@@ -45,20 +44,19 @@ class Robot(RobotBase):
             self.log_and_print)
 
         self.screen = ScrollingScreen(self.brain.screen, Buffer(20))
-        self.main_log = main_log
+        # self.main_log = main_log
         self.alliance_color = None
 
         self.mobile_goal_clamp = MobileGoalClamp(ThreeWirePorts.MOBILE_GOAL_CLAMP_PISTON)
         self.ring_rush_mechanism = RingRushMechanism(ThreeWirePorts.RING_RUSH_MECHANISM_PISTON)
-        self.ring_descorer = RingDescorer(ThreeWirePorts.RING_DESCORER_PISTON)
         self.corner_mechanism = CornerMechanism(DigitalOut(ThreeWirePorts.LEFT_DOINKER_PISTON), DigitalOut(ThreeWirePorts.RIGHT_DOINKER_PISTON))
 
         self.scoring_mechanism = ScoringMechanism(
             Motor(Ports.PORT1, GearSetting.RATIO_18_1, False),
             Motor(Ports.PORT7, GearSetting.RATIO_18_1, True),
             Rotation(Ports.PORT18),
-            Optical(Ports.PORT10),
-            Distance(Ports.PORT4),
+            Optical(Ports.PORT4),
+            Distance(Ports.PORT10),
             self.brain.screen)
 
         self.wall_stake_mechanism = WallStakeMechanism(
@@ -81,7 +79,7 @@ class Robot(RobotBase):
         self.brain.screen.set_font(FontType.MONO15)
         message = " ".join(map(str, parts))
         self.screen.print(message)
-        self.main_log.log(message)
+        # self.main_log.log(message)
         print(message)
 
     def on_autonomous(self):
@@ -105,67 +103,67 @@ class Robot(RobotBase):
         self.autonomous(self)
 
     def select_autonomous_routine(self):
-        self.main_log.debug("Starting autonomous routine selection")
-        self.main_log.trace("Available autonomous routines:", self.autonomous_mappings)
+        # self.main_log.debug("Starting autonomous routine selection")
+        # self.main_log.trace("Available autonomous routines:", self.autonomous_mappings)
         autonomous_type = self.controller.get_selection(["red", "blue", "skills_alliance_stake"])
-        self.main_log.debug("Autonomous type:", autonomous_type)
+        # self.main_log.debug("Autonomous type:", autonomous_type)
         self.alliance_color = {"red": "red", "blue": "blue", "skills_alliance_stake": "red"}[autonomous_type]
         
         if "skills" in autonomous_type:
             self.drivetrain.set_angles_inverted(False)
-            self.main_log.trace("set_angles_inverted: False")
+            # self.main_log.trace("set_angles_inverted: False")
             self.autonomous = AutonomousRoutines.skills
-            self.main_log.debug("Skills routine chosen:", autonomous_type)
+            # self.main_log.debug("Skills routine chosen:", autonomous_type)
             return autonomous_type
 
         auto = self.controller.get_selection(sorted(list(self.autonomous_mappings.keys())))
         angles_inverted = autonomous_type == "blue"
         self.drivetrain.set_angles_inverted(angles_inverted)
-        self.main_log.trace("set_angles_inverted:", angles_inverted)
+        # self.main_log.trace("set_angles_inverted:", angles_inverted)
         self.autonomous = self.autonomous_mappings[auto]
-        self.main_log.trace("Selected autonomous routine:", angles_inverted)
+        # self.main_log.trace("Selected autonomous routine:", angles_inverted)
         return autonomous_type + " " + auto
 
     def start(self):
-        try:
-            self.on_setup()
-        except Exception as e:
-            exception_buffer = io.StringIO()
-            sys.print_exception(e, exception_buffer)
+        # try:
+        self.on_setup()
+        # except Exception as e:
+        #     exception_buffer = io.StringIO()
+        #     sys.print_exception(e, exception_buffer)
         #     self.serial_communication.send(str(exception_buffer.getvalue()))
         #
-            for log_entry in exception_buffer.getvalue().split("\n"):
-                main_log.fatal(str(log_entry))
-            raise e
+            # for log_entry in exception_buffer.getvalue().split("\n"):
+                # main_log.fatal(str(log_entry))
+            # raise e
 
-    @main_log.logged
+    # @main_log.logged
     def on_setup(self):
         # Break down the setup process into dedicated steps.
         self.calibrate_sensors()
         self.align_robot()
         self.select_autonomous_and_drive_style()
-        self.main_log.info("Setup complete")
-        self.main_log.debug("Unlocking setup lock")
+        # self.main_log.info("Setup complete")
+        # self.main_log.debug("Unlocking setup lock")
         self.setup_complete = True
 
     def calibrate_sensors(self):
-        self.main_log.info("Calibrating sensors")
+        # self.main_log.info("Calibrating sensors")
         # Set initial sensor positions and calibrate mechanisms.
         self.wall_stake_mechanism.rotation_sensor.set_position(
             WallStakeMechanismProperties.DOCKED_POSITION.to_degrees(), DEGREES)
 
-        self.main_log.debug("Calibrating scoring mechanism")
+        # self.main_log.debug("Calibrating scoring mechanism")
         self.scoring_mechanism.calibrate()
-        self.main_log.debug("Calibrated scoring mechanism successfully")
-        self.main_log.debug("Calibrating inertial sensor")
+        # self.main_log.debug("Calibrated scoring mechanism successfully")
+        # self.main_log.debug("Calibrating inertial sensor")
         self.drivetrain.odometry.inertial_sensor.calibrate()
         while self.drivetrain.odometry.inertial_sensor.is_calibrating():
             time.sleep_ms(5)
-        self.main_log.debug("Calibrated inertial sensor successfully")
+        # self.main_log.debug("Calibrated inertial sensor successfully")
 
-    @main_log.logged
+    # @main_log.logged
     def align_robot(self):
-        self.main_log.info("Waiting for robot alignment")
+        # self.main_log.info("Waiting for robot alignment")
         # Define target rotations using degrees.
         target_rotations = [
             Rotation2d.from_degrees(0),
@@ -350,9 +348,6 @@ class Robot(RobotBase):
         self.log_and_print("Setting up Dirk Preferences")
         self.controller.buttonB.pressed(
             lambda: [self.log_and_print("Toggling clamp"), self.mobile_goal_clamp.toggle_clamp()])
-
-        self.controller.buttonA.pressed(
-            lambda: [self.log_and_print("Toggling descorer"), self.ring_descorer.toggle_descorer()])
 
         self.controller.buttonL2.pressed(lambda: [self.log_and_print("Outtake"), self.scoring_mechanism.outtake()])
         self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)

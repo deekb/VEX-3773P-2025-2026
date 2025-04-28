@@ -106,12 +106,13 @@ class DrivetrainProperties:
     RIGHT_PIDF_GAINS = PIDFGains(0.2, 0, 0, 0.6)
 
     POSITION_PID_GAINS = PIDGains(5, 0, 0)
-    ROTATION_PID_GAINS = PIDGains(0.9, 0.0, 0.03)
+    ROTATION_PID_GAINS = PIDGains(0.8, 0, 0.03)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     TURN_TIMEOUT_SECONDS = 2
     TURN_CORRECTION_SCALAR_WHILE_MOVING = 1.2
     TURNING_THRESHOLD = Rotation2d.from_degrees(2)
+    TURNING_VELOCITY_THRESHOLD = Rotation2d.from_degrees(2)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
     MOVEMENT_MAX_EXTRA_TIME = 1
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.6)

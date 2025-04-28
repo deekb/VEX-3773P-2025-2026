@@ -18,7 +18,7 @@ from vex import (
     Color,
 )
 
-scoring_mechanism_log = Logger(Brain().sdcard, Brain().screen, "scoring_mechanism")
+# scoring_mechanism_log = Logger(Brain().sdcard, Brain().screen, "scoring_mechanism")
 
 
 class ScoringMechanism:
@@ -68,7 +68,7 @@ class ScoringMechanism:
         self.eject_ring_at_position = 0
         self.ejecting_ring = False
         self.found_ring = False
-        self.log = scoring_mechanism_log
+        # self.log = scoring_mechanism_log
 
     def set_speed(self, speed):
         """
@@ -77,7 +77,7 @@ class ScoringMechanism:
         Args:
             speed (int): The speed to set for the motors.
         """
-        self.log.trace("set_speed: {}".format(speed))
+        # self.log.trace("set_speed: {}".format(speed))
         self.spin_lower_intake(speed)
         self.spin_upper_intake(speed)
 
@@ -103,21 +103,21 @@ class ScoringMechanism:
         """
         Stops both intake motors.
         """
-        self.log.trace("Stopping")
+        # self.log.trace("Stopping")
         self.set_speed(0)
 
     def intake(self):
         """
         Sets both intake motors to intake at full speed.
         """
-        self.log.trace("Intaking")
+        # self.log.trace("Intaking")
         self.set_speed(100)
 
     def outtake(self):
         """
         Sets both intake motors to outtake at full speed.
         """
-        self.log.trace("Outtaking")
+        # self.log.trace("Outtaking")
         self.set_speed(-100)
 
     def back_off(self):
@@ -126,10 +126,10 @@ class ScoringMechanism:
         """
         self.set_speed(-35)
         if abs(self.upper_intake_motor.velocity(PERCENT)) < 10:
-            self.log.trace("Backing off from stopped")
+            # self.log.trace("Backing off from stopped")
             time.sleep(0.1)
         else:
-            self.log.trace("Backing off from moving")
+            # self.log.trace("Backing off from moving")
             time.sleep(0.25)
         self.stop_motor()
 
@@ -163,27 +163,27 @@ class ScoringMechanism:
         """
         Intakes until a ring is detected by the distance sensor.
         """
-        self.log.trace("intake_until_no_ring")
+        # self.log.trace("intake_until_no_ring")
         self.intake()
         wait_until(self.ring_is_near)
         if stop:
             self.stop_motor()
-        self.log.debug(
-            "intake_until_ring done, found {} ring".format(self.get_ring_color())
-        )
+        # self.log.debug(
+        #     "intake_until_ring done, found {} ring".format(self.get_ring_color())
+        # )
 
     def intake_until_no_ring(self):
         """
         Intakes until no ring is detected by the distance sensor.
         """
-        self.log.trace("intake_until_no_ring")
+        # self.log.trace("intake_until_no_ring")
         self.intake()
         wait_until_not(lambda: self.ring_is_near(), 100)
         time.sleep(0.25)
         self.stop_motor()
-        self.log.debug(
-            "intake_until_no_ring done, found {} ring".format(self.get_ring_color())
-        )
+        # self.log.debug(
+        #     "intake_until_no_ring done, found {} ring".format(self.get_ring_color())
+        # )
 
     def eject_ring(self):
         """
@@ -191,10 +191,10 @@ class ScoringMechanism:
         """
         self.ejecting_ring = True
         self.eject_ring_at_position = math.ceil(self.get_position())
-        self.log.debug("current position {}".format(self.get_position()))
-        self.log.debug(
-            "Will eject ring at position {}".format(self.eject_ring_at_position)
-        )
+        # self.log.debug("current position {}".format(self.get_position()))
+        # self.log.debug(
+        #     "Will eject ring at position {}".format(self.eject_ring_at_position)
+        # )
 
     def show_ring_color(self, color):
         """
@@ -203,7 +203,7 @@ class ScoringMechanism:
         Args:
             color (Color): The color to display on the screen.
         """
-        self.log.trace("show_ring_color")
+        # self.log.trace("show_ring_color")
         self.screen.clear_screen()
         self.screen.set_fill_color(color)
         self.screen.set_pen_color(color)
@@ -224,9 +224,9 @@ class ScoringMechanism:
                 self.outtake()
                 time.sleep(0.25)
                 self.intake()
-                self.log.debug(
-                    "ejecting: current position {}".format(self.get_position())
-                )
+                # self.log.debug(
+                #     "ejecting: current position {}".format(self.get_position())
+                # )
                 self.ejecting_ring = False
             return
 
@@ -239,16 +239,16 @@ class ScoringMechanism:
             # Get the color of the detected ring
             ring_color = self.get_ring_color()
             if not ring_color:
-                self.log.warn("Ring color could not be detected")
+                # self.log.warn("Ring color could not be detected")
                 # If no color is detected, show black on the screen
                 self.show_ring_color(Color.BLACK)
                 return
             if ring_color == "red":
-                self.log.debug("Detected red ring")
+                # self.log.debug("Detected red ring")
                 # If the ring is red, show red on the screen
                 self.show_ring_color(Color.RED)
             elif ring_color == "blue":
-                self.log.debug("Detected blue ring")
+                # self.log.debug("Detected blue ring")
                 # If the ring is blue, show blue on the screen
                 self.show_ring_color(Color.BLUE)
 

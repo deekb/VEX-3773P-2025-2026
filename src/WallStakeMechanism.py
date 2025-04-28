@@ -14,9 +14,9 @@ class WallStakeState:
     LOW_SCORING = 4
 
 
-wall_stake_mechanism_logger = Logger(
-    Brain().sdcard, Brain().screen, "WallStakeMechanism"
-)
+# wall_stake_mechanism_logger = Logger(
+#     Brain().sdcard, Brain().screen, "WallStakeMechanism"
+# )
 
 
 class WallStakeMechanism:
@@ -37,7 +37,7 @@ class WallStakeMechanism:
         self.rotation_sensor = rotation_sensor
         self.motor = motor
 
-        self.log = wall_stake_mechanism_logger
+        # self.log = wall_stake_mechanism_logger
 
         self.PID_GAINS = WallStakeMechanismProperties.PID_GAINS
         self.FEEDFORWARD_GAIN = WallStakeMechanismProperties.FEEDFORWARD_GAIN
@@ -55,8 +55,8 @@ class WallStakeMechanism:
 
         # Call transition_to to ensure we are really in the initial state
         self.transition_to(self.state)
-        self.log.info("WallStakeMechanism initialized with state: DOCKED")
-        self.log.info("Starting loop thread")
+        # self.log.info("WallStakeMechanism initialized with state: DOCKED")
+        # self.log.info("Starting loop thread")
         self.tick_thread = Thread(self.loop)
 
     def update_motor_voltage(self):
@@ -80,43 +80,43 @@ class WallStakeMechanism:
         self.motor.spin(FORWARD, feedforward_output - pid_output, VOLT)
         # self.log.debug("Motor voltage set to: {} VOLT".format(feedforward_output - pid_output))
 
-    @wall_stake_mechanism_logger.logged
+    # @wall_stake_mechanism_logger.logged
     def transition_to(self, new_state):
         if new_state == WallStakeState.DOCKED:
-            self.log.info("Transitioning to Docked")
+            # self.log.info("Transitioning to Docked")
             self.pid.setpoint = self.DOCKED_POSITION.to_revolutions()
         elif new_state == WallStakeState.LOADING:
-            self.log.info("Transitioning to Loading")
+            # self.log.info("Transitioning to Loading")
             self.pid.setpoint = self.LOADING_POSITION.to_revolutions()
         elif new_state == WallStakeState.HIGH_SCORING:
-            self.log.info("Transitioning to High Scoring")
+            # self.log.info("Transitioning to High Scoring")
             self.pid.setpoint = self.HIGH_SCORING_POSITION.to_revolutions()
         elif new_state == WallStakeState.LOW_SCORING:
-            self.log.info("Transitioning to Low Scoring")
+            # self.log.info("Transitioning to Low Scoring")
             self.pid.setpoint = self.LOW_SCORING_POSITION.to_revolutions()
 
         self.state = new_state
-        self.log.debug("New state set: {}".format(new_state))
+        # self.log.debug("New state set: {}".format(new_state))
 
     def next_state(self):
-        self.log.trace("Entering next_state")
+        # self.log.trace("Entering next_state")
         if self.state == 4:
-            self.log.warn(
-                "Already in the highest state, cannot transition to next state"
-            )
+            # self.log.warn(
+            #     "Already in the highest state, cannot transition to next state"
+            # )
             return
         self.transition_to(self.state + 1)
-        self.log.info("Transitioned to next state:", self.state)
+        # self.log.info("Transitioned to next state:", self.state)
 
     def previous_state(self):
-        self.log.trace("Entering previous_state")
+        # self.log.trace("Entering previous_state")
         if self.state == 1:
-            self.log.warn(
-                "Already in the lowest state, cannot transition to previous state"
-            )
+            # self.log.warn(
+            #     "Already in the lowest state, cannot transition to previous state"
+            # )
             return
         self.transition_to(self.state - 1)
-        self.log.info("Transitioned to previous state:", self.state)
+        # self.log.info("Transitioned to previous state:", self.state)
 
     def tick(self):
         # self.log.trace("Entering tick")
