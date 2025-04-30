@@ -1,9 +1,10 @@
 from VEXLib.Algorithms.TrapezoidProfile import TrapezoidProfile, Constraints
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d
+from Drivetrain import TimeBasedCommand
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Util import time
-from WallStakeMechanism import WallStakeState
+from WallStakeMechanism import WallStakeState, WallStakeMechanism
 
 from vex import DEGREES, Thread
 
@@ -251,67 +252,142 @@ def negative_full_mobile_goal(robot):
 
 
 def worlds_win_point(robot: Robot):
+    if robot.alliance_color == "red":
+        robot.corner_mechanism.set_left_side_active()
+    else:
+        robot.corner_mechanism.set_right_side_active()
+
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
     # robot.mobile_goal_clamp.release_mobile_goal()
     robot.drivetrain.move_to_point(Translation2d.from_centimeters(-15.0, 108.0))
-    robot.corner_mechanism.lower_left_corner_mechanism()
+    robot.corner_mechanism.toggle_active_corner_mechanism()
     stop_and_sleep(robot, 0.25)
     robot.scoring_mechanism.spin_lower_intake(100)
-    robot.drivetrain.turn_to(Rotation2d.from_degrees(70))
-    robot.corner_mechanism.raise_left_corner_mechanism()
-    stop_and_sleep(robot, 0.25)
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-30.0, 90.0))
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 1.5))
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-65.0, 100.0), use_back=True)
+    robot.drivetrain.turn_to(Rotation2d.from_degrees(85))
+    robot.corner_mechanism.toggle_active_corner_mechanism()
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-30.0, 108.0))
+
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-15.0, 108.0), use_back=True)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 2.5))
+    # stop_and_sleep(robot, 0.25)
+    # robot.drivetrain.move_to_point(Translation2d.from_centimeters(-50.0, 106.0), use_back=True, mostly_there_command=robot.mobile_goal_clamp.clamp_mobile_goal, time_from_move_end=0.1)
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-55.0, 106.0), use_back=True, commands=[TimeBasedCommand(-0.1, robot.mobile_goal_clamp.clamp_mobile_goal)])
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
-    stop_and_sleep(robot, 0.25)
+
     robot.mobile_goal_clamp.clamp_mobile_goal()
-    stop_and_sleep(robot, 0.2)
+    # stop_and_sleep(robot, 0.3)
     robot.scoring_mechanism.set_speed(100)
+
+    # schedule_function(0.3, lambda: robot.scoring_mechanism.intake_until_ring())
+
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-45.0, 90.0))
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 1.5))
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-78.0, 103.0), use_back=True, commands=[TimeBasedCommand(0.1, robot.scoring_mechanism.intake_until_ring, background=True)])
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
+    # stop_and_sleep(robot, 0.25)
+    # robot.mobile_goal_clamp.clamp_mobile_goal()
+    # stop_and_sleep(robot, 0.4)
+    # robot.scoring_mechanism.set_speed(100)
     robot.drivetrain.turn_to(Rotation2d.from_degrees(-120))
-    stop_and_sleep(robot, 0.85)
+    # stop_and_sleep(robot, 0.85)
     robot.mobile_goal_clamp.release_mobile_goal()
     robot.scoring_mechanism.stop_motor()
     stop_and_sleep(robot, 0.25)
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 1.5))
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-110.0, 72.0), use_back=True)
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 2))
-    robot.scoring_mechanism.set_speed(0)
-    stop_and_sleep(robot, 0.2)
-    robot.mobile_goal_clamp.clamp_mobile_goal()
-    stop_and_sleep(robot, 0.3)
-    schedule_function(0.2, lambda: robot.scoring_mechanism.intake_until_ring() and robot.scoring_mechanism.eject_ring())
-    # schedule_function(0.8, lambda: robot.scoring_mechanism.spin_lower_intake(-100))
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-10.0, -28.0), stop_immediately=True)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 2.5))
+    # robot.drivetrain.move_to_point(Translation2d.from_centimeters(-110.0, 72.0), use_back=True, mostly_there_command=robot.mobile_goal_clamp.clamp_mobile_goal, time_from_move_end=0.2)
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-110.0, 72.0), use_back=True, commands=[TimeBasedCommand(-0.2, robot.mobile_goal_clamp.clamp_mobile_goal)])
     robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3))
-    # robot.scoring_mechanism.spin_lower_intake(-100)
-    # stop_and_sleep(robot, 0.25)
+    # robot.scoring_mechanism.set_speed(0)
+    # stop_and_sleep(robot, 0.2)
+    # robot.mobile_goal_clamp.clamp_mobile_goal()
+    # stop_and_sleep(robot, 0.3)
     robot.scoring_mechanism.set_speed(100)
-    # stop_and_sleep(robot, 0.5)
-    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-40.0, 17.0), use_back=True, turn=False)
+    # schedule_function(0.3, lambda: robot.scoring_mechanism.intake_until_ring() and robot.scoring_mechanism.eject_ring())
+    # schedule_function(0.8, lambda: robot.scoring_mechanism.spin_lower_intake(-100))
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(3.0, -30.0), stop_immediately=True)
+    # robot.scoring_mechanism.back_off()
+    # stop_and_sleep(robot, 0.2)
+    robot.scoring_mechanism.set_speed(100)
+    stop_and_sleep(robot, 0.3)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 4))
+    # robot.drivetrain.move_to_point(Translation2d.from_centimeters(-25.0, 12.0), use_back=True, turn=False)
+    # robot.drivetrain.turn_to(Rotation2d.from_degrees(45))
+    # stop_and_sleep(robot, 0.2)
+    # robot.mobile_goal_clamp.release_mobile_goal()
+    # stop_and_sleep(robot, 0.3)
+    # robot.drivetrain.move_to_point(Translation2d.from_centimeters(-85.0, 95.0), use_back=True)
+    # robot.mobile_goal_clamp.clamp_mobile_goal()
+    robot.drivetrain.move_to_point(Translation2d.from_centimeters(-129.0, 82.0), use_back=True, commands=[TimeBasedCommand(-0.2, robot.scoring_mechanism.stop_motor)])
+
+    # schedule_function(1, lambda: robot.scoring_mechanism.stop_motor())
 
 
-def ring_rush(robot):
+def ring_rush_eliminations(robot):
     robot.drivetrain.update_odometry()
     robot.drivetrain.rotation_PID.setpoint = robot.drivetrain.odometry.get_rotation().to_radians()
     robot.mobile_goal_clamp.release_mobile_goal()
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.4, 2))
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.5, 2 * 1.15))
 
     robot.ring_rush_mechanism.lower_ring_rush_mechanism()
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(140), 39)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-43), 39)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-39), 39, turn_first=False)
     robot.ring_rush_mechanism.raise_ring_rush_mechanism()
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.4, 1))
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-26), 135)
-    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.4, 2))
+    stop_and_sleep(robot, 0.3)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(31), 125, commands=[TimeBasedCommand(0.1, robot.scoring_mechanism.intake_until_ring, background=True)])
 
-    stop_and_sleep(robot, 0.25)
-    robot.mobile_goal_clamp.clamp_mobile_goal()
-    stop_and_sleep(robot, 0.25)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.4, 1.5))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-59), 125, commands=[TimeBasedCommand(-0.1, robot.mobile_goal_clamp.clamp_mobile_goal)])
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.5, 2 * 1.15))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), 70, commands=[TimeBasedCommand(-0.5, lambda: robot.scoring_mechanism.set_speed(100))])
+
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(25), 100)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3 * 1.15))
+
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 180, commands=[TimeBasedCommand(0.8, lambda: robot.scoring_mechanism.spin_lower_intake(-100))])
     robot.scoring_mechanism.set_speed(100)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(51), 135)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(20), 5)
-    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(10), -20)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(55), 135, turn_correct=False)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), 135, turn_correct=False)
+
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), -85)
+    robot.wall_stake_mechanism.transition_to(WallStakeState.HIGH_SCORING)
+
+    # robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(130), -85, commands=[TimeBasedCommand(-0.8, lambda: robot.wall_stake_mechanism.transition_to(WallStakeState.HIGH_SCORING))])
+
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(30), -70)
+
+    robot.wall_stake_mechanism.transition_to(WallStakeState.DOCKED)
+    stop_and_sleep(robot, 0.3)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-10), -70)
+
+
+def ring_rush_qualifications(robot):
+    robot.drivetrain.update_odometry()
+    robot.drivetrain.rotation_PID.setpoint = robot.drivetrain.odometry.get_rotation().to_radians()
+    robot.mobile_goal_clamp.release_mobile_goal()
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.5, 2 * 1.15))
+
+    robot.ring_rush_mechanism.lower_ring_rush_mechanism()
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(140), 39)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-39), 39, turn_first=False)
+    robot.ring_rush_mechanism.raise_ring_rush_mechanism()
+    stop_and_sleep(robot, 0.3)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(31), 125, commands=[TimeBasedCommand(0.1, robot.scoring_mechanism.intake_until_ring, background=True)])
+
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.4, 1.5))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-59), 125, commands=[TimeBasedCommand(-0.1, robot.mobile_goal_clamp.clamp_mobile_goal)])
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.5, 2 * 1.15))
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(35), 70, commands=[TimeBasedCommand(-0.5, lambda: robot.scoring_mechanism.set_speed(100))])
+
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(25), 100)
+    robot.drivetrain.trapezoidal_profile = TrapezoidProfile(Constraints(1.6, 3 * 1.15))
+
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(100), 180, commands=[TimeBasedCommand(0.8, lambda: robot.scoring_mechanism.spin_lower_intake(-100))])
+    robot.scoring_mechanism.set_speed(100)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(55), 135, turn_correct=False)
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(-20), 135, turn_correct=False)
+
+    robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_centimeters(120), -65)
+    robot.ring_rush_mechanism.lower_ring_rush_mechanism()
 
 
 def none(robot):
@@ -325,4 +401,4 @@ def test_autonomous(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_meters(1), 90)
 
 
-available_autos = [skills, win_point_states, negative_4_rings_and_touch, negative_full_mobile_goal, worlds_win_point, none, ring_rush]
+available_autos = [skills, win_point_states, negative_4_rings_and_touch, negative_full_mobile_goal, worlds_win_point, none, ring_rush_qualifications, ring_rush_eliminations]

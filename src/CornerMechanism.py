@@ -11,6 +11,12 @@ class CornerMechanism:
         self.right_corner_mechanism_state = False
         self.active_side = Sides.LEFT
 
+    def set_left_side_active(self):
+        self.active_side = Sides.LEFT
+
+    def set_right_side_active(self):
+        self.active_side = Sides.RIGHT
+
     def _update_left_state(self):
         self.left_corner_mechanism_piston.set(self.left_corner_mechanism_state)
 

@@ -102,19 +102,19 @@ class GearRatios:
 
 class DrivetrainProperties:
     # PID gains
-    LEFT_PIDF_GAINS = PIDFGains(0.2, 0, 0, 0.6)
-    RIGHT_PIDF_GAINS = PIDFGains(0.2, 0, 0, 0.6)
+    LEFT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.6)
+    RIGHT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.6)
 
-    POSITION_PID_GAINS = PIDGains(5, 0, 0)
-    ROTATION_PID_GAINS = PIDGains(0.8, 0, 0.03)
+    POSITION_PID_GAINS = PIDGains(3.8, 0, 0)
+    ROTATION_PID_GAINS = PIDGains(1, 0, 0.04)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     TURN_TIMEOUT_SECONDS = 2
     TURN_CORRECTION_SCALAR_WHILE_MOVING = 1.2
-    TURNING_THRESHOLD = Rotation2d.from_degrees(2)
+    TURNING_THRESHOLD = Rotation2d.from_degrees(3)
     TURNING_VELOCITY_THRESHOLD = Rotation2d.from_degrees(2)
-    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
-    MOVEMENT_MAX_EXTRA_TIME = 1
+    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1.5)
+    MOVEMENT_MAX_EXTRA_TIME = 0.5
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.6)
     MOTOR_TO_WHEEL_GEAR_RATIO = (36 / 60)
     WHEEL_DIAMETER = Distance.from_inches(3.235)

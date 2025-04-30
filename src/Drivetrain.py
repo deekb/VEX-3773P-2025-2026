@@ -17,13 +17,29 @@ from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Motor import Motor
 from VEXLib.Units import Units
-from VEXLib.Util import ContinuousTimer, time
+from VEXLib.Util import ContinuousTimer, time, pass_function
 from VEXLib.Util.Logging import Logger, TimeSeriesLogger
 from VEXLib.Util.motor_tests import collect_power_relationship_data
-from vex import DEGREES, Brain, ZAXIS, DPS
+from vex import DEGREES, Brain, ZAXIS, DPS, Thread
 
 
 # drivetrain_log = Logger(Brain().sdcard, Brain().screen, "Drivetrain")
+
+
+class TimeBasedCommand:
+    def __init__(self, time, function, background=False):
+        self.time = time
+        self.function = function
+        self.has_been_executed = False
+        self.background = background
+
+    def execute_once(self):
+        if not self.has_been_executed:
+            if self.background:
+                Thread(self.function)
+            else:
+                self.function()
+            self.has_been_executed = True
 
 
 class Drivetrain:
@@ -226,23 +242,24 @@ class Drivetrain:
             pid_output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
 
             if pid_output > 0.0:
-                pid_output += 0.05
+                pid_output += 0.03
             else:
-                pid_output -= 0.05
+                pid_output -= 0.03
 
 
             output = MathUtil.clamp(
                 pid_output,
-                -0.5,
-                0.5,
+                -0.6,
+                0.6,
             )
             self.set_speed_zero_to_one(output, -output)
             self.update_powers()
             self.update_odometry()
             is_turning_slowly_enough = abs(self.odometry.inertial_sensor.gyro_rate(ZAXIS)) < DrivetrainProperties.TURNING_VELOCITY_THRESHOLD.to_degrees()
             is_at_setpoint = self.rotation_PID.at_setpoint(threshold=self.TURNING_THRESHOLD.to_radians())
+            wheels_are_moving = abs(self.get_right_speed().to_centimeters_per_second()) + abs(self.get_right_speed().to_centimeters_per_second()) > 5
             # time_exceeded = (time.time() - start_time) < DrivetrainProperties.TURN_TIMEOUT_SECONDS
-            if is_at_setpoint and is_turning_slowly_enough:
+            if is_at_setpoint and not wheels_are_moving:
                 break
         # if not self.rotation_PID.at_setpoint(
         #     threshold=self.TURNING_THRESHOLD.to_radians()
@@ -260,13 +277,13 @@ class Drivetrain:
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
 
-    def move_to_point(self, translation: Translation2d, use_back=False, turn=True, stop_immediately=False):
+    def move_to_point(self, translation: Translation2d, use_back=False, turn=True, stop_immediately=False, commands=None):
         # self.log.trace("Entering move_to_point")
         distance, angle = self.get_distance_and_angle_from_position(translation)
         if use_back:
             angle += Rotation2d.from_revolutions(0.5)
             distance = distance.inverse()
-        self.move_distance_towards_direction_trap(distance, (angle.to_degrees() if turn else Units.radians_to_degrees(self.rotation_PID.setpoint)), stop_immediately=stop_immediately)
+        self.move_distance_towards_direction_trap(distance, (angle.to_degrees() if turn else Units.radians_to_degrees(self.rotation_PID.setpoint)), stop_immediately=stop_immediately, commands=commands)
 
     def move_distance_towards_direction_trap(
         self,
@@ -274,7 +291,8 @@ class Drivetrain:
         direction_degrees,
         turn_first=True,
         turn_correct=True,
-        stop_immediately=False
+        stop_immediately=False,
+        commands=None
     ):
         # self.log.trace("Entering move_distance_towards_direction_trap")
         # self.log.debug(
@@ -285,6 +303,10 @@ class Drivetrain:
         #     direction_degrees,
         #     "degrees",
         # )
+
+        if commands is None:
+            commands = []
+
         if turn_first:
             self.turn_to(Rotation2d.from_degrees(direction_degrees))
 
@@ -302,12 +324,26 @@ class Drivetrain:
         elapsed_time = ContinuousTimer.time() - start_time
 
         distance_traveled = 0
+        triggered_mostly_there_command = False
 
         while True:
             elapsed_time = ContinuousTimer.time() - start_time
             target_distance_traveled = self.trapezoidal_profile.calculate(
                 elapsed_time, initial_state, goal_state
             )
+
+            remaining_time = total_time - elapsed_time
+
+            for command in commands:
+                if command.time >= 0:
+                    # Reference from start of movement
+                    if command.time <= elapsed_time:
+                        command.execute_once()
+
+                else:
+                    # Reference from end of movement
+                    if (-command.time) >= remaining_time:
+                        command.execute_once()
 
             left_position = self.get_left_distance().to_meters() - left_start_position
             right_position = (

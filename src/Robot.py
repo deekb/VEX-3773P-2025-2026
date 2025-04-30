@@ -282,6 +282,7 @@ class Robot(RobotBase):
                 self.log_and_print(message)
 
     def on_driver_control(self):
+        self.ring_rush_mechanism.raise_ring_rush_mechanism()
         while not self.setup_complete and self.competition.is_driver_control():
             time.sleep_ms(20)
         if self.color_sort_tick_thread:
