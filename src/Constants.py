@@ -143,4 +143,4 @@ class ScoringMechanismProperties:
     CALIBRATION_OFFSET = 220
 
     HOOK_DISTANCE = 100
-    RING_DISTANCE = 50
+    RING_DISTANCE = 35

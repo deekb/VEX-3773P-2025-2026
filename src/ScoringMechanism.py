@@ -242,12 +242,13 @@ class ScoringMechanism:
                 # self.log.debug("Detected red ring")
                 # If the ring is red, show red on the screen
                 self.show_ring_color(Color.RED)
+                self.found_ring = True
             elif ring_color == "blue":
                 # self.log.debug("Detected blue ring")
                 # If the ring is blue, show blue on the screen
                 self.show_ring_color(Color.BLUE)
+                self.found_ring = True
 
-            self.found_ring = True
             # If the ring color does not match the alliance color, eject the ring
             if ring_color != alliance_color:
                 self.eject_ring()

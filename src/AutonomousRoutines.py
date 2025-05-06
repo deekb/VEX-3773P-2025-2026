@@ -401,4 +401,10 @@ def test_autonomous(robot):
     robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_meters(1), 90)
 
 
-available_autos = [skills, win_point_states, negative_4_rings_and_touch, negative_full_mobile_goal, worlds_win_point, none, ring_rush_qualifications, ring_rush_eliminations]
+def color_sort_test(robot):
+    robot.mobile_goal_clamp.clamp_mobile_goal()
+    stop_and_sleep(robot, 0.3)
+    robot.scoring_mechanism.set_speed(100)
+
+
+available_autos = [skills, win_point_states, negative_4_rings_and_touch, negative_full_mobile_goal, worlds_win_point, none, ring_rush_qualifications, ring_rush_eliminations, color_sort_test]

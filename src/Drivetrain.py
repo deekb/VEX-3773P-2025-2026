@@ -426,11 +426,11 @@ class Drivetrain:
         # self.log.trace("Entering measure_properties")
         # self.log.info("Measuring drivetrain properties...")
         collect_power_relationship_data(
-            "logs/left_drivetrain.csv", self.left_motors, step_delay=0.1
+            "logs/left_drivetrain.csv", self.left_motors, data_points_per_step=10, power_step=0.01
         )
         # self.log.info("Measured left drivetrain properties...")
         collect_power_relationship_data(
-            "logs/right_drivetrain.csv", self.right_motors, step_delay=0.1
+            "logs/right_drivetrain.csv", self.right_motors, data_points_per_step=10, power_step=0.01
         )
         # self.log.info("Measured right drivetrain properties...")
 

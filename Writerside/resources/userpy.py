@@ -1,4 +1,4 @@
-"""8
+"""
 This file goes on the vex brain over a USB cable; the rest of the code can be pushed to an SD card using deploy.py
 """
 

@@ -10,17 +10,31 @@ def rescale_voltage(voltage_data):
     return [(v - min_voltage) / (max_voltage - min_voltage) * 100 for v in voltage_data]
 
 
+# # Load JSON data for the left and right drivetrain
+# with open("input/drivetrain_data_left.json", "r") as file:
+#     left_data_old = json.load(file)
+#
+# with open("input/drivetrain_data_right.json", "r") as file:
+#     right_data_old = json.load(file)
+#
+# with open("input/drivetrain_data_left_2.json", "r") as file:
+#     left_data = json.load(file)
+#
+# with open("input/drivetrain_data_right_2.json", "r") as file:
+#     right_data = json.load(file)
+
+
 # Load JSON data for the left and right drivetrain
-with open("input/drivetrain_data_left.json", "r") as file:
+with open("input/drivetrain_data_left_2.json", "r") as file:
     left_data_old = json.load(file)
 
-with open("input/drivetrain_data_right.json", "r") as file:
+with open("input/drivetrain_data_right_2.json", "r") as file:
     right_data_old = json.load(file)
 
-with open("input/drivetrain_data_left_2.json", "r") as file:
+with open("input/left_drivetrain_3.json", "r") as file:
     left_data = json.load(file)
 
-with open("input/drivetrain_data_right_2.json", "r") as file:
+with open("input/right_drivetrain_3.json", "r") as file:
     right_data = json.load(file)
 
 # Rescale voltage data

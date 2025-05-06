@@ -14,22 +14,20 @@ and lots of utilities to make VEX V5 robot development easier and more fun.
 Here's a quick tour of what's included:
 
 - **`src/`** — Core robot code: autonomous routines, drivetrain logic, odometry, and subsystem modules.
-- **`sim/`** — Simulation tools like Dijkstra's pathfinding algorithm and PID analysis tools.
+- **`sim/`** — Simulation tools for example a pathfinding algorithm and PID analysis tools.
 - **`tests/`** — Unit tests to make sure everything works reliably.
-- **`deploy/`** — Deployment-specific scripts and configurations.
-- **`util/`** — Handy utilities: friction testers, serial communication tests, environment map encoders, and more.
-- **`logs/`** — Recorded logs from drivetrain, scoring mechanisms, and other subsystems, automatically synced from the robot every
-  time you push code!
-- **`assets/`** — An extra folder including anything you want (SVG Logos and a render script by default) on the robot to display or use, pushed to the
-  robot with the code.
-- **`docs/`** — Generated documentation files and help pages.
+- **`deploy/`** — The deployment script and its configurations, allowing the user to upload code to the robot using an SD card (More reliable than uploading large amounts of code over he USB protocol).
+- **`util/`** — Handy utilities: friction testers, serial communication tests, and more.
+- **`logs/`** — Recorded logs from drivetrain, and other robot subsystems, automatically synced from the robot by the "deploy" script every time you push code!
+- **`assets/`** — An extra folder including anything you want (SVG Logos and a script to render them to pngs by default) on the robot to display or use, pushed to the robot with the code.
+- **`docs/`** — Generated documentation files and help pages (You are currently viewing this).
 
 ---
 
 ## 🚀 Getting Started
 
 <tabs group="IDE">
-    <tab id="PYCHARM" title="Pycharm (Pro or Community)" group-key="PYCHARM">
+    <tab id="PYCHARM" title="Pycharm (Pro / Community)" group-key="PYCHARM">
         Getting started with VEXLib and Pycharm, I HIGHLY recommend PyCharm for this project, it integrates very nicely, from the preconfigured run configurations to the in-IDE graph display. (You can even get the professional version for <a href="https://www.jetbrains.com/shop/eform/students">free</a> if you are a student or a teacher)
         <img src="PyCharm Run Configurations.png" alt="PyCharm run configurations" height="400"/>
         <img src="Graph Visualization.png" alt="PyCharm Graph Visualization" height="400"/>
@@ -44,42 +42,64 @@ Here's a quick tour of what's included:
 
 
 1. **Clone the repository:**
-
-```bash
-git clone https://github.com/deekb/VEXLib
-cd VEXLib
-```
-
+  ```sh
+  git clone https://github.com/deekb/VEXLib
+  cd VEXLib
+  ```
 2. **(Optional) Set up a virtual environment:**
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
+  <tabs>
+<tab id="CMD" title="Windows (CMD)">
+<code-block lang="Batch">
+  python -m venv venv
+  .\venv\Scripts\activate.bat
+</code-block>
+</tab>
+<tab id="PS" title="Windows (Powershell)">
+<code-block lang="Batch">
+  python -m venv venv
+  .\venv\Scripts\activate.ps1
+</code-block>
+</tab>
+<tab id="BASH" title="Linux / Mac (Bash)">
+<code-block lang="SH">
+  python -m venv venv
+  source venv/bin/activate.sh
+</code-block>
+</tab>
+<tab id="ZSH" title="Linux / Mac (Zsh)">
+<code-block lang="SH">
+  python -m venv venv
+  source venv/bin/activate.zsh
+</code-block>
+</tab>
+<tab id="Fish" title="Linux / Mac (Fish)">
+<code-block lang="SH">
+  python -m venv venv
+  source venv/bin/activate.fish
+</code-block>
+</tab>
+</tabs>
 
 3. **Install dependencies:**
-
-```bash
-pip install -r requirements.txt
-```
-
+  ```bash
+  pip install -r requirements.txt
+  ```
 4. **Push the example code to the robot**
-
-```shell
-python3 -m deploy
-```
+  ```shell
+  python3 -m deploy
+  ```
 you should see something similar to this, this is the deployment script running, by default it will look for a removable storage medium with the string `VEX` in the name and push code to that, for configuration edit `/deploy/config.ini`:
 
 ```
-__     ______ ____  ____    ____             _                                  _     _____           _ 
-\ \   / / ___/ ___||  _ \  |  _ \  ___ _ __ | | ___  _   _ _ __ ___   ___ _ __ | |_  |_   _|__   ___ | |
- \ \ / /|___ \___ \| | | | | | | |/ _ \ '_ \| |/ _ \| | | | '_ ` _ \ / _ \ '_ \| __|   | |/ _ \ / _ \| |
-  \ V /  ___) |__) | |_| | | |_| |  __/ |_) | | (_) | |_| | | | | | |  __/ | | | |_    | | (_) | (_) | |
-   \_/  |____/____/|____/  |____/ \___| .__/|_|\___/ \__, |_| |_| |_|\___|_| |_|\__|   |_|\___/ \___/|_|
-                                      |_|            |___/                                              
-
 ⠏ Searching for SD card...
 ```
+5.**Upload `src/userpy.py` to the vex brain**
+Open the [VEX V5 code editor](https://codev5.vex.com/), create a new text project, and copy and upload the
+<resource src="userpy.py"/> file to any slot the vex brain.
+> The VEX V5 Code Editor will likely give you a message that it can not find and import the `main` module, this is expected, as the `main` module is on the SD card and not part of the standard vex library. This is a limitation of the VEX V5 Code Editor, and it will not affect the functionality of the code.
+> {style="note"}
+
+
 
 ---
 
@@ -94,28 +114,25 @@ __     ______ ____  ____    ____             _                                  
 
 ## Features
 
-- Robot subsystem simulation (drivetrain, clamps, scorers, descorers, wall stakes, etc.)
-- PID and motion control analysis
 - Log recording and visualization
-- Pathfinding algorithms
+- Generic Odometry and drivetrain controller algorithm
 - Rich documentation and testing suite
 
 ---
 
 ## Documentation
 
-Offline help documentation can be found in the `docs/` folder — open `docs/index.html` for the table of contents!
+Offline help documentation can be found in the `docs/` folder — open `docs/index.html` for this page!
 
 ---
 
 ## Contributing
 
-We'd love for you to contribute!  
+I'd love for you to contribute!  
 Here are some great ways to help:
 
 - Fix bugs
-- Improve simulations
-- Add new robot mechanisms
+- Add / Improve simulations
 - Expand the documentation
 - Write tests
 
@@ -127,7 +144,7 @@ Feel free to open Issues or submit Pull Requests!
 
 - [x] Add `README.md`
 - [x] Generate `requirements.txt`
-- [ ] Clean up stale code
+- [x] Clean up stale code
 - [ ] Full test coverage for /VEXLib
 - [ ] Fully documented
 - [ ] Polish documentation styling
