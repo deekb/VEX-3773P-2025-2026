@@ -2,7 +2,6 @@ import io
 import sys
 
 import AutonomousRoutines
-import AutonomousRoutinesPointBased
 import VEXLib.Math.MathUtil as MathUtil
 from Constants import *
 from CornerMechanism import CornerMechanism
@@ -68,7 +67,8 @@ class Robot(RobotBase):
             lambda: self.wall_stake_mechanism.transition_to(WallStakeState.DOCKED))
 
         self.user_preferences = DefaultPreferences
-        self.autonomous_mappings = {str(function)[10:-14]: function for function in AutonomousRoutines.available_autos + AutonomousRoutinesPointBased.available_autos}
+        # TODO: This string slice is jank as hell, make auto class-based or something and implement a get_name or better yet __str__/__repr__ function
+        self.autonomous_mappings = {str(function)[10:-14]: function for function in AutonomousRoutines.available_autos}
         self.autonomous = pass_function
         self.competition = Competition(self.on_driver_control, self.on_autonomous)
         self.color_sort_tick_thread = None
@@ -132,9 +132,9 @@ class Robot(RobotBase):
         #     sys.print_exception(e, exception_buffer)
         #     self.serial_communication.send(str(exception_buffer.getvalue()))
         #
-            # for log_entry in exception_buffer.getvalue().split("\n"):
-                # main_log.fatal(str(log_entry))
-            # raise e
+        #     for log_entry in exception_buffer.getvalue().split("\n"):
+        #         main_log.fatal(str(log_entry))
+        #     raise e
 
     # @main_log.logged
     def on_setup(self):
