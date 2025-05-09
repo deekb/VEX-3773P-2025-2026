@@ -72,7 +72,7 @@ def crc_bytes(bytes_data):
     Calculate the CRC for a sequence of bytes.
 
     Args:
-        bytes_data (list of int): A variable number of bytes to calculate the CRC for.
+        bytes_data (bytes | list[int]): A variable number of bytes to calculate the CRC for.
 
     Returns:
         int: The computed CRC value.
