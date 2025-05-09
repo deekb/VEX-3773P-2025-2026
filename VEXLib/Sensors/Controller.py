@@ -9,7 +9,7 @@ class DoublePressHandler:
         self,
         pressed_callback,
         double_pressed_callback,
-        timeout_threshold,
+        timeout_threshold=0.2,
         delayed_call=False,
     ):
         """
@@ -29,12 +29,12 @@ class DoublePressHandler:
         """
         # TODO: Implement delayed_call
         self.last_press_time = time.time()
-        self.double_press_time_threshold = 0.2
+        self.timeout_threshold = timeout_threshold
         self.pressed_callback = pressed_callback
         self.double_pressed_callback = double_pressed_callback
 
     def press(self):
-        if time.time() - self.last_press_time < self.double_press_time_threshold:
+        if time.time() - self.last_press_time < self.timeout_threshold:
             self.last_press_time = time.time()
             self.double_pressed_callback()
         else:

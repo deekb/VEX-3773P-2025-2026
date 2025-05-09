@@ -13,11 +13,21 @@ from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import DoublePressHandler, Controller
 from VEXLib.Util import time, pass_function
 from VEXLib.Util.Buffer import Buffer
+from VEXLib.Util.time import wait_until, wait_until_not
 from WallStakeMechanism import WallStakeMechanism, WallStakeState
 from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, FontType, \
     Inertial, Thread
 
 # main_log = Logger(Brain().sdcard, Brain().screen, "robot")
+"""
+Ideas for improvement for 2025-2026:
+
+For autonomous selection, we should map each of the starting angles to a list of possible autos for that orientation, and allow selection on either the controller or the brain screen
+We should have a button to run auto without a comp switch (on controller or on brain screen)
+I want timestamped logs that are performant enough to leave on during a match.
+
+
+"""
 
 
 class Robot(RobotBase):
@@ -68,7 +78,7 @@ class Robot(RobotBase):
         self.autonomous = pass_function
         self.competition = Competition(self.on_driver_control, self.on_autonomous)
         self.color_sort_tick_thread = None
-        
+
         self.setup_complete = False
 
     def log_and_print(self, *parts):
@@ -101,24 +111,16 @@ class Robot(RobotBase):
     def select_autonomous_routine(self):
         # self.main_log.debug("Starting autonomous routine selection")
         # self.main_log.trace("Available autonomous routines:", self.autonomous_mappings)
-        autonomous_type = self.controller.get_selection(["red", "blue", "skills_alliance_stake"])
-        # self.main_log.debug("Autonomous type:", autonomous_type)
-        self.alliance_color = {"red": "red", "blue": "blue", "skills_alliance_stake": "red"}[autonomous_type]
-        
-        if "skills" in autonomous_type:
-            self.drivetrain.set_angles_inverted(False)
-            # self.main_log.trace("set_angles_inverted: False")
-            self.autonomous = AutonomousRoutines.skills
-            # self.main_log.debug("Skills routine chosen:", autonomous_type)
-            return autonomous_type
+        self.alliance_color = self.controller.get_selection(["red", "blue"])
+        # self.main_log.debug("Alliance color type:", self.alliance_color)
 
         auto = self.controller.get_selection(sorted(list(self.autonomous_mappings.keys())))
-        angles_inverted = autonomous_type == "blue"
+        angles_inverted = self.alliance_color == "blue"
         self.drivetrain.set_angles_inverted(angles_inverted)
         # self.main_log.trace("set_angles_inverted:", angles_inverted)
         self.autonomous = self.autonomous_mappings[auto]
         # self.main_log.trace("Selected autonomous routine:", angles_inverted)
-        return autonomous_type + " " + auto
+        return self.alliance_color + " " + auto
 
     def start(self):
         # try:
@@ -153,8 +155,7 @@ class Robot(RobotBase):
         # self.main_log.debug("Calibrated scoring mechanism successfully")
         # self.main_log.debug("Calibrating inertial sensor")
         self.drivetrain.odometry.inertial_sensor.calibrate()
-        while self.drivetrain.odometry.inertial_sensor.is_calibrating():
-            time.sleep_ms(5)
+        wait_until_not(self.drivetrain.odometry.inertial_sensor.is_calibrating)
         # self.main_log.debug("Calibrated inertial sensor successfully")
 
     # @main_log.logged
@@ -177,6 +178,7 @@ class Robot(RobotBase):
         self.controller.rumble("..")
         self.log_and_print("Please line up robot...")
         self.log_and_print("The screen will turn green when properly aligned")
+        self.log_and_print("Press A to continue")
 
         while not exit_condition():
             # Get the current rotation as a Rotation2d object.
@@ -195,8 +197,8 @@ class Robot(RobotBase):
                     min_signed_error = error_deg_signed
 
             # Decide on the screen color based on the absolute error.
-            if min_abs_error > 5.0:
-                # More than 5° away: flash the screen.
+            if min_abs_error > ALIGNMENT_FAR_ANGLE.to_degrees():
+                # Far away: flash the screen.
                 flash_period_ms = 500
                 current_time = time.time_ms()  # Get current time in ms.
                 if ((current_time // flash_period_ms) % 2) == 0:
@@ -206,8 +208,8 @@ class Robot(RobotBase):
                     screen_color = Color.BLACK
                     text_color = Color.RED
             else:
-                # Within 5°: interpolate hue from green (120° at 0° error) to red (0° at 5° error).
-                ratio = min_abs_error / 5.0
+                # Somewhat close: LERP from green (hue 120° at no error) to red (hue 0° at high error).
+                ratio = min_abs_error / ALIGNMENT_FAR_ANGLE.to_degrees()
                 hue = MathUtil.interpolate(120, 0, ratio, allow_extrapolation=False)
                 screen_color = Color().hsv(hue, 1, 1)
                 text_color = Color.BLACK
@@ -233,7 +235,7 @@ class Robot(RobotBase):
 
             self.brain.screen.print(display_text)
 
-            if min_abs_error < 0.25:
+            if min_abs_error < ALIGNMENT_CLOSE_ANGLE.to_degrees():
                 self.brain.screen.set_cursor(3, 3)
                 self.brain.screen.print("Lined Up :)")
             else:
@@ -353,7 +355,7 @@ class Robot(RobotBase):
         self.controller.buttonL1.pressed(self.double_press_handler.press)
         self.controller.buttonR2.released(
             lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
-        
+
         self.controller.buttonRight.pressed(self.corner_mechanism.toggle_left_corner_mechanism)
         self.controller.buttonY.pressed(self.corner_mechanism.toggle_right_corner_mechanism)
 

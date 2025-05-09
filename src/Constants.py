@@ -5,6 +5,8 @@ from VEXLib.Geometry.Translation1d import Distance
 from VEXLib.Geometry.Velocity1d import Velocity1d
 from vex import Ports, GearSetting, Brain
 
+ALIGNMENT_FAR_ANGLE = Rotation2d.from_degrees(5)
+ALIGNMENT_CLOSE_ANGLE = Rotation2d.from_degrees(0.25)
 
 class PIDGains:
     def __init__(self, kp, ki, kd):
