@@ -3,9 +3,8 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from deploy.Constants import LOCAL_LOGS_DIRECTORY
 
-BASENAME = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(BASENAME)
 
 pd.set_option("display.max_columns", None)  # Show all columns
 pd.set_option("display.width", 0)  # Disable automatic line wrapping
@@ -93,7 +92,7 @@ class TimeSeriesAnalyzer:
 # Example Usage
 if __name__ == "__main__":
     # Automatically detects CSV path in your project structure
-    filename = os.path.join(PROJECT_ROOT, "logs/left_drivetrain.csv")
+    filename = os.path.join(LOCAL_LOGS_DIRECTORY, "left_drivetrain.csv")
 
     # Initialize the analyzer
     analyzer = TimeSeriesAnalyzer(filename)
@@ -102,8 +101,8 @@ if __name__ == "__main__":
     analyzer.basic_statistics()
 
     # Plot ALL available columns except the detected time column
-    analyzer.plot_time_series(title="Robot Data Overview")
+    # analyzer.plot_time_series(title="Robot Data Overview")
 
     # # Plot just specific columns if desired
-    # analyzer.plot_time_series(columns=['left_speed (cm/s)', 'right_speed (cm/s)'],
-    #                           title="Left and Right Speeds Over Time")
+    analyzer.plot_time_series(columns=['speed (% of rated)', 'input_power (% of rated)'],
+                              title="Left and Right Speeds Over Time")

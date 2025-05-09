@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+from deploy.Constants import LOCAL_LOGS_DIRECTORY
+import os
 
 # Define the path to the CSV file
 left_drivetrain_file_path = (
-    "/home/derek/PycharmProjects/VEXlib/logs/left_drivetrain.csv"
+    os.path.join(LOCAL_LOGS_DIRECTORY, "left_drivetrain.csv")
 )
 right_drivetrain_file_path = (
-    "/home/derek/PycharmProjects/VEXlib/logs/right_drivetrain.csv"
+    os.path.join(LOCAL_LOGS_DIRECTORY, "right_drivetrain.csv")
 )
 
 # Read the CSV file into a DataFrame
