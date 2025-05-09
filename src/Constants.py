@@ -31,6 +31,7 @@ class DefaultPreferences:
     MOVE_SPEED = 1
     TURN_SPEED = 1
     DO_TURN_DECAY = False
+    TURN_DECAY_KP = 1.0
     COLOR_SORT = False
     MEASURE_DRIVETRAIN_PROPERTIES_ON_STARTUP = False
     USE_PIDF_CONTROL = False
@@ -53,10 +54,11 @@ class DirkPreferencesNoColorSort(DirkPreferences):
 
 class DerekPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
-    CUBIC_FILTER_LINEARITY = 0.7
-    USE_PIDF_CONTROL = True
-    PIDF_GAINS = PIDFGains(0.1, 0, 0, 0.6)
-    ENABLE_DRIVING = False
+    CUBIC_FILTER_LINEARITY = 1
+    DO_TURN_DECAY = True
+    TURN_DECAY_KP = 0.7
+    TURN_SPEED = 0.7
+    COLOR_SORT = True
 
 
 class AllisonPreferences(DefaultPreferences):

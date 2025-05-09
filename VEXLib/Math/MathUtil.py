@@ -587,7 +587,7 @@ def smallest_angular_difference(current, target):
         -1.5707963267948966
     """
     tau = 2 * math.pi
-    current %= 2 * tau
+    current %= tau
     target %= tau
     angular_difference = target - current
     if angular_difference > math.pi:

@@ -309,13 +309,14 @@ class Robot(RobotBase):
             if self.user_preferences.DO_TURN_DECAY:
                 # scale speeds to -1 to 1
                 self.drivetrain.update_drivetrain_velocities()
-                speeds_scaled = list(
-                    map(lambda speed: speed.to_meters_per_second() / DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(), self.drivetrain.get_speeds()))
-                current_turn = speeds_scaled[0] - speeds_scaled[1]
-                turn_correction = (target_turn_speed - current_turn) * 1
+                left_speed_zero_to_one = self.drivetrain.get_left_speed().to_meters_per_second() / DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second()
+                right_speed_zero_to_one = self.drivetrain.get_right_speed().to_meters_per_second() / DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second()
 
-                left_speed = forward_speed - turn_correction
-                right_speed = forward_speed + turn_correction
+                current_turn = left_speed_zero_to_one - right_speed_zero_to_one
+                turn_correction = (target_turn_speed * -2) - current_turn
+
+                left_speed = forward_speed + turn_correction
+                right_speed = forward_speed - turn_correction
             else:
                 left_speed = forward_speed - target_turn_speed
                 right_speed = forward_speed + target_turn_speed
@@ -363,18 +364,15 @@ class Robot(RobotBase):
 
     def setup_derek_preferences(self):
         self.log_and_print("Setting up Derek Preferences")
-        self.controller.buttonUp.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(0)))
-        self.controller.buttonLeft.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(90)))
-        self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(180)))
-        self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(270)))
         self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
-        self.controller.buttonL1.pressed(self.scoring_mechanism.intake)
-        self.controller.buttonX.pressed(self.ring_rush_mechanism.lower_ring_rush_mechanism)
-        self.controller.buttonX.released(self.ring_rush_mechanism.raise_ring_rush_mechanism)
-        self.controller.buttonL1.released(self.scoring_mechanism.stop_motor)
+
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
-        self.controller.buttonL2.released(self.scoring_mechanism.back_off)
+        self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
+        self.controller.buttonR2.pressed(self.scoring_mechanism.intake)
         self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
-        self.controller.buttonR2.pressed(self.wall_stake_mechanism.previous_state)
-        self.controller.buttonY.pressed(
-            lambda: self.log_and_print("Toggling corner mechanism") or self.corner_mechanism.toggle_left_corner_mechanism())
+        self.controller.buttonL1.pressed(self.double_press_handler.press)
+        self.controller.buttonR2.released(
+            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
+
+        self.controller.buttonRight.pressed(self.corner_mechanism.toggle_left_corner_mechanism)
+        self.controller.buttonY.pressed(self.corner_mechanism.toggle_right_corner_mechanism)
