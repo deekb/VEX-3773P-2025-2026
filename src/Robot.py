@@ -1,6 +1,3 @@
-import io
-import sys
-
 import AutonomousRoutines
 import VEXLib.Math.MathUtil as MathUtil
 from Constants import *
@@ -16,7 +13,6 @@ from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import DoublePressHandler, Controller
 from VEXLib.Util import time, pass_function
 from VEXLib.Util.Buffer import Buffer
-from VEXLib.Util.Logging import Logger
 from WallStakeMechanism import WallStakeMechanism, WallStakeState
 from vex import Competition, PRIMARY, Rotation, Optical, Distance, DigitalOut, DEGREES, Color, FontType, \
     Inertial, Thread
@@ -67,7 +63,7 @@ class Robot(RobotBase):
             lambda: self.wall_stake_mechanism.transition_to(WallStakeState.DOCKED))
 
         self.user_preferences = DefaultPreferences
-        # TODO: This string slice is jank as hell, make auto class-based or something and implement a get_name or better yet __str__/__repr__ function
+        # TODO: This string slice is jank as hell, it's literally slicing the name from this: "<function some_function at 0x7b8b993a>" I should make auto class-based or something and implement a get_name or better yet __str__/__repr__ function
         self.autonomous_mappings = {str(function)[10:-14]: function for function in AutonomousRoutines.available_autos}
         self.autonomous = pass_function
         self.competition = Competition(self.on_driver_control, self.on_autonomous)
@@ -140,7 +136,7 @@ class Robot(RobotBase):
     def on_setup(self):
         # Break down the setup process into dedicated steps.
         self.calibrate_sensors()
-        self.align_robot()
+        self.align_robot(exit_condition=self.controller.buttonA.pressing)
         self.select_autonomous_and_drive_style()
         # self.main_log.info("Setup complete")
         # self.main_log.debug("Unlocking setup lock")
@@ -162,7 +158,7 @@ class Robot(RobotBase):
         # self.main_log.debug("Calibrated inertial sensor successfully")
 
     # @main_log.logged
-    def align_robot(self):
+    def align_robot(self, exit_condition):
         # self.main_log.info("Waiting for robot alignment")
         # Define target rotations using degrees.
         target_rotations = [
@@ -182,7 +178,7 @@ class Robot(RobotBase):
         self.log_and_print("Please line up robot...")
         self.log_and_print("The screen will turn green when properly aligned")
 
-        while not self.controller.buttonA.pressing():
+        while not exit_condition():
             # Get the current rotation as a Rotation2d object.
             current_rotation = self.drivetrain.odometry.get_rotation()
 
@@ -242,7 +238,7 @@ class Robot(RobotBase):
                 self.brain.screen.print("Lined Up :)")
             else:
                 self.brain.screen.set_cursor(1, 2)
-                self.brain.screen.print("Please Rotate")
+                self.brain.screen.print("Please Align")
 
             self.drivetrain.update_odometry()
             time.sleep_ms(20)
