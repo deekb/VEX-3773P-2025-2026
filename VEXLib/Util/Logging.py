@@ -81,7 +81,7 @@ class Logger:
         message = " ".join(map(str, parts)) + end
 
         start_time = time.time()
-        self.sd_card.appendfile(self.log_file_path, bytearray("<" + log_level + "> " + message))
+        self.sd_card.appendfile(self.log_file_path, bytearray("["+ str(time.time()) +"]" + "<" + log_level + "> " + message))
         end_time = time.time()
 
         elapsed_time = end_time - start_time
