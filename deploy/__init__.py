@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 import time
 from subprocess import CalledProcessError
@@ -24,7 +25,16 @@ parser.add_argument(
     "--no-push-lib", action="store_true", help="Skip pushing library files"
 )
 parser.add_argument(
-    "--no-push-deploy", action="store_true", help="Skip pushing deploy objects"
+    "--no-push-assets", action="store_true", help="Skip pushing additional assets"
+)
+parser.add_argument(
+    "--clear-logs", action="store_true", help="Clear the logs from the robot and the local logs before pushing"
+)
+parser.add_argument(
+    "--clear-robot-logs", action="store_true", help="Clear the logs from the robot /logs directory before pushing"
+)
+parser.add_argument(
+    "--clear-local-logs", action="store_true", help="Clear the logs from the local logs directory before pulling new logs"
 )
 parser.add_argument("--no-pull-logs", action="store_true", help="Skip pulling logs")
 parser.add_argument(
@@ -71,6 +81,20 @@ def copy_files_and_update_count(
             progress.update(task, advance=1)
 
 
+def clear_robot_logs(directory):
+    print(f"removing files recursively from directory: {directory}")
+
+
+def clear_local_logs(directory):
+    print(f"removing files recursively from directory: {directory}")
+    response = input("THIS WILL REMOVE ALL FILES IN THE DIRECTORY AND ITS SUBDIRECTORIES, ENTER Y TO CONTINUE: ")
+    if response.lower().strip() == "y":
+        os.unlink(directory)
+    else:
+        print("Aborting log removal, the upload will resume in 3 seconds...")
+        time.sleep(3)
+
+
 def main():
     with Progress() as progress:
         task = progress.add_task(
@@ -96,22 +120,27 @@ def main():
         vex_disk_path = vex_disk.path
         console.print(f"[bold green]Found VEX disk at {vex_disk_path}[/bold green]")
     total_files_deployed = 0
-    total_bytes_copied = 0
+    total_bytes_uploaded = 0
 
     total_files_pulled = 0
-    total_bytes_pulled = 0
+    total_bytes_downloaded = 0
 
     def update_deployed_count_and_size(deployed_count, deployed_size_bytes):
-        nonlocal total_files_deployed, total_bytes_copied
+        nonlocal total_files_deployed, total_bytes_uploaded
         total_files_deployed += deployed_count
-        total_bytes_copied += deployed_size_bytes
+        total_bytes_uploaded += deployed_size_bytes
 
     def update_pulled_count_and_size(deployed_count, deployed_size_bytes):
-        nonlocal total_files_pulled, total_bytes_pulled
+        nonlocal total_files_pulled, total_bytes_downloaded
         total_files_pulled += deployed_count
-        total_bytes_pulled += deployed_size_bytes
+        total_bytes_downloaded += deployed_size_bytes
 
     start_time = time.perf_counter()
+
+    if args.clear_logs or args.clear_robot_logs:
+        clear_robot_logs(LOCAL_LOGS_DIRECTORY)
+    if args.clear_logs or args.clear_local_logs:
+        clear_local_logs(LOCAL_LOGS_DIRECTORY)
 
     if not args.no_pull_logs:
         log_objects = scan_directory(
@@ -136,6 +165,7 @@ def main():
 
     if not args.no_push_lib:
         library_objects = scan_directory(VEXLIB_DIRECTORY, exclude_from_deploy)
+        print(POSIX_MOUNT_POINT_DIR)
         copy_files_and_update_count(
             library_objects,
             str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "VEXlib")),
@@ -143,11 +173,11 @@ def main():
             update_deployed_count_and_size,
         )
 
-    if not args.no_push_deploy:
+    if not args.no_push_assets:
         deploy_objects = scan_directory(ASSETS_DIRECTORY, exclude_from_deploy)
         copy_files_and_update_count(
             deploy_objects,
-            str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "deploy")),
+            str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "assets")),
             ASSETS_DIRECTORY,
             update_deployed_count_and_size,
         )
@@ -188,10 +218,10 @@ def main():
 
     # Final stats with color
     console.print(
-        f"[bold red]↑ Uploaded {total_files_deployed} files ({convert_size(total_bytes_copied)})[/bold red]"
+        f"[bold red]↑ Uploaded {total_files_deployed} files ({convert_size(total_bytes_uploaded)})[/bold red]"
     )
     console.print(
-        f"[bold blue]↓ Downloaded {total_files_pulled} files ({convert_size(total_bytes_pulled)})[/bold blue]"
+        f"[bold blue]↓ Downloaded {total_files_pulled} files ({convert_size(total_bytes_downloaded)})[/bold blue]"
     )
 
 

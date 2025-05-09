@@ -10,6 +10,7 @@ config.read(os.path.join(BASENAME, "config.ini"))
 
 
 SRC_DIRECTORY = os.path.abspath(config.get("Paths", "SRC_DIRECTORY"))
+LOCAL_LOGS_DIRECTORY = os.path.join(PROJECT_ROOT, "logs")
 ASSETS_DIRECTORY = os.path.abspath(config.get("Paths", "ASSETS_DIRECTORY"))
 VEXLIB_DIRECTORY = os.path.abspath(config.get("Paths", "VEXLIB_DIRECTORY"))
 POSIX_MOUNT_POINT_DIR = eval(config.get("Paths", "POSIX_MOUNT_POINT_DIR"))
