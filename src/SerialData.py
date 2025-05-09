@@ -1,5 +1,7 @@
 from math import log, ceil, floor
 
+from VEXLib.Util.CRC import crc_bytes
+
 
 class FrameType:
     CONFIGURATION = 0x1
@@ -129,18 +131,17 @@ class Frame:
         return output
 
 
-#
-# message = "this is my random message"
-#
-# frame = Frame(frame_header=split_int_to_bytes(0xEB90),
-#               frame_type=FrameType.DATA,
-#               data_length=len(message),
-#               frame_id=1,
-#               data=bytes(message, "ISO-8859-1"),
-#               crc_function=crc_bytes)
-#
-# frame_bytes = (frame.get_bytearray())
-# print(f"Message is {len(message)} bytes")
-# print(f"Frame is {len(frame_bytes)} bytes")
-# print(hex_format(frame_bytes))
-# print(frame_bytes)
+message = "this is my test message"
+
+frame = Frame(frame_header=split_int_to_bytes(0xEB90),
+              frame_type=FrameType.DATA,
+              data_length=len(message),
+              frame_id=1,
+              data=bytes(message, "ISO-8859-1"),
+              crc_function=crc_bytes)
+
+frame_bytes = (frame.get_bytearray())
+print(f"Message is {len(message)} bytes")
+print(f"Frame is {len(frame_bytes)} bytes")
+print(hex_format(frame_bytes))
+print(frame_bytes)
