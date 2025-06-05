@@ -1,9 +1,12 @@
+from vex import Brain
+
+
 class RobotBase:
     """
     This is the basic representation of a robot
     It has methods to be called when it is enabled and disabled
     """
-    def __init__(self, brain):
+    def __init__(self, brain: Brain):
         self.brain = brain
 
     def tick_handler(self):
