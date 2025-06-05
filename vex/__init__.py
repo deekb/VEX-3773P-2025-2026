@@ -1355,7 +1355,7 @@ class Brain:
 
     def __init__(self, *args):
         self._index = 31
-        self.screen = Brain.Lcd()
+        self.screen: Brain.Lcd = Brain.Lcd()
         """ An instance of the Lcd class"""
         self.timer = Timer()
         """ An instance of the Timer class"""
