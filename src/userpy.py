@@ -1,4 +1,4 @@
-"""8
+"""
 This file goes on the vex brain over a USB cable; the rest of the code can be pushed to an SD card using deploy.py
 """
 
@@ -14,6 +14,6 @@ if not brain.sdcard.is_inserted():
     brain.screen.clear_screen()
     brain.screen.set_cursor(1, 1)
 
-    import main
+import main
 
 main.main(brain, 1)  # Pass the brain to the main function to save GC some work
