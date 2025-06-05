@@ -9,6 +9,7 @@ from rich.progress import Progress
 
 from deploy.Constants import *
 from deploy.Utils import *
+from deploy.Utils import process_file_in_place, process_directory
 
 os.chdir(PROJECT_ROOT)
 
@@ -162,6 +163,9 @@ def main():
             SRC_DIRECTORY,
             update_deployed_count_and_size,
         )
+        # print("Processing output files for compatibility with python 2.7 (convert f-strings to .format calls)")
+        # process_directory(str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path)))
+        # print("Done!")
 
     if not args.no_push_lib:
         library_objects = scan_directory(VEXLIB_DIRECTORY, exclude_from_deploy)

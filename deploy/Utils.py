@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import time
 from typing import Optional
+import ast
 
 from deploy import POSIX_MOUNT_POINT_DIR, DEPLOY_EXCLUDE_REGEX
 
@@ -228,3 +229,39 @@ def convert_size(size_bytes: int) -> str:
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
     return f"{s} {size_name[i]}"
+
+
+class FStringToFormatTransformer(ast.NodeTransformer):
+    def visit_JoinedStr(self, node):
+        # Convert f-strings (JoinedStr) to .format() calls
+        format_string = ""
+        format_args = []
+        for value in node.values:
+            if isinstance(value, ast.Str):
+                format_string += value.s
+            elif isinstance(value, ast.FormattedValue):
+                format_string += "{}"
+                format_args.append(ast.unparse(value.value) if hasattr(ast, "unparse") else self._unparse(value.value))
+        format_call = "{}.format({})".format(
+            repr(format_string),
+            ", ".join(format_args)
+        )
+        return ast.parse(format_call).body[0].value
+
+
+def process_file_in_place(file_path):
+    with open(file_path, "r") as f:
+        source = f.read()
+    tree = ast.parse(source)
+    transformer = FStringToFormatTransformer()
+    transformed_tree = transformer.visit(tree)
+    transformed_code = ast.unparse(transformed_tree) if hasattr(ast, "unparse") else compile(transformed_tree, file_path, "exec")
+    with open(file_path, "w") as f:
+        f.write(transformed_code)
+
+
+def process_directory(directory):
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".py"):
+                process_file_in_place(os.path.join(root, file))
