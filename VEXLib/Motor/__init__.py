@@ -1,9 +1,10 @@
 import vex
+from vex import GearSetting
 from .Constants import *
 
 
 class Motor(vex.Motor):
-    def __init__(self, port, gear_ratio, inverted):
+    def __init__(self, port, gear_ratio=GearSetting.RATIO_18_1, inverted=False):
         super().__init__(port, gear_ratio, inverted)
 
     def set(self, power):
