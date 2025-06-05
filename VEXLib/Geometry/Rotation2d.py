@@ -107,6 +107,11 @@ class Rotation2d:
         """Create a Rotation2d object from an angle in revolutions."""
         return cls(angle_revolutions * 2 * math.pi)
 
+    @classmethod
+    def from_turns(cls, angle_turns):
+        """Create a Rotation2d object from an angle in turns (same as revolutions)."""
+        return cls.from_revolutions(angle_turns)
+
     def to_radians(self):
         """Return the angle in radians."""
         return self.angle_radians
