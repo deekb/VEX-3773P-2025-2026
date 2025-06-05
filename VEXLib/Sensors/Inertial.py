@@ -8,6 +8,7 @@ class DirectionType:
 
 
 class Inertial(vex.Inertial):
+    # TODO: Finish this before using
     def __init__(self, port):
         super().__init__(port)
         self.direction_correction_coefficient = 1
@@ -25,8 +26,8 @@ class Inertial(vex.Inertial):
     def set_counter_clockwise_positive(self):
         self.set_positive_direction(DirectionType.COUNTER_CLOCKWISE)
 
-    def set_zero_heading(self):
-        self.zero_heading_offset =
+    # def set_zero_heading(self):
+    #     self.zero_heading_offset =
 
     def calibrate(self, blocking=True):
         super().calibrate()
