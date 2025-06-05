@@ -258,8 +258,8 @@ class Drivetrain:
             is_turning_slowly_enough = abs(self.odometry.inertial_sensor.gyro_rate(ZAXIS)) < DrivetrainProperties.TURNING_VELOCITY_THRESHOLD.to_degrees()
             is_at_setpoint = self.rotation_PID.at_setpoint(threshold=self.TURNING_THRESHOLD.to_radians())
             wheels_are_moving = abs(self.get_right_speed().to_centimeters_per_second()) + abs(self.get_right_speed().to_centimeters_per_second()) > 5
-            # time_exceeded = (time.time() - start_time) < DrivetrainProperties.TURN_TIMEOUT_SECONDS
-            if is_at_setpoint and not wheels_are_moving:
+            time_exceeded = (time.time() - start_time) > DrivetrainProperties.TURN_TIMEOUT_SECONDS
+            if (is_at_setpoint and not wheels_are_moving) or time_exceeded:
                 break
         # if not self.rotation_PID.at_setpoint(
         #     threshold=self.TURNING_THRESHOLD.to_radians()
