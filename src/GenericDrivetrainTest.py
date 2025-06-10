@@ -5,8 +5,8 @@ from VEXLib.Geometry.GeometryUtil import arc_length_from_rotation, circle_circum
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance
 from VEXLib.Geometry.Velocity1d import Velocity1d
+from VEXLib.Kinematics import GenericDrivetrain, GenericWheel
 from VEXLib.Robot.RobotBase import RobotBase
-from VEXLib.Util.KinematicsUtil import GenericDrivetrain, GenericWheel
 from vex import Inertial, Ports, Motor, TURNS
 
 

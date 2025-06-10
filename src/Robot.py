@@ -260,7 +260,7 @@ class Robot(RobotBase):
         autonomous_routine = self.select_autonomous_routine()
         self.log_and_print("Selected autonomous routine:", autonomous_routine)
 
-        drive_style = self.controller.get_selection(["Dirk", "Dirk No color sort", "Derek"])
+        drive_style = self.controller.get_selection(["Colton", "Dirk", "Dirk No color sort"])
         self.log_and_print("Selected drive style:", drive_style)
 
         if drive_style == "Dirk":
@@ -269,9 +269,9 @@ class Robot(RobotBase):
         elif drive_style == "Dirk No color sort":
             self.user_preferences = DirkPreferencesNoColorSort
             self.setup_dirk_preferences()
-        elif drive_style == "Derek":
-            self.user_preferences = DerekPreferences
-            self.setup_derek_preferences()
+        elif drive_style == "Colton":
+            self.user_preferences = ColtonPreferences
+            self.setup_colton_preferences()
 
         self.log_and_print("Set up user preferences:", drive_style)
 
@@ -349,21 +349,6 @@ class Robot(RobotBase):
         self.controller.buttonB.pressed(
             lambda: [self.log_and_print("Toggling clamp"), self.mobile_goal_clamp.toggle_clamp()])
 
-        self.controller.buttonL2.pressed(lambda: [self.log_and_print("Outtake"), self.scoring_mechanism.outtake()])
-        self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
-        self.controller.buttonR2.pressed(lambda: [self.log_and_print("Intake"), self.scoring_mechanism.intake()])
-        self.controller.buttonR1.pressed(self.wall_stake_mechanism.next_state)
-        self.controller.buttonL1.pressed(self.double_press_handler.press)
-        self.controller.buttonR2.released(
-            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
-
-        self.controller.buttonRight.pressed(self.corner_mechanism.toggle_left_corner_mechanism)
-        self.controller.buttonY.pressed(self.corner_mechanism.toggle_right_corner_mechanism)
-
-    def setup_derek_preferences(self):
-        self.log_and_print("Setting up Derek Preferences")
-        self.controller.buttonB.pressed(self.mobile_goal_clamp.toggle_clamp)
-
         self.controller.buttonL2.pressed(self.scoring_mechanism.outtake)
         self.controller.buttonL2.released(self.scoring_mechanism.stop_motor)
         self.controller.buttonR2.pressed(self.scoring_mechanism.intake)
@@ -374,3 +359,33 @@ class Robot(RobotBase):
 
         self.controller.buttonRight.pressed(self.corner_mechanism.toggle_left_corner_mechanism)
         self.controller.buttonY.pressed(self.corner_mechanism.toggle_right_corner_mechanism)
+
+    def setup_colton_preferences(self):
+        self.log_and_print("Setting up Colton Preferences")
+        self.controller.buttonB.pressed(
+            self.corner_mechanism.toggle_right_corner_mechanism
+        )
+        self.controller.buttonDown.pressed(self.corner_mechanism.toggle_left_corner_mechanism)
+
+        self.controller.buttonY.pressed(self.mobile_goal_clamp.toggle_clamp)
+
+        self.controller.buttonR2.pressed(self.scoring_mechanism.outtake)
+        self.controller.buttonR2.released(self.scoring_mechanism.stop_motor)
+
+        self.controller.buttonL2.pressed(self.wall_stake_mechanism.next_state)
+        self.controller.buttonL1.pressed(self.double_press_handler.press)
+
+        self.controller.buttonR1.pressed(self.scoring_mechanism.intake)
+        self.controller.buttonR1.released(
+            lambda: self.scoring_mechanism.set_speed(-35) or time.sleep(0.05) or self.scoring_mechanism.stop_motor())
+
+        def change_kp(amount):
+            self.drivetrain.left_drivetrain_PID.pid_gains.kp += amount
+            self.drivetrain.right_drivetrain_PID.pid_gains.kp += amount
+            self.controller.screen.clear_screen()
+            self.controller.screen.set_cursor(1, 1)
+            self.controller.screen.print("KP:" + str(self.drivetrain.left_drivetrain_PID.pid_gains.kp))
+
+        self.controller.buttonLeft.pressed(lambda: change_kp(-0.005))
+        self.controller.buttonRight.pressed(lambda: change_kp(0.005))
+

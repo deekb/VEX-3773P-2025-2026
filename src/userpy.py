@@ -16,4 +16,4 @@ if not brain.sdcard.is_inserted():
 
 import main
 
-main.main(brain, 1)  # Pass the brain to the main function to save GC some work
+main.main(brain, "2025_debug")  # Pass the brain to the main function to save GC some work

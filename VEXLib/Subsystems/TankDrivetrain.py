@@ -17,10 +17,10 @@ from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Motor import Motor
 from VEXLib.Units import Units
-from VEXLib.Util import ContinuousTimer, time, pass_function
-from VEXLib.Util.Logging import Logger, TimeSeriesLogger
+from VEXLib.Util import ContinuousTimer, time
+from VEXLib.Util.Logging import TimeSeriesLogger
 from VEXLib.Util.motor_tests import collect_power_relationship_data
-from vex import DEGREES, Brain, ZAXIS, DPS, Thread
+from vex import DEGREES, ZAXIS, Thread
 
 
 # drivetrain_log = Logger(Brain().sdcard, Brain().screen, "Drivetrain")
