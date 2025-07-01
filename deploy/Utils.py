@@ -19,6 +19,8 @@ __all__ = [
     "convert_size",
     "find_vex_disk",
     "exclude_from_deploy",
+    "convert_fstrings_to_format_calls_in_place",
+    "convert_fstrings_to_format_calls_in_place_recursively"
 ]
 
 
@@ -249,7 +251,7 @@ class FStringToFormatTransformer(ast.NodeTransformer):
         return ast.parse(format_call).body[0].value
 
 
-def process_file_in_place(file_path):
+def convert_fstrings_to_format_calls_in_place(file_path):
     with open(file_path, "r") as f:
         source = f.read()
     tree = ast.parse(source)
@@ -260,8 +262,8 @@ def process_file_in_place(file_path):
         f.write(transformed_code)
 
 
-def process_directory(directory):
+def convert_fstrings_to_format_calls_in_place_recursively(directory):
     for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith(".py"):
-                process_file_in_place(os.path.join(root, file))
+                convert_fstrings_to_format_calls_in_place(os.path.join(root, file))
