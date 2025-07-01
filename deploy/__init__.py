@@ -1,5 +1,4 @@
 import argparse
-import os
 import sys
 import time
 from subprocess import CalledProcessError
@@ -9,7 +8,7 @@ from rich.progress import Progress
 
 from deploy.Constants import *
 from deploy.Utils import *
-from deploy.Utils import process_file_in_place, process_directory
+from deploy.Utils import convert_fstrings_to_format_calls_in_place, convert_fstrings_to_format_calls_in_place_recursively
 
 os.chdir(PROJECT_ROOT)
 
