@@ -1,0 +1,4 @@
+Files placed in this directory will be deployed to the SD-card into the
+'assets' directory in the root folder.
+
+TODO: Write a get_assets_directory function of some sort to get a proper path relative to the "assets" directory.

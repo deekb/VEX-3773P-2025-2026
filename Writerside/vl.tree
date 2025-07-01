@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE instance-profile
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
+
+<instance-profile id="vl"
+                 name="VEXLib"
+                 start-page="VEXLib.md">
+
+    <toc-element topic="VEXLib.md">
+        <toc-element topic="Geometry.md">
+            <toc-element topic="Translation1d.md"/>
+            <toc-element topic="Translation2d.md"/>
+            <toc-element topic="Rotation2d.md"/>
+            <toc-element topic="Pose2d.md"/>
+            <toc-element topic="GeometryUtil.md"/>
+        </toc-element>
+        <toc-element topic="Unit-Tests.md">
+            <toc-element topic="Structure1.md"/>
+            <toc-element topic="Best-Practices1.md"/>
+            <toc-element topic="Examples1.md"/>
+        </toc-element>
+    </toc-element>
+    <toc-element topic="starter-topic.md"/>
+</instance-profile>
