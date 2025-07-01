@@ -4,15 +4,12 @@ from vex import Brain
 class RobotBase:
     """
     This is the basic representation of a robot
-    It has methods to be called when it is enabled and disabled
+    It has a brain and methods to be called when it's state changes
     """
     def __init__(self, brain: Brain):
         self.brain = brain
 
-    def tick_handler(self):
-        self.periodic()
-
-    """Instant callbacks"""
+    """one-shot callbacks (each is run a maximum of once whenever the robot changes state)"""
 
     def on_setup(self):
         """
