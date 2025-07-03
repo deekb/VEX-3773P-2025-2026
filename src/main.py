@@ -1,8 +1,8 @@
-def main(brain, robot_id):
+def main(brain, robot_file):
 
-    if robot_id == "drivebase_test":
-        from DrivetrainOnlyRobot import Robot
-    else:
+    try:
+        exec("from %s import Robot".format(robot_file))
+    except ImportError:
         from Robot import Robot
 
     robot = Robot(brain)
