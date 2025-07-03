@@ -168,7 +168,6 @@ def main():
 
     if not args.no_push_lib:
         library_objects = scan_directory(VEXLIB_DIRECTORY, exclude_from_deploy)
-        print(POSIX_MOUNT_POINT_DIR)
         copy_files_and_update_count(
             library_objects,
             str(os.path.join(POSIX_MOUNT_POINT_DIR, vex_disk_path, "VEXlib")),

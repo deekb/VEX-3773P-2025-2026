@@ -1,10 +1,11 @@
 import io
 import sys
 
-from VEXLib.Robot.ScrollBufferedScreen import ScrollBufferedScreen
+from VEXLib.Robot.ScrollingScreen import ScrollingScreen
+from VEXLib.Util.Buffer import Buffer
 
 from Constants import *
-from Drivetrain import Drivetrain
+from VEXLib.Subsystems.TankDrivetrain import Drivetrain
 from VEXLib import Util
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Motor import Motor
@@ -37,7 +38,7 @@ class Robot(RobotBase):
             Inertial(Ports.PORT20),
             self.log_and_print)
 
-        self.screen = ScrollBufferedScreen(max_lines=20)
+        self.screen = ScrollingScreen(Buffer(20))
         self.main_log = main_log
         self.debug_log = debug_log
 
@@ -86,8 +87,6 @@ class Robot(RobotBase):
     def on_setup(self):
         # self.calibrate_sensors()
         self.main_log.info("Setup complete")
-
-        raise Exception("OH NO!")
         # self.auto_routine()
 
         # self.drivetrain.measure_properties()
