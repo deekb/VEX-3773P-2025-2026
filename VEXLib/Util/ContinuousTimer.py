@@ -1,9 +1,10 @@
-try:
-    # Try to import MicroPython library
-    import utime as _time
-except ImportError:
-    # Fallback to standard Python library
-    import time as _time
+from vex import Brain
+# try:
+# Try to import MicroPython library
+import utime as _time
+# except ImportError:
+#     # Fallback to standard Python library
+#     import time as _time
 
 from VEXLib.Units import Units
 
@@ -22,11 +23,7 @@ class TimeUtils:
         Function to get the current timer value in microseconds.
         Returns the timer ticks similar to `utime.ticks_us()`.
         """
-        if hasattr(_time, 'ticks_us'):
-            return _time.ticks_us()  # MicroPython function
-        else:
-            # Approximate for standard Python using time.time()
-            return int(_time.time() * 1_000_000)
+        Brain.timer.system_high_res()
 
     @staticmethod
     def sleep(seconds):
