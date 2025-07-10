@@ -1,4 +1,3 @@
-from CornerMechanism import Sides
 from VEXLib.Geometry.GeometryUtil import circle_circumference
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance

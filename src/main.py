@@ -1,11 +1,7 @@
 def main(brain, robot_file):
 
-    try:
-        exec("from %s import Robot".format(robot_file))
-    except ImportError:
-        from Robot import Robot
-
-    robot = Robot(brain)
+    robot_module = __import__(robot_file)
+    robot = robot_module.Robot(brain)
 
     robot.start()
 

@@ -16,4 +16,4 @@ if not brain.sdcard.is_inserted():
 
 import main
 
-main.main(brain, "Robot")  # Pass the brain to the main function to save GC some work
+main.main(brain, "TickBasedTestRobot")  # Pass the brain to the main function to save GC some work
