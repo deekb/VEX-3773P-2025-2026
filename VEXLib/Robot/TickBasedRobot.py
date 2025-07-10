@@ -21,11 +21,8 @@ class TickBasedRobot(RobotBase):
     def __init__(self, brain: Brain):
         super().__init__(brain)
 
-        # self.autonomous_thread = Thread(pass_function)
-        # self.driver_control_thread = Thread(pass_function)
-
-        # Create a new competition object
-        self._competition = Competition(self.on_driver_control, self.on_autonomous)
+        self.autonomous_thread = Thread(pass_function)
+        self.driver_control_thread = Thread(pass_function)
 
         self.state = DRIVER_CONTROL_DISABLED  # Initial state
         self.transitions = {DRIVER_CONTROL_DISABLED: self._from_driver_control_disabled,
@@ -143,17 +140,15 @@ class TickBasedRobot(RobotBase):
 
     def _from_driver_control_disabled(self, new_state: GameState):
         if new_state == DRIVER_CONTROL_ENABLED:
-            self.on_driver_control()
-        # elif new_state == AUTONOMOUS_CONTROL_ENABLED:
-        #     self._on_autonomous_internal()
+            self._on_driver_control_internal()
+        elif new_state == AUTONOMOUS_CONTROL_ENABLED:
+            self._on_autonomous_internal()
 
     def _from_autonomous_control_disabled(self, new_state: GameState):
-        ...
-        # if new_state == AUTONOMOUS_CONTROL_ENABLED:
-        #     self._on_autonomous_internal()
-        #     pass
-        # elif new_state == DRIVER_CONTROL_ENABLED:
-        #     self.on_driver_control()
+        if new_state == AUTONOMOUS_CONTROL_ENABLED:
+            self._on_autonomous_internal()
+        elif new_state == DRIVER_CONTROL_ENABLED:
+            self._on_driver_control_internal()
 
     def _from_driver_control_enabled(self, new_state: GameState):
         if new_state == DRIVER_CONTROL_DISABLED:
@@ -162,20 +157,20 @@ class TickBasedRobot(RobotBase):
             self.on_driver_control_disable()
         elif new_state == AUTONOMOUS_CONTROL_ENABLED:
             self.on_driver_control_disable()
-        #     self.on_disable()
-        #     self._on_autonomous_internal()
+            self.on_disable()
+            self._on_autonomous_internal()
 
     def _from_autonomous_control_enabled(self, new_state: GameState):
         if new_state == DRIVER_CONTROL_DISABLED:
-            # self.autonomous_thread.stop()
+            self.autonomous_thread.stop()
             self.on_autonomous_disable()
         elif new_state == DRIVER_CONTROL_ENABLED:
-            # self.autonomous_thread.stop()
+            self.autonomous_thread.stop()
             self.on_autonomous_disable()
             self.on_disable()
-            # self.on_driver_control()
+            self._on_driver_control_internal()
         elif new_state == AUTONOMOUS_CONTROL_DISABLED:
-            # self.autonomous_thread.stop()
+            self.autonomous_thread.stop()
             self.on_autonomous_disable()
 
     """Polling methods"""
@@ -190,7 +185,7 @@ class TickBasedRobot(RobotBase):
         """
         Get whether the robot is currently disabled
         """
-        return self.state.enabled == ENABLED.enabled == DISABLED
+        return self.state.enabled == DISABLED
 
     def is_driver_control(self):
         """
