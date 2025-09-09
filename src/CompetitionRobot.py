@@ -169,6 +169,7 @@ class Robot(RobotBase):
         if self.controller.buttonA.pressing():
             self.debug_mode = True
             self.controller.rumble("....")
+            robot_log.info("Debug mode enabled")
 
         robot_log.info("Setup complete")
         robot_log.debug("Unlocking setup lock")
