@@ -1,9 +1,24 @@
+import io
+import sys
+from logging import Logger
+
+
 def main(brain, robot_file):
+    main_log = Logger("logs/main")
+    try:
+        robot_module = __import__(robot_file)
+        robot = robot_module.Robot(brain)
 
-    robot_module = __import__(robot_file)
-    robot = robot_module.Robot(brain)
-
-    robot.start()
+        robot.start()
+    except Exception as e:
+        exception_buffer = io.StringIO()
+        sys.print_exception(e, exception_buffer)
+        for log_entry in exception_buffer.getvalue().split("\n"):
+            main_log.fatal(str(log_entry))
+            robot.brain.screen.print(str(log_entry))
+            robot.brain.screen.next_row()
+        main_log.flush_logs()
+        raise e
 
     # del robot  # Delete the robot instance
     #
