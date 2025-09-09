@@ -13,6 +13,7 @@ MAX_TIMER_VALUE = (2 ** 30)
 continuous_time_us = 0
 prev_timer_value_us = 0
 
+_brain = Brain()
 
 class TimeUtils:
     """Utility class to abstract time functions for compatibility."""
@@ -23,7 +24,7 @@ class TimeUtils:
         Function to get the current timer value in microseconds.
         Returns the timer ticks similar to `utime.ticks_us()`.
         """
-        Brain.timer.system_high_res()
+        _brain.timer.system_high_res()
 
     @staticmethod
     def sleep(seconds):
