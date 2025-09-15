@@ -1,7 +1,14 @@
 import vex
-from VEXLib.Math import apply_deadband, cubic_filter
+from VEXLib.Kinematics import desaturate_wheel_speeds
+from VEXLib.Math import apply_deadband, cubic_filter, MathUtil
 from VEXLib.Util import time
 from VEXLib.Util.time import wait_until, wait_until_not
+import collections
+
+class ControlStyles:
+    TANK = 1
+    ARCADE = 2
+    SPLIT_ARCADE = 3
 
 
 class DoublePressHandler:
@@ -167,6 +174,42 @@ class Controller(vex.Controller):
         """
         return self._get_raw_axis_value(self.axis2)
 
+    def left_stick_position(self):
+        """
+        Get the PROCESSED position of the left stick as a tuple (x, y).
+
+        Returns:
+            tuple: A tuple containing the processed X and Y values of the left stick.
+        """
+        return self.left_stick_x(), self.left_stick_y()
+
+    def left_stick_position_raw(self):
+        """
+        Get the RAW position of the left stick as a tuple (x, y).
+
+        Returns:
+            tuple: A tuple containing the raw X and Y values of the left stick.
+        """
+        return self.left_stick_x_raw(), self.left_stick_y_raw()
+
+    def right_stick_position(self):
+        """
+        Get the PROCESSED position of the right stick as a tuple (x, y).
+
+        Returns:
+            tuple: A tuple containing the processed X and Y values of the right stick.
+        """
+        return self.right_stick_x(), self.right_stick_y()
+
+    def right_stick_position_raw(self):
+        """
+        Get the RAW position of the right stick as a tuple (x, y).
+
+        Returns:
+            tuple: A tuple containing the raw X and Y values of the right stick.
+        """
+        return self.right_stick_x_raw(), self.right_stick_y_raw()
+
     def stick_values(self):
         """
         Get all PROCESSED stick values as a dictionary.
@@ -288,3 +331,114 @@ class Controller(vex.Controller):
                 question_index = 0
             elif question_index >= len(questions) - 1:
                 return selections
+
+    def get_wheel_speeds(self, control_style, drive_speed=1.0, turn_speed=1.0):
+        left_speed = right_speed = 0
+        if control_style == ControlStyles.TANK:
+            left_speed = self.left_stick_y()
+            right_speed = self.right_stick_y()
+        elif control_style == ControlStyles.ARCADE:
+            forward_speed = self.left_stick_y() * drive_speed
+            turn_speed = self.left_stick_x() * turn_speed
+            left_speed = forward_speed + turn_speed
+            right_speed = forward_speed - turn_speed
+        elif control_style == ControlStyles.SPLIT_ARCADE:
+            forward_speed = self.left_stick_y() * drive_speed
+            turn_speed = self.right_stick_x() * turn_speed
+            left_speed = forward_speed + turn_speed
+            right_speed = forward_speed - turn_speed
+
+        left_speed, right_speed = desaturate_wheel_speeds([left_speed, right_speed])
+        left_speed = MathUtil.clamp(left_speed, -1, 1)
+        right_speed = MathUtil.clamp(right_speed, -1, 1)
+
+        return left_speed, right_speed
+
+
+class ButtonComboHandler:
+    """
+    Handles mapping of button combinations (simultaneous or sequential) to callbacks.
+    """
+    def __init__(self, controller, combo_timeout=0.3):
+        """
+        Args:
+            controller: The vex.Controller instance.
+            combo_timeout: Max time (s) between sequential presses.
+        """
+        self.controller = controller
+        self.combo_timeout = combo_timeout
+        self.combos = []  # List of (combo_def, callback)
+        self.button_states = {}  # {button_name: (pressed, last_time)}
+        self.event_history = collections.deque(maxlen=10)  # (button_name, time, event_type)
+        self.button_map = {
+            "A": controller.buttonA,
+            "B": controller.buttonB,
+            "X": controller.buttonX,
+            "Y": controller.buttonY,
+            "Up": controller.buttonUp,
+            "Down": controller.buttonDown,
+            "Left": controller.buttonLeft,
+            "Right": controller.buttonRight,
+            # Add more as needed
+        }
+
+    def add_combo(self, combo, callback, simultaneous=False):
+        """
+        Register a combo.
+        Args:
+            combo: List of button names (e.g., ["A", "B"]) for simultaneous,
+                   or sequence (e.g., ["A", "B"]) for sequential.
+            callback: Function to call when combo is matched.
+            simultaneous: If True, combo is simultaneous; else sequential.
+        """
+        self.combos.append({
+            "combo": combo,
+            "callback": callback,
+            "simultaneous": simultaneous,
+        })
+
+    def update(self):
+        """
+        Call this in your main loop to check for combos.
+        """
+        now = time.time()
+        # Update button states and event history
+        for name, btn in self.button_map.items():
+            pressed = btn.pressing()
+            prev = self.button_states.get(name, (False, 0))
+            if pressed and not prev[0]:
+                self.event_history.append((name, now, "down"))
+                self.button_states[name] = (True, now)
+            elif not pressed and prev[0]:
+                self.event_history.append((name, now, "up"))
+                self.button_states[name] = (False, now)
+            else:
+                self.button_states[name] = (pressed, prev[1])
+
+        # Check combos
+        for combo_def in self.combos:
+            combo = combo_def["combo"]
+            if combo_def["simultaneous"]:
+                # All buttons must be pressed at the same time
+                if all(self.button_map[b].pressing() for b in combo):
+                    combo_def["callback"]()
+            else:
+                # Sequential: check event history for sequence within timeout
+                idx = len(self.event_history) - 1
+                matched = True
+                last_time = None
+                for b in reversed(combo):
+                    # Find last "down" event for this button
+                    while idx >= 0 and (self.event_history[idx][0] != b or self.event_history[idx][2] != "down"):
+                        idx -= 1
+                    if idx < 0:
+                        matched = False
+                        break
+                    t = self.event_history[idx][1]
+                    if last_time is not None and last_time - t > self.combo_timeout:
+                        matched = False
+                        break
+                    last_time = t
+                    idx -= 1
+                if matched:
+                    combo_def["callback"]()
