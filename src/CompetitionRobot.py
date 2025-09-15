@@ -1,7 +1,7 @@
 import io
 import math
 import sys
-from math import atan2
+from shelve import Shelf
 
 import VEXLib.Math.MathUtil as MathUtil
 from JoystickCalibration import normalize_joystick_input
@@ -16,9 +16,9 @@ from VEXLib.Util import time
 from VEXLib.Util.Buffer import Buffer
 from Intake import Intake
 from Logging import Logger
+from motor_analysis import collect_power_relationship_data
 from vex import (
     Competition,
-    PRIMARY,
     Color,
     FontType,
     Inertial,
@@ -26,14 +26,21 @@ from vex import (
 
 
 robot_log = Logger("logs/robot")
+persistent_variables = Shelf("logs/variable_shelf.csv")
+
+if persistent_variables.get("font", None) is None:
+    persistent_variables.set("font", FontType.MONO12)
+
 
 class Robot(RobotBase):
     def __init__(self, brain):
         robot_log.info("Robot __init__ called")
-        super().__init__(brain)
-        self.brain.screen.set_font(FontType.MONO12)
+        persistent_variables.set("startup_count", persistent_variables.get("startup_count", 0))
 
-        self.controller = Controller(PRIMARY)
+        super().__init__(brain)
+        self.brain.screen.set_font(persistent_variables.get("font"))
+
+        self.controller = Controller()
         self.drivetrain = Drivetrain(
             [
                 Motor(
@@ -98,7 +105,6 @@ class Robot(RobotBase):
         self.brain.screen.pressed(self.flush_all_logs)
 
         self.setup_complete = False
-        self.debug_mode = False
 
     def flush_all_logs(self):
         robot_log.info("Flushing all logs")
@@ -157,35 +163,48 @@ class Robot(RobotBase):
             robot_log.flush_logs()
             raise e
 
-    # @main_log.logged
+    @robot_log.logged
     def on_setup(self):
         robot_log.info("Robot on_setup called")
         # Break down the setup process into dedicated steps.
         # self.calibrate_sensors()
         self.align_robot()
         self.select_autonomous_and_drive_style()
-
-        time.sleep_ms(2000)
-        if self.controller.buttonA.pressing():
-            self.debug_mode = True
-            self.controller.rumble("....")
-            robot_log.info("Debug mode enabled")
-
         robot_log.info("Setup complete")
         robot_log.debug("Unlocking setup lock")
+
+        time.sleep(2)
+
+        if self.controller.buttonA.pressing():
+            with open("logs/left_drivetrain.csv", "w") as f:
+                f.flush()
+                f.close()
+            with open("logs/right_drivetrain.csv", "w") as f:
+                f.flush()
+                f.close()
+
+            collect_power_relationship_data("logs/left_drivetrain.csv", self.drivetrain.left_motors)
+            time.sleep(3)
+            collect_power_relationship_data("logs/right_drivetrain.csv", self.drivetrain.right_motors)
+
         self.setup_complete = True
+        # # Show the menu and keep it active after setup
+        # while True:
+        #     menu = MainMenuPage(self, self.controller)
+        #     menu.show()
+        #     # After any subpage, return to the main menu
 
     def calibrate_sensors(self):
         robot_log.info("Calibrating sensors")
         # Set initial sensor positions and calibrate mechanisms.
 
-        # self.main_log.debug("Calibrating inertial sensor")
-        # self.drivetrain.odometry.inertial_sensor.calibrate()
-        # while self.drivetrain.odometry.inertial_sensor.is_calibrating():
-        #     time.sleep_ms(5)
-        # self.main_log.debug("Calibrated inertial sensor successfully")
+        robot_log.debug("Calibrating inertial sensor")
+        self.drivetrain.odometry.inertial_sensor.calibrate()
+        while self.drivetrain.odometry.inertial_sensor.is_calibrating():
+            time.sleep_ms(5)
+        robot_log.debug("Calibrated inertial sensor successfully")
 
-    # @main_log.logged
+    @robot_log.logged
     def align_robot(self):
         robot_log.info("Aligning robot")
         robot_log.info("Waiting for robot alignment")
@@ -295,6 +314,7 @@ class Robot(RobotBase):
         # for message in self.drivetrain.measure_properties():
         #     self.log_and_print(message)
 
+    @robot_log.logged
     def on_driver_control(self):
         robot_log.trace("Driver control started")
         while not self.setup_complete and self.competition.is_driver_control():
@@ -325,7 +345,7 @@ class Robot(RobotBase):
         left_stick_x_processed, left_stick_y_processed = normalize_joystick_input(left_stick_x, left_stick_y)
 
         if hypotenuse(left_stick_x_processed, left_stick_y_processed) > 1:
-            angle = atan2(left_stick_y_processed, left_stick_x_processed)
+            angle = math.atan2(left_stick_y_processed, left_stick_x_processed)
             left_stick_x_processed = math.cos(angle)
             left_stick_y_processed = math.sin(angle)
 
@@ -338,6 +358,7 @@ class Robot(RobotBase):
         if self.controller.buttonX.pressing():
             self.drivetrain.measure_properties()
 
+    @robot_log.logged
     def setup_colton_preferences(self):
         robot_log.info("Setting up Colton preferences")
         self.controller.buttonL1.pressed(lambda: (self.intake.run_lower(-1.0), self.intake.run_bucket(1.0)))
@@ -345,10 +366,5 @@ class Robot(RobotBase):
         self.controller.buttonL2.pressed(lambda: (self.intake.run_lower(1.0), self.intake.run_bucket(-1.0)))
         self.controller.buttonL2.released(lambda: (self.intake.stop_lower(), self.intake.stop_bucket()))
 
-        self.controller.buttonR1.pressed(lambda: (self.intake.run_lower(-1.0), self.intake.run_bucket(-1.0), self.intake.run_upper(-1.0)))
-        self.controller.buttonR1.released(lambda: (self.intake.stop_lower(), self.intake.stop_bucket(), self.intake.stop_upper()))
-        self.controller.buttonR2.pressed(lambda: (self.intake.run_lower(-1.0), self.intake.run_bucket(-1.0), self.intake.run_upper(1.0)))
-        self.controller.buttonR2.released(lambda: (self.intake.stop_lower(), self.intake.stop_bucket(), self.intake.stop_upper()))
-
-        self.controller.buttonDown.pressed(lambda: self.intake.toggle_bucket_lock)
-        self.controller.buttonY.pressed(self.drivetrain.verify_speed_pid)
+        self.controller.buttonY.pressed(lambda: (self.intake.run_hood(1.0)))
+        self.controller.buttonB.pressed(lambda: (self.intake.run_hood(-1.0)))
