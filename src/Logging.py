@@ -107,3 +107,35 @@ class Logger:
     def warn(self, *parts): self.log(*parts, log_level=LogLevel.WARN)
     def error(self, *parts): self.log(*parts, log_level=LogLevel.ERROR)
     def fatal(self, *parts): self.log(*parts, log_level=LogLevel.FATAL)
+
+    def logged(self, func, log_level=LogLevel.TRACE):
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            if hasattr(func, "__name__"):
+                self.log("[" + str(format_time(start_time)) + "] \"" + func.__name__ + "\" called with args=" + str(
+                    args) + ", kwargs=" + str(kwargs), log_level=log_level)
+            else:
+                self.log("[" + str(format_time(start_time)) + "] \"" + str(func) + "\" called with args=" + str(
+                    args) + ", kwargs=" + str(kwargs), log_level=log_level)
+
+            output = func(*args, **kwargs)
+            end_time = time.time()
+            elapsed = end_time - start_time
+
+            if hasattr(func, "__name__"):
+                self.log("[" + str(format_time(end_time)) + "] \"" + func.__name__ + "\" finished in " + str(
+                    format_time(elapsed)) + " with output: " + str(output), log_level=log_level)
+            else:
+                self.log("[" + str(format_time(end_time)) + "] \"" + str(func) + "\" finished in " + str(
+                    format_time(elapsed)) + " with output: " + str(output), log_level=log_level)
+
+            return output
+
+        return wrapper
+
+def format_time(seconds):
+    millis = int((seconds % 1) * 1000)
+    seconds = int(seconds)
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return "{:02}:{:02}:{:02}.{:03}".format(hours, minutes, seconds, millis)
