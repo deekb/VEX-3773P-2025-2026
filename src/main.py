@@ -2,6 +2,8 @@ import io
 import sys
 from logging import Logger
 
+from vex import Brain
+
 
 def main(brain, robot_file):
     main_log = Logger("logs/main")
@@ -15,8 +17,8 @@ def main(brain, robot_file):
         sys.print_exception(e, exception_buffer)
         for log_entry in exception_buffer.getvalue().split("\n"):
             main_log.fatal(str(log_entry))
-            robot.brain.screen.print(str(log_entry))
-            robot.brain.screen.next_row()
+            brain.screen.print(str(log_entry))
+            brain.screen.next_row()
         main_log.flush_logs()
         raise e
 
