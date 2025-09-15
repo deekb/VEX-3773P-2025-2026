@@ -594,3 +594,29 @@ def smallest_angular_difference(current, target):
     elif angular_difference < -math.pi:
         angular_difference += tau
     return angular_difference
+
+
+def linspace(start, stop, num):
+    """
+    Generate a list of evenly spaced values over a specified interval.
+
+    Args:
+        start (float): The starting value of the sequence.
+        stop (float): The end value of the sequence.
+        num (int): Number of samples to generate. Must be >= 1.
+
+    Returns:
+        list[float]: A list of 'num' evenly spaced values from start to stop (inclusive).
+
+    Examples:
+        >>> linspace(0.0, 1.0, 5)
+        [0.0, 0.25, 0.5, 0.75, 1.0]
+        >>> linspace(2.0, 3.0, 3)
+        [2.0, 2.5, 3.0]
+        >>> linspace(5.0, 5.0, 1)
+        [5.0]
+    """
+    if num == 1:
+        return [start]
+    step = (stop - start) / (num - 1)
+    return [start + i * step for i in range(num)]
