@@ -12,7 +12,7 @@ class TankOdometry:
     the robot's pose (position and rotation) on a 2D plane using sensor inputs and geometric calculations.
     """
 
-    def __init__(self, inertial_sensor: Inertial, robot_relative_to_field_relative_rotation):
+    def __init__(self, inertial_sensor: Inertial, zero_rotation: Rotation2d):
         """
         Initializes the TankOdometry system.
 
@@ -31,7 +31,7 @@ class TankOdometry:
         self.pose = Pose2d.from_zero()
 
         # Rotation offset to align the inertial sensor's initial orientation with the robot's coordinate system
-        self.zero_rotation = Rotation2d()
+        self.zero_rotation = zero_rotation
 
     def update(self, left_rotation: Translation1d, right_rotation: Translation1d):
         """
@@ -91,3 +91,6 @@ class TankOdometry:
             Rotation2d: The current rotation of the robot.
         """
         return self.pose.rotation
+
+    def get_rotation_normalized(self):
+        return self.pose.rotation.normalize()
