@@ -19,7 +19,7 @@ from VEXLib.Motor import Motor
 from VEXLib.Units import Units
 from VEXLib.Util import time
 from VEXLib.Util.Logging import TimeSeriesLogger
-from VEXLib.Util.motor_tests import collect_power_relationship_data
+from VEXLib.Util.motor_analysis import collect_power_relationship_data
 from vex import DEGREES, Thread
 try:
     import os
@@ -63,7 +63,7 @@ class Drivetrain:
 
         self.odometry = TankOdometry(
             inertial_sensor,
-            DrivetrainProperties.ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION,
+            Rotation2d.from_degrees(180),
         )
         self.log.debug("Odometry initialized with inertial_sensor:", inertial_sensor)
 
@@ -88,10 +88,10 @@ class Drivetrain:
         )
 
         self.position_PID = PIDController(
-            DrivetrainProperties.POSITION_PID_GAINS, 0.02, 10
+            DrivetrainProperties.POSITION_PID_GAINS, 1e-5, 10
         )
         self.rotation_PID = PIDController(
-            DrivetrainProperties.ROTATION_PID_GAINS, 0.02, 10
+            DrivetrainProperties.ROTATION_PID_GAINS, 1e-5, 10
         )
         self.log.debug("Position and Rotation PID Controllers initialized with gains")
 
@@ -104,7 +104,7 @@ class Drivetrain:
         self.log.debug("Trapezoidal profile initialized")
 
         self.TURNING_THRESHOLD = DrivetrainProperties.TURNING_THRESHOLD
-        self.log.debug("Turning threshold set to ", self.TURNING_THRESHOLD)
+        self.log.debug("Turning threshold set to ", self.TURNING_THRESHOLD.to_degrees())
 
         self.target_pose = Pose2d(Translation2d(), self.odometry.zero_rotation)
         self.log.debug("Target pose initialized to", self.target_pose)
@@ -123,7 +123,7 @@ class Drivetrain:
         self.target_pose.translation += Translation2d(
             distance * rotation.cos(), distance * rotation.sin()
         )
-        self.log.debug("New target translation: {}".format(self.target_pose))
+        self.log.debug("New target translation: {} in".format(self.target_pose.translation.to_inches()))
 
     def get_distance_and_angle_from_position(self, target_translation: Translation2d):
         self.log.trace("Entering get_distance_and_angle_from_position")
@@ -236,6 +236,7 @@ class Drivetrain:
             Units.radians_to_degrees(angular_difference),
             "degrees",
         )
+        self.log.debug("New target heading", new_target_heading, "degrees")
 
         self.rotation_PID.setpoint = self.rotation_PID.setpoint + angular_difference
         self.update_odometry()
@@ -260,12 +261,15 @@ class Drivetrain:
             self.update_powers()
             self.update_odometry()
             # is_turning_slowly_enough = abs(self.odometry.inertial_sensor.gyro_rate(ZAXIS)) < DrivetrainProperties.TURNING_VELOCITY_THRESHOLD.to_degrees()
-            is_at_setpoint = self.rotation_PID.at_setpoint(threshold=self.TURNING_THRESHOLD.to_radians())
+            is_at_setpoint = self.rotation_PID.at_setpoint(self.odometry.get_rotation().to_radians(), threshold=self.TURNING_THRESHOLD.to_radians())
             wheels_are_moving = abs(self.get_right_speed().to_centimeters_per_second()) + abs(self.get_right_speed().to_centimeters_per_second()) > 5
             time_exceeded = (time.time() - start_time) > DrivetrainProperties.TURN_TIMEOUT_SECONDS
             if (is_at_setpoint and not wheels_are_moving) or time_exceeded:
+                drivetrain_log.info("Turn finished, at_setpoint: {}, wheels_are_moving: {}, time_exceeded: {}".format(is_at_setpoint, wheels_are_moving, time_exceeded))
+
                 break
         if not self.rotation_PID.at_setpoint(
+            self.odometry.get_rotation().to_radians(),
             threshold=self.TURNING_THRESHOLD.to_radians()
         ):
             self.log.warn(
@@ -298,12 +302,14 @@ class Drivetrain:
         stop_immediately=False,
         commands=None
     ):
+        self.position_PID.reset()
+        self.rotation_PID.reset()
         self.log.trace("Entering move_distance_towards_direction_trap")
         self.log.debug(
             "Driving",
             ("forwards" if distance.to_meters() > 0 else "backwards"),
-            distance.to_centimeters(),
-            "cm at",
+            distance.to_inches(),
+            "in at",
             direction_degrees,
             "degrees",
         )
@@ -371,6 +377,7 @@ class Drivetrain:
             self.update_odometry()
 
             at_setpoint = self.position_PID.at_setpoint(
+                distance_traveled,
                 DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters()
             )
 
@@ -394,9 +401,9 @@ class Drivetrain:
                 break
 
         self.log.debug(
-            "Remaining Distance: " + str(distance.to_meters() - distance_traveled)
+            "Remaining Distance: " + str(distance.to_inches() - Units.meters_to_inches(distance_traveled)) + " in"
         )
-        self.log.debug("Distance Traveled: " + str(distance_traveled))
+        self.log.debug("Distance Traveled: " + str(Units.meters_to_inches(distance_traveled)) + " in")
 
         self.set_speed_zero_to_one(0, 0)
         self.set_powers(0, 0)

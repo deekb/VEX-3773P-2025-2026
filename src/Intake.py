@@ -1,45 +1,75 @@
 from VEXLib.Motor import Motor
+from VEXLib.Util import time
+from vex import DigitalOut, TorqueUnits, PERCENT
+
 
 class Intake:
-    def __init__(self, lower_motor: Motor, upper_motor: Motor, bucket_motor: Motor):
-        self.lower_motor = lower_motor
-        self.upper_motor = upper_motor
-        self.bucket_motor = bucket_motor
-        self.bucket_locked = False  # Initialize bucket lock state
+    def __init__(self, upper_intake_motor: Motor, floating_intake_motor: Motor, hood_motor: Motor, piston: DigitalOut):
+        self.upper_intake_motor = upper_intake_motor
+        self.floating_intake_motor = floating_intake_motor
+        self.hood_motor = hood_motor
+        self.piston = piston
+        self.last_not_stalled_timestamp = time.time()
 
-    def run_lower(self, speed):
-        """Run the lower intake motor at a specified speed."""
-        self.lower_motor.set(speed)
+    def run_floating_intake(self, speed):
+        """Run the floating intake motor at a specified speed."""
+        self.floating_intake_motor.set(speed)
 
-    def stop_lower(self):
-        """Stop the lower intake motor."""
-        self.lower_motor.set(0)
+    def stop_floating_intake(self):
+        """Stop the floating intake motor"""
+        self.floating_intake_motor.set(0)
 
-    def run_upper(self, speed):
+    def run_upper_intake(self, speed):
         """Run the upper intake motor at a specified speed."""
-        self.upper_motor.set(speed)
+        self.upper_intake_motor.set(speed)
 
-    def stop_upper(self):
-        """Stop the upper intake motor."""
-        self.upper_motor.set(0)
+    def stop_upper_intake(self):
+        """Stop the upper intake motor"""
+        self.upper_intake_motor.set(0)
 
-    def run_bucket(self, speed):
-        """Run the bucket motor at a specified speed."""
-        if not self.bucket_locked:
-            self.bucket_motor.set(speed)
+    def run_hood(self, speed):
+        """Run the hood motor at a specified speed."""
+        self.hood_motor.set(speed)
 
-    def stop_bucket(self):
-        """Stop the bucket motor."""
-        self.bucket_motor.set(0)
+    def stop_hood(self):
+        """Stop the hood motor."""
+        self.hood_motor.set(0)
 
-    def toggle_bucket_lock(self):
-        """Toggle the bucket lock state."""
-        self.bucket_locked = not self.bucket_locked
-        if self.bucket_locked:
-            self.stop_bucket()
+    def run_intake(self, speed):
+        """Run the full intake motor at a specified speed."""
+        self.run_upper_intake(speed)
+        self.run_floating_intake(speed)
+        self.run_hood(speed)
 
-    def set_bucket_lock(self, locked: bool):
-        """Set the bucket to a locked state."""
-        self.bucket_locked = locked
-        if locked:
-            self.stop_bucket()
+    def stop_intake(self):
+        """Stop the full intake"""
+        self.run_upper_intake(0)
+        self.run_floating_intake(0)
+        self.run_hood(0)
+
+    def raise_intake(self):
+        """Raise the intake piston."""
+        self.piston.set(False)
+
+    def lower_intake(self):
+        """Lower the intake piston."""
+        self.piston.set(True)
+
+    def flaps_are_stalled(self):
+         # Stall if torque is high and velocity is low
+         torque_threshold = 1  # Adjust as needed
+         velocity_threshold = 10  # Adjust as needed
+
+         is_stalled = (
+             self.upper_intake_motor.get() != 0 and
+             self.upper_intake_motor.torque(TorqueUnits.NM) > torque_threshold and
+             abs(self.upper_intake_motor.velocity(PERCENT)) < velocity_threshold
+         )
+
+         current_time = time.time()
+         if not is_stalled:
+            self.last_not_stalled_timestamp = current_time
+
+         # Only report stall if the condition has persisted for at least 0.1s
+         stalled_duration = current_time - self.last_not_stalled_timestamp
+         return is_stalled and stalled_duration > 0.1

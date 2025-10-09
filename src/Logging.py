@@ -1,6 +1,8 @@
 import struct
 import json
 import sys
+from shelve import Shelf
+
 from VEXLib.Util import time
 
 class LogLevel:
@@ -28,40 +30,11 @@ def file_exists(filename):
     return Brain().sdcard.filesize(filename)
 
 class Logger:
-    _shared_index = None
-    _index_file = "index.json"
-
-    def __init__(self, log_name='main', flush_threshold=1024):
+    def __init__(self, log_name, index=None, flush_threshold=512):
         self.flush_threshold = flush_threshold
         self.log_buffer = bytearray()
-        self.current_index = self._get_or_create_shared_index(log_name)
+        self.current_index = (index if index is not None else Shelf("logs/startup_count.csv").get("startup_count", 0))
         self.log_file_path = "{log_name}-{index}.binlog".format(log_name=log_name, index=self.current_index)
-
-    @classmethod
-    def _get_or_create_shared_index(cls, log_name):
-        index_data = {}
-        if file_exists(cls._index_file):
-            try:
-                with open(cls._index_file, "r") as f:
-                    index_data = json.load(f)
-            except json.JSONDecodeError:
-                index_data = {}
-
-        if "index" in index_data:
-            index_data["index"] += 1
-        else:
-            index_data["index"] = 1
-
-        # if log_name in index_data:
-        #     index_data[log_name] += 1
-        # else:
-        #     index_data[log_name] = 1
-
-        with open(cls._index_file, "w") as f:
-            json.dump(index_data, f)
-
-        return index_data["index"]
-        # return index_data[log_name]
 
     def log(self, *parts, log_level=LogLevel.INFO):
         try:
