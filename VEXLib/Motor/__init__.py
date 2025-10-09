@@ -6,9 +6,14 @@ from .Constants import *
 class Motor(vex.Motor):
     def __init__(self, port, gear_ratio=GearSetting.RATIO_18_1, inverted=False):
         super().__init__(port, gear_ratio, inverted)
+        self._target_velocity = 0
 
     def set(self, power):
-        self.spin(vex.FORWARD, power * 12, vex.VOLT)
+        self._target_velocity = power
+        self.spin(vex.FORWARD, self._target_velocity * 12, vex.VOLT)
+
+    def get(self):
+        return self._target_velocity
 
 # class Motor:
 #     def __init__(self, port, gear_ratio=18, direction=FORWARD, run_mode=NONE):
