@@ -1,11 +1,18 @@
 import math
 import struct
 
+from VEXLib.Geometry.GeometryUtil import hypotenuse
+from VEXLib.Math import interpolate_2d
+
+PACKING_FORMAT_STRING = "ff"  # Packing/unpacking as two floats
+PACKING_FORMAT_RECORD_LENGTH = struct.calcsize(PACKING_FORMAT_STRING)
+
+
 # Load polar coordinates from the binary file
 polar_coordinates = []
 with open("assets/calibration_coefficients.bin", "rb") as file:
-    while chunk := file.read(8):  # Each record is 8 bytes (2 floats of 4 bytes each)
-        r, theta = struct.unpack("ff", chunk)
+    while chunk := file.read(PACKING_FORMAT_RECORD_LENGTH):
+        r, theta = struct.unpack(PACKING_FORMAT_STRING, chunk)
         polar_coordinates.append((r, theta))
 
 # Sort polar coordinates by theta
@@ -15,7 +22,7 @@ theta_values = [point[1] for point in polar_coordinates]
 print("Loaded {} polar coordinates from binary file.".format(len(polar_coordinates)))
 
 def cartesian_to_polar(x, y):
-    r = math.sqrt(x**2 + y**2)
+    r = hypotenuse(x, y)
     theta = math.atan2(y, x)
     return r, theta
 
@@ -36,6 +43,7 @@ def normalize_joystick_input(x, y):
 
         if theta_1 <= theta <= theta_2:
             # Perform linear interpolation
+            interpolate_2d(theta_1, theta_2, r_1, r_2, theta, allow_extrapolation=False)
             interpolated_r = r_1 + (r_2 - r_1) * (theta - theta_1) / (theta_2 - theta_1)
             break
     else:

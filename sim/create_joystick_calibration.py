@@ -1,13 +1,30 @@
 import math
 import struct
 
-# Plot the points in Cartesian coordinates
-x_values = eval(open("controller_x.txt").read())
-y_values = eval(open("controller_y.txt").read())
+import pandas as pd
+
+from VEXLib.Geometry.GeometryUtil import distance
+
+# # Plot the points in Cartesian coordinates
+# x_values = eval(open("controller_x.txt").read())
+# y_values = eval(open("controller_y.txt").read())
+
+df = pd.read_csv("left_stick_values.csv")
+
+# Ensure expected columns exist
+expected_cols = ["x", "y"]
+for col in expected_cols:
+    if col not in df.columns:
+        raise ValueError(f"Missing expected column in csv file: {col}")
+
+x_values = df["x"]
+y_values = df["y"]
+
+
 points = list(zip(x_values, y_values))
 
 # remove all points that are too close to the origin
-points = [(x, y) for x, y in points if math.sqrt(x**2 + y**2) > 0.5]
+points = [point for point in points if distance((0, 0), point) > 0.8]
 
 
 def cartesian_to_polar(x, y):
