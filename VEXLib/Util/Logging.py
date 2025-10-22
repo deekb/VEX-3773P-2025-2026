@@ -1,7 +1,7 @@
 import json
 import struct
 import sys
-from shelve import Shelf
+from VEXLib.Util.Shelf import Shelf
 
 from VEXLib.Util import time
 
