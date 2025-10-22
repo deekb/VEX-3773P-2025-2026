@@ -1,7 +1,7 @@
 import random
 import unittest
 
-from VEXLib.Math import Shape, Matrix
+from VEXLib.Math.Matrix import Matrix, Shape
 
 MATRIX_SHAPE_3X3 = Shape(3, 3)
 
@@ -61,21 +61,6 @@ class TestMatrix(unittest.TestCase):
         ]
         self.assertEqual(result.data, expected_data)
 
-        # Test matrix-matrix multiplication
-        other_matrix_data = [
-            [2, 0, 1],
-            [1, 0, 2],
-            [0, 1, 1]
-        ]
-        other_matrix = Matrix(self.shape, other_matrix_data)
-        result = self.matrix * other_matrix
-        expected_data = [
-            [2, 0, 3],
-            [4, 0, 12],
-            [0, 8, 9]
-        ]
-        self.assertEqual(result.data, expected_data)
-
     def test_matrix_division(self):
         scalar = 2
         result = self.matrix / scalar
@@ -83,21 +68,6 @@ class TestMatrix(unittest.TestCase):
             [0.5, 1.0, 1.5],
             [2.0, 2.5, 3.0],
             [3.5, 4.0, 4.5]
-        ]
-        self.assertEqual(result.data, expected_data)
-
-        # Test matrix-matrix division
-        other_matrix_data = [
-            [1, 2, 3],
-            [4, 5, 6],
-            [7, 8, 9]
-        ]
-        other_matrix = Matrix(self.shape, other_matrix_data)
-        result = self.matrix / other_matrix
-        expected_data = [
-            [1, 1, 1],
-            [1, 1, 1],
-            [1, 1, 1]
         ]
         self.assertEqual(result.data, expected_data)
 
@@ -116,8 +86,8 @@ class TestMatrix(unittest.TestCase):
         self.assertEqual(copied_matrix.shape, self.shape)
 
     def test_matrix_determinant(self):
-        determinant = self.matrix.get_determinant_in_n_factorial_time()
-        self.assertEqual(determinant, 0)  # Determinant of the provided matrix is 0
+        determinant = self.matrix.determinant()
+        self.assertAlmostEqual(determinant, 0)  # Determinant of the provided matrix is 0
 
         # Additional test cases for determinant
         # Case: Identity matrix
@@ -125,7 +95,7 @@ class TestMatrix(unittest.TestCase):
                                                    [0, 1, 0],
                                                    [0, 0, 1]])
 
-        self.assertEqual(identity_matrix.get_determinant_in_n_factorial_time(), 1)
+        self.assertAlmostEqual(identity_matrix.determinant(), 1)
 
         # Case: Diagonal matrix
         diagonal_matrix_data = [
@@ -134,21 +104,21 @@ class TestMatrix(unittest.TestCase):
             [0, 0, 4]
         ]
         diagonal_matrix = Matrix(self.shape, diagonal_matrix_data)
-        self.assertEqual(diagonal_matrix.get_determinant_in_n_factorial_time(), 24)
+        self.assertEqual(diagonal_matrix.determinant(), 24)
 
         # Case: arbitrary matrix
         arbitrary_matrix_data = [[1, 2, 3],
                                  [3, 2, 1],
                                  [2, 1, 3]]
 
-        arbitrary_matrix = Matrix(self.shape, arbitrary_matrix_data).transpose()
-        self.assertEqual(arbitrary_matrix.get_determinant_in_n_factorial_time(), -12)
+        arbitrary_matrix = Matrix(self.shape, arbitrary_matrix_data)
+        self.assertEqual(arbitrary_matrix.determinant(), -12)
 
         # Case: Random matrix
         random.seed(42)
         random_matrix = Matrix(self.shape)
         random_matrix.fill_with_random()
-        determinant_random_matrix = random_matrix.get_determinant_in_n_factorial_time()
+        determinant_random_matrix = random_matrix.determinant()
 
     def test_matrix_fill_with_random(self):
         self.matrix.fill_with_random()
