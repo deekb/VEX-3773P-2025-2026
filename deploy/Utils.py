@@ -96,12 +96,8 @@ def copy_if_changed(
             file_to_overwrite_checksum = get_checksum(target_path)
 
         if file_to_copy_checksum != file_to_overwrite_checksum:
-            if file_to_overwrite_checksum:
-                # print(f"{target_path} exists but has invalid checksum: {file_to_overwrite_checksum}, pushing")
-                if not dry_run:
-                    os.remove(target_path)
-            # else:
-            #     print(f"{target_path} does not exist, pushing")
+            if file_to_overwrite_checksum and not dry_run:
+                os.remove(target_path)
             if not dry_run:
                 shutil.copy(file, target_path)
             deployed_count += 1
