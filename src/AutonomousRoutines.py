@@ -2,11 +2,14 @@ import time
 
 from Logging import Logger
 from VEXLib.Algorithms.TrapezoidProfile import TrapezoidProfile, Constraints
+import math
 
 from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Translation1d
 from Constants import DrivetrainProperties
 from VEXLib.Geometry.Translation2d import Translation2d
+from VEXLib.Subsystems.TankDrivetrain import TimeBasedCommand
+from vex import Color
 
 if False:
     from CompetitionRobot import Robot
@@ -34,6 +37,9 @@ class AutonomousRoutine:
     def execute(self):
         return False
 
+    def set_acceleration_factor(self, factor):
+        self.robot.drivetrain.trapezoidal_profile.constraints.max_acceleration = DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * factor
+
     def cleanup(self):
         self.robot.drivetrain.init()
         self.robot.drivetrain.set_powers(0, 0)
@@ -55,11 +61,18 @@ class Skills(AutonomousRoutine):
 
     @staticmethod
     def startup_angle():
-        return Rotation2d.from_degrees(0)
+        return Rotation2d.from_degrees(180)
 
 
     def execute(self):
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), 0)
+        self.robot.intake.run_upper_intake(1)
+        self.robot.intake.run_floating_intake(1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 180, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-5), 180, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(10), 180, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-5), 180, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(10), 180, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-20), 180)
 
 class DriveForwardOneTile(AutonomousRoutine):
     name = "DriveForwardOneTile"
@@ -99,20 +112,34 @@ class LongGoalLow(AutonomousRoutine):
         return Rotation2d.from_degrees(-90)
 
     def execute(self):
-        self.robot.drivetrain.trapezoidal_profile = TrapezoidProfile(
-            Constraints(
-                DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(),
-                DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(),
-            )
-        )
+        self.set_acceleration_factor(1.2)
+
         self.robot.intake.raise_intake()
-        self.robot.intake.run_floating_intake(1)
+        self.robot.match_load_helper.extend()
+        self.robot.intake.run_floating_intake(0.5)
         self.robot.intake.run_upper_intake(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(32), -90)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(31), -90)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 180, max_extra_time=0)
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(1), 180, max_extra_time=0, turn_first=False)
+
+        self.robot.drivetrain.set_powers(0.2, 0.2)
+        time.sleep(0.2)
+        for _ in range(7):
+            self.robot.drivetrain.set_powers(0.2, 0.2)
+            time.sleep(0.2)
+            self.robot.drivetrain.set_powers(-0.2, -0.2)
+            time.sleep(0.1)
+        self.robot.drivetrain.set_powers(0, 0)
+
+        self.set_acceleration_factor(1.5)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-27), 180, max_extra_time=0, commands=[TimeBasedCommand(0.7, self.robot.match_load_helper.retract)])
+        self.set_acceleration_factor(1.2)
+
+        self.robot.intake.run_intake(1)
+        time.sleep(1.6)
+        self.robot.intake.stop_intake()
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(5), 180)
-        time.sleep(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-10), 180)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-25), 180)
+        self.robot.drivetrain.turn_to(Rotation2d.from_degrees(90))
         self.robot.intake.run_intake(1)
 
 
@@ -126,22 +153,36 @@ class LongGoalHigh(AutonomousRoutine):
         return Rotation2d.from_degrees(90)
 
     def execute(self):
-        self.robot.drivetrain.trapezoidal_profile = TrapezoidProfile(
-            Constraints(
-                DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(),
-                DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second(),
-            )
-        )
+        self.set_acceleration_factor(1.2)
 
         self.robot.intake.raise_intake()
-        self.robot.intake.run_floating_intake(1)
+        self.robot.match_load_helper.extend()
+        self.robot.intake.run_floating_intake(0.5)
         self.robot.intake.run_upper_intake(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(30), 90)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(5), 180)
-        time.sleep(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-10), 180)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-25), 180)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(31), 90)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), -180, max_extra_time=0)
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(1), -180, max_extra_time=0, turn_first=False)
+
+        self.robot.drivetrain.set_powers(0.2, 0.2)
+        time.sleep(0.2)
+        for _ in range(7):
+            self.robot.drivetrain.set_powers(0.2, 0.2)
+            time.sleep(0.2)
+            self.robot.drivetrain.set_powers(-0.2, -0.2)
+            time.sleep(0.1)
+        self.robot.drivetrain.set_powers(0, 0)
+
+        self.set_acceleration_factor(1.5)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-27), -180, max_extra_time=0, commands=[TimeBasedCommand(0.7, self.robot.match_load_helper.retract)])
+        self.set_acceleration_factor(1.2)
+
         self.robot.intake.run_intake(1)
+        time.sleep(1.6)
+        self.robot.intake.stop_intake()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(5), 180)
+        self.robot.drivetrain.turn_to(Rotation2d.from_degrees(-90))
+        self.robot.intake.run_intake(1)
+
 
 class SimpleLow(AutonomousRoutine):
     name = "Simple Low"
@@ -164,10 +205,12 @@ class SimpleLow(AutonomousRoutine):
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-41), 52)
         self.robot.intake.run_upper_intake(1)
         self.robot.intake.run_floating_intake(1)
+        self.robot.match_load_helper.extend()
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 175)
         time.sleep(1)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-24), 175)
         self.robot.intake.run_intake(1)
+
 
 class SimpleHigh(AutonomousRoutine):
     name = "Simple High"
@@ -193,6 +236,7 @@ class SimpleHigh(AutonomousRoutine):
         self.robot.intake.raise_intake()
         self.robot.intake.run_upper_intake(1)
         self.robot.intake.run_floating_intake(1)
+        self.robot.match_load_helper.extend()
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 180)
         time.sleep(1)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-27), 180)
@@ -239,4 +283,67 @@ class TurnTest(AutonomousRoutine):
         autonomous_log.flush_logs()
 
 
-all_routines = [LongGoalLow, LongGoalHigh, SimpleLow, SimpleHigh, DoNothingAutonomous]
+class WinPoint(AutonomousRoutine):
+    name = "Win Point"
+    def __init__(self, robot: Robot):
+        super().__init__(robot)
+        self.robot.brain.screen.draw_rectangle(1, 1, 50, 50, Color.RED)
+
+    @staticmethod
+    def startup_angle():
+        return Rotation2d.from_degrees(-90)
+
+    def cleanup(self):
+        self.robot.brain.screen.draw_rectangle(1, 1, 50, 50, Color.RED)
+
+    def execute(self):
+        self.robot.drivetrain.trapezoidal_profile.constraints.max_velocity = DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second()
+        self.set_acceleration_factor(1.2)
+
+        self.robot.intake.raise_intake()
+
+        self.robot.intake.run_floating_intake(0.5)
+        self.robot.intake.run_upper_intake(1)
+        self.robot.brain.screen.draw_rectangle(1, 1, 50, 50, Color.GREEN)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(31), -90)
+        self.robot.drivetrain.turn_to(Rotation2d.from_degrees(180))
+        self.robot.match_load_helper.extend()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 180, max_extra_time=0, turn_first=False)
+
+        for _ in range(6):
+            self.robot.drivetrain.set_powers(0.1, 0.1)
+            time.sleep(0.25)
+            self.robot.drivetrain.set_powers(-0.1, -0.1)
+            time.sleep(0.1)
+
+        self.robot.drivetrain.set_powers(0, 0)
+
+        self.set_acceleration_factor(1.5)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-27), 180, max_extra_time=0, commands=[TimeBasedCommand(0.7, self.robot.match_load_helper.retract),
+                                                                                                                                    TimeBasedCommand(-0.2, lambda: self.robot.intake.run_intake(1))])
+        self.set_acceleration_factor(1.2)
+
+        # self.robot.intake.run_intake(1)
+        time.sleep(1)
+        self.robot.intake.stop_hood()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(10), 180)
+        self.robot.intake.lower_intake()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(63), 76)
+        self.set_acceleration_factor(1.5)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 76, turn_first=False)
+        self.set_acceleration_factor(4)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-8), 133)
+        self.set_acceleration_factor(1.2)
+
+        self.robot.intake.run_intake(1)
+        time.sleep(0.6)
+        # self.robot.intake.run_hood(-0.5)
+        self.robot.intake.stop_hood()
+        self.robot.intake.raise_intake()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(44), 135)
+        self.robot.intake.stop_hood()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-20), 180, commands=[TimeBasedCommand(-0.3, lambda: self.robot.intake.run_intake(1))])
+        self.robot.intake.run_intake(1)
+        self.robot.brain.screen.draw_rectangle(1, 1, 50, 50, Color.YELLOW)
+
+all_routines = [WinPoint, Skills, LongGoalLow, LongGoalHigh, SimpleLow, SimpleHigh, DoNothingAutonomous]
