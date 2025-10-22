@@ -8,6 +8,7 @@ from Logging import Logger
 startup_count = Shelf("logs/startup_count.csv")
 startup_count.set("startup_count", startup_count.get("startup_count", -1) + 1)
 robot_log = Logger("logs/robot")
+telemetry_log = Logger("logs/telemetry")
 
 import io
 import math
@@ -28,7 +29,18 @@ from VEXLib.Util.Buffer import Buffer
 from Intake import Intake
 from AutonomousRoutines import DoNothingAutonomous, all_routines, Skills
 from VEXLib.Util.motor_analysis import collect_power_relationship_data
-from vex import Competition, Color, FontType, Inertial, DigitalOut, DEGREES
+from vex import (
+    Competition,
+    Color,
+    FontType,
+    Inertial,
+    DigitalOut,
+    DEGREES,
+    TemperatureUnits,
+    VoltageUnits,
+    CurrentUnits,
+    PERCENT,
+)
 
 SmartPorts = CompetitionSmartPorts
 
@@ -41,6 +53,9 @@ class Robot(RobotBase):
         self.brain.screen.set_font(FontType.MONO12)
 
         self.controller = Controller()
+        self.controller.add_deadband_step(0.05)
+        # self.controller.add_cubic_step()
+
         self.drivetrain = Drivetrain(
             [
                 Motor(
@@ -80,13 +95,15 @@ class Robot(RobotBase):
 
         self.driver_rotation_pid = PIDController(PIDGains(3, 0, 0))
 
-        self.match_load_helper = MatchLoadHelper(DigitalOut(ThreeWirePorts.SCORING_SOLENOID))
-
         self.intake = Intake(
             Motor(SmartPorts.UPPER_INTAKE_MOTOR, GearRatios.INTAKE, True),
             Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.INTAKE, False),
             Motor(SmartPorts.HOOD_MOTOR, GearRatios.HOOD, False),
             DigitalOut(ThreeWirePorts.SCORING_SOLENOID),
+        )
+
+        self.match_load_helper = MatchLoadHelper(
+            DigitalOut(ThreeWirePorts.MATCH_LOAD_HELPER_SOLENOID)
         )
 
         self.screen = ScrollingScreen(self.brain.screen, Buffer(20))
@@ -102,6 +119,7 @@ class Robot(RobotBase):
         self.brain.screen.pressed(self.flush_all_logs)
 
         self.setup_complete = False
+        self.iteration_count = 0
 
     def flush_all_logs(self, message="Screen pressed; flushing logs manually"):
         robot_log.info("Flushing all logs")
@@ -137,9 +155,10 @@ class Robot(RobotBase):
             return autonomous_type
 
         selected_auto = self.controller.get_selection([auto.name for auto in self.available_autonomous_routines])
-        angles_inverted = autonomous_type == "blue"
-        self.drivetrain.set_angles_inverted(angles_inverted)
-        robot_log.trace("set_angles_inverted:", angles_inverted)
+        # angles_inverted = autonomous_type == "blue"
+        self.drivetrain.set_angles_inverted(False) # Hardcoded to False because of how the field is set up this year
+        # robot_log.trace("set_angles_inverted:", angles_inverted)
+        robot_log.trace("set_angles_inverted:", False)
 
         for autonomous in self.available_autonomous_routines:
             if selected_auto == autonomous.name:
@@ -308,9 +327,10 @@ class Robot(RobotBase):
 
     @robot_log.logged
     def on_driver_control(self):
+        self.selected_autonomous.cleanup()
         self.flush_all_logs("Flushing logs before driver control")
-        self.drivetrain.left_drivetrain_PID.pid_gains = self.user_preferences.PIDF_GAINS
-        self.drivetrain.right_drivetrain_PID.pid_gains = self.user_preferences.PIDF_GAINS
+        self.drivetrain.left_drivetrain_PID.pid_gains = self.user_preferences.PIDF_GAINS_LEFT
+        self.drivetrain.right_drivetrain_PID.pid_gains = self.user_preferences.PIDF_GAINS_RIGHT
         robot_log.trace("Driver control started")
         self.intake.stop_intake()
         self.intake.stop_hood()
@@ -331,7 +351,22 @@ class Robot(RobotBase):
         self.drivetrain.rotation_PID.setpoint = self.drivetrain.target_pose.rotation.to_radians()
         self.selected_autonomous.execute()
 
+    def log_telemetry(self):
+        self.iteration_count += 1
+        if self.iteration_count % 100 == 0:
+            telemetry_log.info("Telemetry at iteration", self.iteration_count)
+            telemetry_log.info("Time: ", time.time())
+            telemetry_log.info("Drivetrain Pose:", self.drivetrain.odometry.pose)
+            telemetry_log.info("Left Motor temps:", [motor.temperature(TemperatureUnits.CELSIUS) for motor in self.drivetrain.left_motors])
+            telemetry_log.info("Right Motor temps:", [motor.temperature(TemperatureUnits.CELSIUS) for motor in self.drivetrain.right_motors])
+            telemetry_log.info("Battery Voltage:", self.brain.battery.voltage(VoltageUnits.VOLT))
+            telemetry_log.info("Battery Temperature:", self.brain.battery.temperature(TemperatureUnits.CELSIUS))
+            telemetry_log.info("Battery Current:", self.brain.battery.current(CurrentUnits.AMP))
+            telemetry_log.info("Battery Capacity:", self.brain.battery.capacity())
+            telemetry_log.flush_logs()
+
     def driver_control_periodic(self):
+        self.log_telemetry()
         left_speed, right_speed = self.controller.get_wheel_speeds(self.user_preferences.CONTROL_STYLE)
 
         # target_forward_speed = self.controller.left_stick_y_raw()
@@ -379,6 +414,7 @@ class Robot(RobotBase):
             self.brain.screen.draw_pixel(left_stick_x_processed * 100 + 360, -left_stick_y_processed * 100 + 120)
             # robot_log.info("Wheel Speeds Linear: " + str(self.drivetrain.get_speeds()))
 
+        self.ensure_match_loader_in_size()
         # self.intake.flaps_are_stalled()
         # if self.controller.buttonL1.pressing():
         #     if self.intake.flaps_are_stalled():
@@ -436,6 +472,12 @@ class Robot(RobotBase):
         #     time.sleep(3)
         #     mass += 100
 
+    def ensure_match_loader_in_size(self):
+        if self.intake.piston.value() and self.match_load_helper.piston.value():
+            self.match_load_helper.retract()
+            robot_log.warn("Retracting match load helper because intake is down")
+            self.controller.rumble("..")
+
     @robot_log.logged
     def setup_default_bindings(self):
         robot_log.info("Setting up default controller bindings")
@@ -463,8 +505,15 @@ class Robot(RobotBase):
 
         self.controller.buttonL1.pressed(lambda: self.intake.run_intake(1.0))
         self.controller.buttonL1.released(self.intake.stop_intake)
-        self.controller.buttonX.pressed(self.intake.raise_intake)
-        self.controller.buttonY.pressed(self.intake.lower_intake)
+
+        # self.controller.buttonX.pressed(self.intake.raise_intake)
+        # self.controller.buttonY.pressed(self.intake.lower_intake)
+
+        self.controller.buttonY.pressed(self.intake.toggle_intake_piston)
+
+        self.controller.buttonX.pressed(self.match_load_helper.extend)
+        self.controller.buttonX.released(self.match_load_helper.retract)
+
         #
         # self.controller.buttonY.pressed(lambda: (self.intake.run_hood(1.0)))
         # self.controller.buttonB.pressed(lambda: (self.intake.run_hood(-1.0)))

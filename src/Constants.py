@@ -26,7 +26,8 @@ class DefaultPreferences:
     TURN_SPEED = 1.0
     DO_TURN_DECAY = False
     USE_PIDF_CONTROL = False
-    PIDF_GAINS = PIDFGains(0.0, 0, 0, 0.6)
+    PIDF_GAINS_LEFT = PIDFGains(0.03, 0, 0, 0.6)
+    PIDF_GAINS_RIGHT = PIDFGains(0.03, 0, 0, 0.63)
     ENABLE_DRIVING = True
     INPUT_DEBUG_MODE = False
 
@@ -34,7 +35,7 @@ class DefaultPreferences:
 class ColtonPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
     CUBIC_FILTER_LINEARITY = 1
-    USE_PIDF_CONTROL = False
+    USE_PIDF_CONTROL = True
 
 class DebugPreferences(DefaultPreferences):
     CONTROL_STYLE = ControlStyles.SPLIT_ARCADE
