@@ -1,13 +1,30 @@
+import io
+import sys
+from VEXLib.Util.Logging import Logger
+
+
 def main(brain, robot_file):
-
+    error_log = Logger("logs/error", 0)
+    error_log.info("Starting Robot")
+    error_log.flush_logs()
     try:
-        exec("from %s import Robot".format(robot_file))
-    except ImportError:
-        from Robot import Robot
+        error_log.info("Importing Robot class from {}".format(robot_file))
+        error_log.flush_logs()
+        robot_module = __import__(robot_file)
+        robot = robot_module.Robot(brain)
 
-    robot = Robot(brain)
-
-    robot.start()
+        robot.start()
+    except Exception as e:
+        error_log.error("Failed to import Robot class from {}".format(robot_file))
+        error_log.flush_logs()
+        exception_buffer = io.StringIO()
+        sys.print_exception(e, exception_buffer)
+        for log_entry in exception_buffer.getvalue().split("\n"):
+            error_log.fatal(str(log_entry))
+            brain.screen.print(str(log_entry))
+            brain.screen.next_row()
+        error_log.flush_logs()
+        raise e
 
     # del robot  # Delete the robot instance
     #
