@@ -55,6 +55,10 @@ class Intake:
         """Lower the intake piston."""
         self.piston.set(True)
 
+    def toggle_intake_piston(self):
+        """Toggle the intake piston."""
+        self.piston.set(not self.piston.value())
+
     def flaps_are_stalled(self):
          # Stall if torque is high and velocity is low
          torque_threshold = 1  # Adjust as needed
