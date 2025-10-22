@@ -18,14 +18,9 @@ from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Motor import Motor
 from VEXLib.Units import Units
 from VEXLib.Util import time
-from VEXLib.Util.Logging import TimeSeriesLogger
+from VEXLib.Util.Logging import Logger, TimeSeriesLogger
 from VEXLib.Util.motor_analysis import collect_power_relationship_data
 from vex import DEGREES, Thread
-try:
-    import os
-    from src.Logging import Logger
-except ImportError:
-    from Logging import Logger
 
 
 drivetrain_log = Logger("logs/Drivetrain")
@@ -300,7 +295,8 @@ class Drivetrain:
         turn_first=True,
         turn_correct=True,
         stop_immediately=False,
-        commands=None
+        commands=None,
+        max_extra_time=DrivetrainProperties.MOVEMENT_MAX_EXTRA_TIME
     ):
         self.position_PID.reset()
         self.rotation_PID.reset()
@@ -387,7 +383,7 @@ class Drivetrain:
                 )
             else:
                 time_exceeded = (
-                    elapsed_time >= total_time + DrivetrainProperties.MOVEMENT_MAX_EXTRA_TIME
+                    elapsed_time >= total_time + max_extra_time
                 )
             if elapsed_time >= total_time and (at_setpoint or time_exceeded):
                 self.log.debug(

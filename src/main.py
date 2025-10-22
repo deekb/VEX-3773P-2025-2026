@@ -1,8 +1,6 @@
 import io
 import sys
-from logging import Logger
-
-from vex import Brain
+from VEXLib.Util.Logging import Logger
 
 
 def main(brain, robot_file):

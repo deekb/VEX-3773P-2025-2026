@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from VEXLib.Math import Shape
+from VEXLib.Math.Matrix import Shape
 
 
 def create_shape_with_invalid_size():
