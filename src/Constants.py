@@ -78,8 +78,6 @@ class CompetitionSmartPorts:
     INERTIAL_SENSOR = Ports.PORT11
 
 class ThreeWirePorts:
-    """Scoring Mechanism"""
-
     brain = Brain()
     SCORING_SOLENOID = brain.three_wire_port.a
     MATCH_LOAD_HELPER_SOLENOID = brain.three_wire_port.b
@@ -93,17 +91,17 @@ class GearRatios:
 
 class DrivetrainProperties:
     # PID gains
-    LEFT_PIDF_GAINS = PIDFGains(0.2, 0, 0, 0.6)
-    RIGHT_PIDF_GAINS = PIDFGains(0.2, 0, 0, 0.6)
+    LEFT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.6)
+    RIGHT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.63)
 
-    POSITION_PID_GAINS = PIDGains(6, 1, 0)
+    POSITION_PID_GAINS = PIDGains(6, 0.6, 0)
     ROTATION_PID_GAINS = PIDGains(0.62, 0.0, 0.01)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
-    TURN_TIMEOUT_SECONDS = 2
-    TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.4
+    TURN_TIMEOUT_SECONDS = 1
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.6
     TURNING_THRESHOLD = Rotation2d.from_degrees(2)
-    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.7)
+    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.5)
     MOVEMENT_MAX_EXTRA_TIME = 0.2
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.77)
     MOTOR_TO_WHEEL_GEAR_RATIO = 36 / 60
