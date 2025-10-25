@@ -1,8 +1,8 @@
 from VEXLib.Algorithms.PID import PIDController
-from VEXLib.Algorithms.PIDF import PIDFController
 from VEXLib.Geometry.Translation2d import Translation2d
 from shelve import Shelf
 from Logging import Logger
+from DescoringArm import DescoringArm
 
 # This gets done first so any loggers that are created during imports use the updated index
 startup_count = Shelf("logs/startup_count.csv")
@@ -106,6 +106,10 @@ class Robot(RobotBase):
             DigitalOut(ThreeWirePorts.MATCH_LOAD_HELPER_SOLENOID)
         )
 
+        self.descoring_arm = DescoringArm(
+            DigitalOut(ThreeWirePorts.DESCORING_ARM_SOLENOID)
+        )
+
         self.screen = ScrollingScreen(self.brain.screen, Buffer(20))
         self.alliance_color = None
 
@@ -155,9 +159,7 @@ class Robot(RobotBase):
             return autonomous_type
 
         selected_auto = self.controller.get_selection([auto.name for auto in self.available_autonomous_routines])
-        # angles_inverted = autonomous_type == "blue"
         self.drivetrain.set_angles_inverted(False) # Hardcoded to False because of how the field is set up this year
-        # robot_log.trace("set_angles_inverted:", angles_inverted)
         robot_log.trace("set_angles_inverted:", False)
 
         for autonomous in self.available_autonomous_routines:
@@ -218,6 +220,7 @@ class Robot(RobotBase):
         while self.drivetrain.odometry.inertial_sensor.is_calibrating():
             time.sleep_ms(5)
         robot_log.debug("Calibrated inertial sensor successfully")
+        time.sleep(2)
         self.controller.rumble("..")
 
     @robot_log.logged
@@ -506,14 +509,10 @@ class Robot(RobotBase):
         self.controller.buttonL1.pressed(lambda: self.intake.run_intake(1.0))
         self.controller.buttonL1.released(self.intake.stop_intake)
 
-        # self.controller.buttonX.pressed(self.intake.raise_intake)
-        # self.controller.buttonY.pressed(self.intake.lower_intake)
 
         self.controller.buttonY.pressed(self.intake.toggle_intake_piston)
 
-        self.controller.buttonX.pressed(self.match_load_helper.extend)
-        self.controller.buttonX.released(self.match_load_helper.retract)
+        self.controller.buttonB.pressed(self.match_load_helper.extend)
+        self.controller.buttonB.released(self.match_load_helper.retract)
 
-        #
-        # self.controller.buttonY.pressed(lambda: (self.intake.run_hood(1.0)))
-        # self.controller.buttonB.pressed(lambda: (self.intake.run_hood(-1.0)))
+        self.controller.buttonDown.pressed(self.descoring_arm.toggle)

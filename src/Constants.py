@@ -27,7 +27,7 @@ class DefaultPreferences:
     DO_TURN_DECAY = False
     USE_PIDF_CONTROL = False
     PIDF_GAINS_LEFT = PIDFGains(0.03, 0, 0, 0.6)
-    PIDF_GAINS_RIGHT = PIDFGains(0.03, 0, 0, 0.63)
+    PIDF_GAINS_RIGHT = PIDFGains(0.03, 0, 0, 0.61)
     ENABLE_DRIVING = True
     INPUT_DEBUG_MODE = False
 
@@ -81,6 +81,7 @@ class ThreeWirePorts:
     brain = Brain()
     SCORING_SOLENOID = brain.three_wire_port.a
     MATCH_LOAD_HELPER_SOLENOID = brain.three_wire_port.b
+    DESCORING_ARM_SOLENOID = brain.three_wire_port.c
 
 
 class GearRatios:
