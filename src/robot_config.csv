@@ -1,9 +1,0 @@
-arm_motor_port,5
-autonomous_enabled,true
-config,"{""testng"": 1, ""1234"": ""Hello""}"
-drive_motor_ports,"[1, 2, 3, 4]"
-max_speed,100
-pid_kd,0.15
-pid_ki,0.02
-pid_kp,0.75
-team_name,BowBots

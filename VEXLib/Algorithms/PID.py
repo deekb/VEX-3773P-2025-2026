@@ -72,7 +72,8 @@ class PIDMotorController:
 class PIDController:
     def __init__(self, pid_gains: PIDGains,
                  t: float = 0.01,
-                 integral_limit: float = 1.0):
+                 integral_limit: float = 1.0,
+                 clear_integral_when_crossing_setpoint = False):
         """
         Initializes a PIDController instance.
 
@@ -88,6 +89,7 @@ class PIDController:
         self.setpoint = 0.0
         self._error_integral = 0.0
         self._integral_limit = integral_limit
+        self.clear_integral_when_crossing_setpoint = clear_integral_when_crossing_setpoint
         self._previous_error = 0.0
         self._control_output = 0.0
 
@@ -124,8 +126,16 @@ class PIDController:
         else:
             error_derivative = 0.0
 
+        # Reset integral if error changes sign (crosses the setpoint)
+        if self.clear_integral_when_crossing_setpoint and (
+            self._previous_error * current_error < 0
+        ):
+            self._error_integral = 0.0
+
         self._control_output = (
-                self.pid_gains.kp * current_error + self.pid_gains.ki * self._error_integral + self.pid_gains.kd * error_derivative
+            self.pid_gains.kp * current_error
+            + self.pid_gains.ki * self._error_integral
+            + self.pid_gains.kd * error_derivative
         )
         self._previous_error = current_error
         return self._control_output
