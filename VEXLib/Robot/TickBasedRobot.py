@@ -12,6 +12,8 @@ DRIVER_CONTROL_DISABLED = GameState(DRIVER_CONTROL, DISABLED)
 AUTONOMOUS_CONTROL_ENABLED = GameState(AUTONOMOUS_CONTROL, ENABLED)
 AUTONOMOUS_CONTROL_DISABLED = GameState(AUTONOMOUS_CONTROL, DISABLED)
 
+debug_print = pass_function
+# debug_print = print
 
 class TickBasedRobot(RobotBase):
     """
@@ -20,6 +22,8 @@ class TickBasedRobot(RobotBase):
 
     def __init__(self, brain: Brain):
         super().__init__(brain)
+
+        self._competition = Competition(pass_function, pass_function)
 
         self.autonomous_thread = Thread(pass_function)
         self.driver_control_thread = Thread(pass_function)
@@ -70,61 +74,61 @@ class TickBasedRobot(RobotBase):
         return GameState(mode, enabled)
 
     def _tick(self):
-        print("GS")
+        debug_print("GS")
         new_state = self._update_state()
 
-        print("CS")
+        debug_print("CS")
         if new_state != self.state:
-            print("New state != Current state")
-            print("Transitioning from " + str(self.state) + " to " + str(new_state))
+            debug_print("New state != Current state")
+            debug_print("Transitioning from " + str(self.state) + " to " + str(new_state))
             self.transition_to(new_state)
 
-        print("HP")
+        debug_print("HP")
         self._handle_periodic_callbacks()
 
     def _mainloop(self):
         while True:
-            print("TICK")
+            debug_print("TICK")
             self._tick()
 
     def _handle_periodic_callbacks(self):
-        print("TW")
+        debug_print("TW")
         while True:
             now = ContinuousTimer.time_ms()
-            print("NOW:" + str(now))
-            print("NEXT:" + str(self.next_tick_time))
+            # debug_print("NOW:" + str(now))
+            # debug_print("NEXT:" + str(self.next_tick_time))
             if now >= self.next_tick_time:
                 break
-        print("CL")
+        debug_print("CL")
         self.control_loop()
-        print("PANIC_CHECK")
+        debug_print("PANIC_CHECK")
         if now > self.next_tick_time + (self._warning_tick_duration_ms - self._target_tick_duration_ms):
             time_overrun = now - self.next_tick_time
-            print("PANIC: Scheduler tick overran target period by " + str(time_overrun) + " ms")
-        print("INC")
+            debug_print("PANIC: Scheduler tick overran target period by " + str(time_overrun) + " ms")
+        debug_print("INC")
         self.next_tick_time += self._target_tick_duration_ms
 
     def _handle_periodic_callbacks_internal(self):
         if self.state.enabled:
             if self.state.mode == DRIVER_CONTROL:
-                print("DCP")
+                debug_print("DCP")
                 self.driver_control_periodic()
             elif self.state.mode == AUTONOMOUS_CONTROL:
-                print("ACP")
+                debug_print("ACP")
                 self.autonomous_periodic()
-            print("EP")
+            debug_print("EP")
             self.enabled_periodic()
         else:
-            print("DP")
+            debug_print("DP")
             self.disabled_periodic()
-        print("P")
+        debug_print("P")
         self.periodic()
-        print("NT")
+        debug_print("NT")
         self._last_tick_time = ContinuousTimer.time_ms()
 
     def transition_to(self, new_state: GameState):
         if self.state == new_state:
-            print("Already in state: " + str(self.state) + ". No transition needed.")
+            debug_print("Already in state: " + str(self.state) + ". No transition needed.")
             return
 
         if new_state.enabled:

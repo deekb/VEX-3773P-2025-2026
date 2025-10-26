@@ -83,7 +83,7 @@ class Skills(AutonomousRoutine):
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(10), 180, max_extra_time=0)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-5), 180, max_extra_time=0)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(10), 180, max_extra_time=0)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-20), 180)
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-20), 180)
 
 class DriveForwardOneTile(AutonomousRoutine):
     name = "DriveForwardOneTile"

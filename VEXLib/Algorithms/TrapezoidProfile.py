@@ -148,7 +148,7 @@ if __name__ == "__main__":
     # Create TrapezoidProfile
     constraints = Constraints(max_velocity, max_acceleration)
     initial_state = State(0.0, 0)
-    goal_state = State(10, 0)
+    goal_state = State(10, -1)
     profile = TrapezoidProfile(constraints)
 
     profile.calculate(0, initial_state, goal_state)
