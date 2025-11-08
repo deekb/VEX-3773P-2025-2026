@@ -1,5 +1,5 @@
 from vex import *
-from VEXLib.Util import ContinuousTimer
+import VEXLib.Util.time as time
 from VEXLib.Robot.Constants import TARGET_TICK_DURATION_MS, WARNING_TICK_DURATION_MS
 from VEXLib.Robot.RobotBase import RobotBase
 
@@ -16,12 +16,12 @@ class TickBasedRobot(RobotBase):
         self._competition = Competition(self.on_driver_control, self.on_autonomous)
 
         # Tick-based control variables
-        self.next_tick_time = ContinuousTimer.time_ms() + 1
+        self.next_tick_time = time.time_ms() + 1
         self._target_tick_duration_ms = TARGET_TICK_DURATION_MS
         self._warning_tick_duration_ms = WARNING_TICK_DURATION_MS
 
-        self._current_time = ContinuousTimer.time_ms()
-        self._last_tick_time = ContinuousTimer.time_ms()
+        self._current_time = time.time_ms()
+        self._last_tick_time = time.time_ms()
 
     def start(self):
         self.on_setup()
@@ -38,7 +38,7 @@ class TickBasedRobot(RobotBase):
 
     def _handle_periodic_callbacks(self):
         while True:
-            now = ContinuousTimer.time_ms()
+            now = time.time_ms()
             print("NOW:" + str(now))
             print("NEXT:" + str(self.next_tick_time))
             if now >= self.next_tick_time:

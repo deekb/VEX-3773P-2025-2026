@@ -1,5 +1,6 @@
 from vex import *
-from VEXLib.Util import ContinuousTimer, pass_function
+import VEXLib.Util.time as time
+from VEXLib.Util import pass_function
 from VEXLib.Robot.Constants import DRIVER_CONTROL, AUTONOMOUS_CONTROL, TARGET_TICK_DURATION_MS, \
     WARNING_TICK_DURATION_MS, ENABLED, DISABLED
 from VEXLib.Robot.RobotBase import RobotBase
@@ -32,16 +33,16 @@ class TickBasedRobot(RobotBase):
                             }
 
         # Tick-based control variables
-        self.next_tick_time = ContinuousTimer.time_ms() + 1
+        self.next_tick_time = time.time_ms() + 1
         self._target_tick_duration_ms = TARGET_TICK_DURATION_MS
         self._warning_tick_duration_ms = WARNING_TICK_DURATION_MS
 
         self.restart_requested = False
 
-        self._last_enable_time = self._last_disable_time = ContinuousTimer.time()
+        self._last_enable_time = self._last_disable_time = time.time()
 
-        self._current_time = ContinuousTimer.time_ms()
-        self._last_tick_time = ContinuousTimer.time_ms()
+        self._current_time = time.time_ms()
+        self._last_tick_time = time.time_ms()
 
     def _on_autonomous_internal(self):
         self.autonomous_thread = Thread(self.on_autonomous)
@@ -90,7 +91,7 @@ class TickBasedRobot(RobotBase):
     def _handle_periodic_callbacks(self):
         print("TW")
         while True:
-            now = ContinuousTimer.time_ms()
+            now = time.time_ms()
             print("NOW:" + str(now))
             print("NEXT:" + str(self.next_tick_time))
             if now >= self.next_tick_time:
@@ -120,7 +121,7 @@ class TickBasedRobot(RobotBase):
         print("P")
         self.periodic()
         print("NT")
-        self._last_tick_time = ContinuousTimer.time_ms()
+        self._last_tick_time = time.time_ms()
 
     def transition_to(self, new_state: GameState):
         if self.state == new_state:
