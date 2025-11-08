@@ -91,6 +91,7 @@ def plot_motor_data(
             ax_individual.set_ylabel(ax.get_ylabel())
             ax_individual.legend(fontsize=8)
             plt.tight_layout()
+            plt.show()
             filename = f"{output_png_prefix}_{title}.png"
             fig_individual.savefig(filename, dpi=300)
             plt.close(fig_individual)
@@ -101,8 +102,7 @@ if __name__ == "__main__":
     # Example: compare two log files and export as PDF + individual PNGs
     plot_motor_data(
         [
-            "/home/derek/PycharmProjects/VEX-3773P-2025-2026/logs/left_drivetrain_competition.csv",
-            "/home/derek/PycharmProjects/VEX-3773P-2025-2026/logs/right_drivetrain_competition.csv",
+            f"/home/derek/PycharmProjects/VEX-3773P-2025-2026/logs/friction_tests/GREEN_{i*100}G.csv" for i in range(1, 31)
         ],
         output_pdf="/home/derek/PycharmProjects/VEX-3773P-2025-2026/logs/competition_drivetrain.pdf",
         output_png_prefix="/home/derek/PycharmProjects/VEX-3773P-2025-2026/logs/competition_drivetrain",

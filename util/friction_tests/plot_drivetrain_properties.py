@@ -1,47 +1,20 @@
 import json
-
 import matplotlib.pyplot as plt
 
 
-# Function to rescale voltage data to 0-100 range
-def rescale_voltage(voltage_data):
-    min_voltage = min(voltage_data)
-    max_voltage = max(voltage_data)
-    return [(v - min_voltage) / (max_voltage - min_voltage) * 100 for v in voltage_data]
-
-
-# # Load JSON data for the left and right drivetrain
-# with open("input/drivetrain_data_left.json", "r") as file:
-#     left_data_old = json.load(file)
-#
-# with open("input/drivetrain_data_right.json", "r") as file:
-#     right_data_old = json.load(file)
-#
-# with open("input/drivetrain_data_left_2.json", "r") as file:
-#     left_data = json.load(file)
-#
-# with open("input/drivetrain_data_right_2.json", "r") as file:
-#     right_data = json.load(file)
-
 
 # Load JSON data for the left and right drivetrain
-with open("input/drivetrain_data_left_2.json", "r") as file:
+with open("input/left_drivetrain_4.json", "r") as file:
     left_data_old = json.load(file)
 
-with open("input/drivetrain_data_right_2.json", "r") as file:
+with open("input/right_drivetrain_4.json", "r") as file:
     right_data_old = json.load(file)
 
-with open("input/left_drivetrain_3.json", "r") as file:
+with open("input/left_drivetrain_4.json", "r") as file:
     left_data = json.load(file)
 
-with open("input/right_drivetrain_3.json", "r") as file:
+with open("input/right_drivetrain_4.json", "r") as file:
     right_data = json.load(file)
-
-# Rescale voltage data
-left_data["voltage"] = rescale_voltage(left_data["voltage"])
-right_data["voltage"] = rescale_voltage(right_data["voltage"])
-left_data_old["voltage"] = rescale_voltage(left_data_old["voltage"])
-right_data_old["voltage"] = rescale_voltage(right_data_old["voltage"])
 
 # Define the properties to plot and their units
 properties = ["torque", "power", "speed"]
@@ -69,22 +42,22 @@ for i, prop in enumerate(properties):
             label=f"Right {prop.capitalize()}",
             color="orange",
         )
-    if prop in left_data_old:  # Check if property exists in left_data_old
-        axes[i].plot(
-            left_data_old["voltage"],
-            left_data_old.get(prop, []),
-            label=f"Left {prop.capitalize()} Old",
-            color="blue",
-            linestyle=":",
-        )
-    if prop in right_data_old:  # Check if property exists in right_data_old
-        axes[i].plot(
-            right_data_old["voltage"],
-            right_data_old.get(prop, []),
-            label=f"Right {prop.capitalize()} Old",
-            color="orange",
-            linestyle=":",
-        )
+    # if prop in left_data_old:  # Check if property exists in left_data_old
+    #     axes[i].plot(
+    #         left_data_old["voltage"],
+    #         left_data_old.get(prop, []),
+    #         label=f"Left {prop.capitalize()} Old",
+    #         color="blue",
+    #         linestyle=":",
+    #     )
+    # if prop in right_data_old:  # Check if property exists in right_data_old
+    #     axes[i].plot(
+    #         right_data_old["voltage"],
+    #         right_data_old.get(prop, []),
+    #         label=f"Right {prop.capitalize()} Old",
+    #         color="orange",
+    #         linestyle=":",
+    #     )
 
     axes[i].set_title(f"{prop.capitalize()} Comparison")
     axes[i].set_xlabel("PWM Duty Cycle (%)")

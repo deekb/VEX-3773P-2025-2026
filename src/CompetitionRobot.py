@@ -141,22 +141,10 @@ class Robot(RobotBase):
     def select_autonomous_routine(self):
         robot_log.debug("Starting autonomous routine selection")
         robot_log.trace("Available autonomous routines:", self.available_autonomous_routines)
-        autonomous_type = self.controller.get_selection(
-            ["red", "blue", "skills"]
+        self.alliance_color = self.controller.get_selection(
+            ["red", "blue"]
         )
-        robot_log.debug("Autonomous type:", autonomous_type)
-        self.alliance_color = {
-            "red": "red",
-            "blue": "blue",
-            "skills": "red",
-        }[autonomous_type]
-
-        if "skills" in autonomous_type:
-            self.drivetrain.set_angles_inverted(False)
-            robot_log.trace("set_angles_inverted: False")
-            self.selected_autonomous = Skills(self)
-            robot_log.debug("Skills routine chosen:", autonomous_type)
-            return autonomous_type
+        robot_log.debug("Alliance color:", self.alliance_color)
 
         selected_auto = self.controller.get_selection([auto.name for auto in self.available_autonomous_routines])
         self.drivetrain.set_angles_inverted(False) # Hardcoded to False because of how the field is set up this year
@@ -170,7 +158,7 @@ class Robot(RobotBase):
         if isinstance(self.selected_autonomous, DoNothingAutonomous):
             robot_log.warn("DoNothingAutonomous autonomous routine selected")
 
-        return autonomous_type + " " + self.selected_autonomous.name
+        return self.alliance_color + " " + self.selected_autonomous.name
 
     def start(self):
         robot_log.info("Robot start called")
