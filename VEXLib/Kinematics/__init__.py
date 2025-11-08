@@ -107,7 +107,7 @@ class GenericWheel:
 
     def calculate_desired_wheel_speed(
         self, movement_angle: Rotation2d, movement_speed: Velocity1d
-    ) -> Velocity1d:
+    ):
         """
         Calculates the wheel speed based on the movement angle and speed.
 
