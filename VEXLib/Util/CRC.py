@@ -79,5 +79,7 @@ def crc_bytes(bytes_data):
     """
     crc = PRESET  # Start with the preset value
     for byte in bytes_data:  # Process each byte in the input
+        if byte < 0:
+            raise ValueError("Byte values must be non-negative integers.")
         crc = _update_crc(crc, byte)
     return crc

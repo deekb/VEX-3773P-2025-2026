@@ -1,4 +1,4 @@
-import VEXLib.Util.ContinuousTimer as time
+import VEXLib.Util.time as time
 from VEXLib.Algorithms.PIDF import PIDFController
 from VEXLib.Algorithms.RateOfChangeCalculator import RateOfChangeCalculator
 from VEXLib.Geometry.GeometryUtil import arc_length_from_rotation, circle_circumference

@@ -1,10 +1,10 @@
 from vex import Brain
-# try:
-# Try to import MicroPython library
-import utime as _time
-# except ImportError:
-#     # Fallback to standard Python library
-#     import time as _time
+try:
+    # Try to import MicroPython library
+    import utime as _time
+except ImportError:
+    # Fallback to standard Python library
+    import time as _time
 
 from VEXLib.Units import Units
 

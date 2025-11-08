@@ -27,7 +27,7 @@ class DefaultPreferences:
     DO_TURN_DECAY = False
     USE_PIDF_CONTROL = False
     PIDF_GAINS_LEFT = PIDFGains(0.03, 0, 0, 0.6)
-    PIDF_GAINS_RIGHT = PIDFGains(0.03, 0, 0, 0.61)
+    PIDF_GAINS_RIGHT = PIDFGains(0.03, 0, 0, 0.65)
     ENABLE_DRIVING = True
     INPUT_DEBUG_MODE = False
 
@@ -93,14 +93,14 @@ class GearRatios:
 class DrivetrainProperties:
     # PID gains
     LEFT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.6)
-    RIGHT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.63)
+    RIGHT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.65)
 
     POSITION_PID_GAINS = PIDGains(6, 0.6, 0)
     ROTATION_PID_GAINS = PIDGains(0.62, 0.0, 0.01)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     TURN_TIMEOUT_SECONDS = 1
-    TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.6
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.8
     TURNING_THRESHOLD = Rotation2d.from_degrees(2)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.5)
     MOVEMENT_MAX_EXTRA_TIME = 0.2
