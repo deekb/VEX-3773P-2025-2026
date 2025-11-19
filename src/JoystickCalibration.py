@@ -2,7 +2,7 @@ import math
 import struct
 
 from VEXLib.Geometry.GeometryUtil import hypotenuse
-from VEXLib.Math import interpolate_2d
+from VEXLib.Math.MathUtil import interpolate_2d
 
 PACKING_FORMAT_STRING = "ff"  # Packing/unpacking as two floats
 PACKING_FORMAT_RECORD_LENGTH = struct.calcsize(PACKING_FORMAT_STRING)

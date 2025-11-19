@@ -106,6 +106,13 @@ class Logger:
 
         return wrapper
 
+class NoLogger(Logger):
+    def __init__(self, log_name, index=None, flush_threshold=512):
+        super().__init__(log_name, index=None, flush_threshold=512)
+
+    def log(self, *parts, log_level=LogLevel.INFO):
+        pass
+
 def format_time(seconds):
     millis = int((seconds % 1) * 1000)
     seconds = int(seconds)

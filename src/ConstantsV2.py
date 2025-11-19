@@ -27,13 +27,11 @@ class DefaultPreferences:
     TURN_SPEED = 1.0
     DO_TURN_DECAY = False
     USE_PIDF_CONTROL = False
+    PIDF_GAINS_LEFT_DRIVER = PIDFGains(0.04, 0, 0, 0.6)
+    PIDF_GAINS_RIGHT_DRIVER = PIDFGains(0.03, 0, 0, 0.6)
 
-    PIDF_GAINS_LEFT_DRIVER = PIDFGains(0.03, 0, 0, 0.6)
-    PIDF_GAINS_RIGHT_DRIVER = PIDFGains(0.05, 0, 0, 0.7)
-
-    PIDF_GAINS_LEFT_AUTO = PIDFGains(0.40, 0, 0, 0.6)
-    PIDF_GAINS_RIGHT_AUTO = PIDFGains(0.35, 0, 0, 0.7)
-
+    PIDF_GAINS_LEFT_AUTO = PIDFGains(0.25, 0.1, 0, 0.6)
+    PIDF_GAINS_RIGHT_AUTO = PIDFGains(0.25, 0.1, 0, 0.6)
     ENABLE_DRIVING = True
     INPUT_DEBUG_MODE = False
 
@@ -50,44 +48,27 @@ class DebugPreferences(DefaultPreferences):
     INPUT_DEBUG_MODE = True
 
 
-class TestingSmartPorts:
-    """Drivetrain"""
-
-    FRONT_LEFT_DRIVETRAIN_MOTOR = Ports.PORT20
-    REAR_LOWER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT19
-    REAR_UPPER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT18
-
-    FRONT_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT13
-    REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT12
-    REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT11
-
-    HOOD_MOTOR = Ports.PORT10
-
-    INERTIAL_SENSOR = Ports.PORT1
-
-
 class CompetitionSmartPorts:
     """Drivetrain"""
 
-    FRONT_LEFT_DRIVETRAIN_MOTOR = Ports.PORT4
-    REAR_LOWER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT2
-    REAR_UPPER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT3
+    FRONT_LEFT_DRIVETRAIN_MOTOR = Ports.PORT3
+    REAR_LOWER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT5
+    REAR_UPPER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT9
 
     FRONT_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT7
-    REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT8
-    REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT9
+    REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT4
+    REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT6
 
-    UPPER_INTAKE_MOTOR = Ports.PORT1
-    FLOATING_INTAKE_MOTOR = Ports.PORT5
+    UPPER_INTAKE_MOTOR = Ports.PORT20
     HOOD_MOTOR = Ports.PORT10
 
-    INERTIAL_SENSOR = Ports.PORT11
+    INERTIAL_SENSOR = Ports.PORT8
 
 class ThreeWirePorts:
     brain = Brain()
-    SCORING_SOLENOID = brain.three_wire_port.a
+    SCORING_SOLENOID = brain.three_wire_port.c
     MATCH_LOAD_HELPER_SOLENOID = brain.three_wire_port.b
-    DESCORING_ARM_SOLENOID = brain.three_wire_port.c
+    DESCORING_ARM_SOLENOID = brain.three_wire_port.a
 
 
 class GearRatios:
@@ -98,15 +79,18 @@ class GearRatios:
 
 class DrivetrainProperties:
     # PID gains
+    LEFT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.6)
+    RIGHT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.65)
+
     POSITION_PID_GAINS = PIDGains(6, 0.6, 0)
-    ROTATION_PID_GAINS = PIDGains(0.62, 0.0, 0.01)
+    ROTATION_PID_GAINS = PIDGains(0.65, 0.0, 0.05)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     TURN_TIMEOUT_SECONDS = 1
     TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.8
-    TURNING_THRESHOLD = Rotation2d.from_degrees(0.5)
-    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.3)
-    MOVEMENT_MAX_EXTRA_TIME = 0.5
+    TURNING_THRESHOLD = Rotation2d.from_degrees(2)
+    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.5)
+    MOVEMENT_MAX_EXTRA_TIME = 0.2
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.77)
     MOTOR_TO_WHEEL_GEAR_RATIO = 36 / 60
     WHEEL_DIAMETER = Distance.from_inches(3.233)

@@ -4,6 +4,7 @@ import sys
 from VEXLib.Util.Shelf import Shelf
 
 from VEXLib.Util import time
+from vex import Brain
 
 
 class LogLevel:
@@ -49,41 +50,41 @@ class Logger:
         )
 
     def log(self, *parts, log_level=LogLevel.INFO):
-        try:
-            if log_level not in LOG_LEVELS:
-                raise ValueError("Invalid log level: " + str(log_level))
+        # try:
+        if log_level not in LOG_LEVELS:
+            raise ValueError("Invalid log level: " + str(log_level))
 
-            timestamp = float(time.time())
-            message_bytes = " ".join(map(str, parts)).encode("utf-8")
-            log_entry = struct.pack(
-                "<fBI{}s".format(len(message_bytes)),
-                timestamp,
-                LOG_LEVELS[log_level],
-                len(message_bytes),
-                message_bytes,
-            )
-            self.log_buffer.extend(log_entry)
-            if len(self.log_buffer) >= self.flush_threshold:
-                self.flush_logs()
-        except MemoryError:
-            self.log_buffer = []
+        timestamp = float(time.time())
+        message_bytes = " ".join(map(str, parts)).encode("utf-8")
+        log_entry = struct.pack(
+            "<fBI{}s".format(len(message_bytes)),
+            timestamp,
+            LOG_LEVELS[log_level],
+            len(message_bytes),
+            message_bytes,
+        )
+        self.log_buffer.extend(log_entry)
+        if len(self.log_buffer) >= self.flush_threshold:
+            self.flush_logs()
+        # except MemoryError:
+        #     self.log_buffer = []
 
     def log_vars(self, vars_dict, log_level=LogLevel.INFO):
         self.log(json.dumps(vars_dict), log_level=log_level)
 
     def flush_logs(self):
         if self.log_buffer:
-            try:
-                with open(self.log_file_path, "ab") as f:
-                    # Ensure log_buffer is bytes before writing
-                    if isinstance(self.log_buffer, bytes):
-                        f.write(self.log_buffer)
-                    else:
-                        f.write(bytes(self.log_buffer))
-                    f.flush()
-                self.log_buffer = []
-            except OSError:
-                pass
+            # try:
+            with open(self.log_file_path, "ab") as f:
+                # Ensure log_buffer is bytes before writing
+                if isinstance(self.log_buffer, bytes):
+                    f.write(self.log_buffer)
+                else:
+                    f.write(bytes(self.log_buffer))
+                f.flush()
+            self.log_buffer = []
+            # except OSError:
+
 
     # Shorthand methods
     def trace(self, *parts):
@@ -164,6 +165,8 @@ class Logger:
             return output
 
         return wrapper
+
+
 class TimeSeriesLogger:
     def __init__(self, filename, fieldnames=None):
         """
@@ -205,7 +208,7 @@ class TimeSeriesLogger:
         if not self.fieldnames:
             # Infer fieldnames from the first row of data if not provided at initialization
             self.fieldnames = list(data.keys())
-            self._initialize_csv()  # Re-initialize CSV file with inferred fieldnames
+            self._initialize_csv(True)  # Re-initialize CSV file with inferred fieldnames
 
         Brain().sdcard.appendfile(self.filename, bytearray(','.join(str(data[field]) for field in self.fieldnames) + '\n'))
 

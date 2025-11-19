@@ -3,7 +3,7 @@ import json
 from VEXLib.Kinematics.TankOdometry import TankOdometry
 
 import VEXLib.Math.MathUtil as MathUtil
-from Constants import DrivetrainProperties, NO_LOGGING
+from ConstantsV2 import DrivetrainProperties, NO_LOGGING, DefaultPreferences
 from VEXLib.Algorithms.LinearRegressor import LinearRegressor
 from VEXLib.Algorithms.PID import PIDController
 from VEXLib.Algorithms.PIDF import PIDFController
@@ -21,8 +21,6 @@ from VEXLib.Util import time
 from VEXLib.Util.Logging import Logger, TimeSeriesLogger
 from VEXLib.Util.motor_analysis import collect_power_relationship_data
 from Logging import NoLogger
-
-from Constants import DefaultPreferences
 from vex import DEGREES, Thread
 
 
@@ -92,10 +90,10 @@ class Drivetrain:
         )
 
         self.position_PID = PIDController(
-            DrivetrainProperties.POSITION_PID_GAINS, 0.075, 10
+            DrivetrainProperties.POSITION_PID_GAINS, 1e-5, 10
         )
         self.rotation_PID = PIDController(
-            DrivetrainProperties.ROTATION_PID_GAINS, 0.075, 10
+            DrivetrainProperties.ROTATION_PID_GAINS, 1e-5, 10
         )
         self.log.debug("Position and Rotation PID Controllers initialized with gains")
 

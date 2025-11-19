@@ -4,7 +4,7 @@ from VEXLib.Util.Logging import TimeSeriesLogger
 from shelve import Shelf
 from Logging import Logger, NoLogger
 from DescoringArm import DescoringArm
-from Constants import *
+from ConstantsV2 import *
 
 
 # This gets done first so any loggers that are created during imports use the updated index
@@ -27,14 +27,14 @@ import VEXLib.Math.MathUtil as MathUtil
 from JoystickCalibration import normalize_joystick_input
 from MatchLoadHelper import MatchLoadHelper
 from VEXLib.Geometry.GeometryUtil import hypotenuse
-from TankDrivetrain import Drivetrain
+from TankDrivetrainV2 import Drivetrain
 from VEXLib.Motor import Motor
 from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import Controller
 from VEXLib.Util import time
 from VEXLib.Util.Buffer import Buffer
-from Intake import Intake
+from IntakeV2 import IntakeV2
 from AutonomousRoutines import DoNothingAutonomous, all_routines, Skills
 from VEXLib.Util.motor_analysis import collect_power_relationship_data
 from vex import (
@@ -103,9 +103,8 @@ class Robot(RobotBase):
 
         self.driver_rotation_pid = PIDController(PIDGains(3, 0, 0))
 
-        self.intake = Intake(
-            Motor(SmartPorts.UPPER_INTAKE_MOTOR, GearRatios.INTAKE, True),
-            Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.INTAKE, False),
+        self.intake = IntakeV2(
+            Motor(SmartPorts.UPPER_INTAKE_MOTOR, GearRatios.INTAKE, False),
             Motor(SmartPorts.HOOD_MOTOR, GearRatios.HOOD, False),
             DigitalOut(ThreeWirePorts.SCORING_SOLENOID),
         )
@@ -488,7 +487,7 @@ class Robot(RobotBase):
         #     mass += 100
 
     def ensure_match_loader_in_size(self):
-        if self.intake.piston.value() and self.match_load_helper.piston.value():
+        if (not self.intake.piston.value()) and self.match_load_helper.piston.value():
             self.match_load_helper.retract()
             robot_log.warn("Retracting match load helper because intake is down")
             self.controller.rumble("..")
@@ -496,23 +495,19 @@ class Robot(RobotBase):
     @robot_log.logged
     def setup_default_bindings(self):
         robot_log.info("Setting up default controller bindings")
-        # self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(-1.0), self.intake.run_floating_intake(-1.0), self.intake.run_hood(-1.0)))
-        # self.controller.buttonL1.released(lambda: (self.intake.stop_intake(), self.intake.stop_hood(), self.intake.stop_floating_intake()))
-        # self.controller.buttonL2.pressed(lambda: (self.intake.run_intake(1.0), self.intake.run_floating_intake(1.0), self.intake.run_hood(1.0)))
-        # self.controller.buttonL2.released(lambda: (self.intake.stop_intake(), self.intake.stop_hood(), self.intake.stop_floating_intake()))
 
         self.controller.buttonL2.pressed(lambda: (self.intake.run_intake(-1.0), self.intake.run_hood(-1.0)))
         self.controller.buttonL2.released(lambda: (self.intake.stop_intake(),self.intake.stop_hood()))
 
         self.controller.buttonR1.pressed(
-            lambda: (self.intake.run_upper_intake(1.0), self.intake.run_floating_intake(1.0), self.intake.stop_hood())
+            lambda: (self.intake.run_upper_intake(1.0), self.intake.stop_hood())
         )
         self.controller.buttonR1.released(
             lambda: (self.intake.stop_intake(), self.intake.stop_hood())
         )
 
         self.controller.buttonR2.pressed(
-            lambda: (self.intake.run_upper_intake(-1.0), self.intake.run_floating_intake(-1.0), self.intake.stop_hood())
+            lambda: (self.intake.run_upper_intake(-1.0), self.intake.stop_hood())
         )
         self.controller.buttonR2.released(
             lambda: (self.intake.stop_intake(), self.intake.stop_hood())
