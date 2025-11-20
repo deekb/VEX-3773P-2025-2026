@@ -35,7 +35,7 @@ from VEXLib.Sensors.Controller import Controller
 from VEXLib.Util import time
 from VEXLib.Util.Buffer import Buffer
 from IntakeV2 import IntakeV2
-from AutonomousRoutines import DoNothingAutonomous, all_routines, Skills
+from AutonomousRoutinesV2 import DoNothingAutonomous, all_routines, Skills
 from VEXLib.Util.motor_analysis import collect_power_relationship_data
 from vex import (
     Competition,
@@ -100,6 +100,8 @@ class Robot(RobotBase):
             Inertial(SmartPorts.INERTIAL_SENSOR),
             self.log_and_print,
         )
+
+        self.calibrate_sensors()
 
         self.driver_rotation_pid = PIDController(PIDGains(3, 0, 0))
 
@@ -183,7 +185,6 @@ class Robot(RobotBase):
     def on_setup(self):
         robot_log.info("Robot on_setup called")
         # Break down the setup process into dedicated steps.
-        self.calibrate_sensors()
         self.select_autonomous_and_drive_style()
         self.align_robot()
         robot_log.info("Setup complete")

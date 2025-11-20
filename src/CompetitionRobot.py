@@ -216,7 +216,7 @@ class Robot(RobotBase):
         while self.drivetrain.odometry.inertial_sensor.is_calibrating():
             time.sleep_ms(5)
         robot_log.debug("Calibrated inertial sensor successfully")
-        time.sleep(2)
+
         self.controller.rumble("..")
 
     @robot_log.logged
@@ -520,7 +520,6 @@ class Robot(RobotBase):
 
         self.controller.buttonL1.pressed(lambda: self.intake.run_intake(1.0))
         self.controller.buttonL1.released(self.intake.stop_intake)
-
 
         self.controller.buttonY.pressed(self.intake.toggle_intake_piston)
 
