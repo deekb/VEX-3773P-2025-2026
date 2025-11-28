@@ -514,11 +514,11 @@ class Robot(RobotBase):
             lambda: (self.intake.stop_intake(), self.intake.stop_hood())
         )
 
-        self.controller.buttonL1.pressed(lambda: self.intake.run_intake(1.0))
+        self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(1.0), self.descoring_arm.extend()))
         self.controller.buttonL1.released(self.intake.stop_intake)
 
 
-        self.controller.buttonY.pressed(self.intake.toggle_intake_piston)
+        self.controller.buttonY.pressed(lambda: (self.intake.toggle_intake_piston(), self.descoring_arm.retract() if self.intake.piston.value() else None))
 
         self.controller.buttonB.pressed(self.match_load_helper.extend)
         self.controller.buttonB.released(self.match_load_helper.retract)

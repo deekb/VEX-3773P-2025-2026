@@ -30,8 +30,8 @@ class DefaultPreferences:
     PIDF_GAINS_LEFT_DRIVER = PIDFGains(0.04, 0, 0, 0.6)
     PIDF_GAINS_RIGHT_DRIVER = PIDFGains(0.03, 0, 0, 0.6)
 
-    PIDF_GAINS_LEFT_AUTO = PIDFGains(0.25, 0.1, 0, 0.6)
-    PIDF_GAINS_RIGHT_AUTO = PIDFGains(0.25, 0.1, 0, 0.6)
+    PIDF_GAINS_LEFT_AUTO = PIDFGains(0.35, 0.1, 0, 0.65)
+    PIDF_GAINS_RIGHT_AUTO = PIDFGains(0.35, 0.1, 0, 0.6)
     ENABLE_DRIVING = True
     INPUT_DEBUG_MODE = False
 
@@ -78,10 +78,6 @@ class GearRatios:
 
 
 class DrivetrainProperties:
-    # PID gains
-    LEFT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.6)
-    RIGHT_PIDF_GAINS = PIDFGains(0.25, 0, 0, 0.65)
-
     POSITION_PID_GAINS = PIDGains(6, 0.6, 0)
     ROTATION_PID_GAINS = PIDGains(0.65, 0.0, 0.05)
 
