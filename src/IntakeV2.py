@@ -4,8 +4,9 @@ from vex import DigitalOut, TorqueUnits, PERCENT
 
 
 class IntakeV2:
-    def __init__(self, upper_intake_motor: Motor, hood_motor: Motor, piston: DigitalOut):
+    def __init__(self, upper_intake_motor: Motor, floating_intake_motor: Motor, hood_motor: Motor, piston: DigitalOut):
         self.upper_intake_motor = upper_intake_motor
+        self.floating_intake_motor = floating_intake_motor
         self.hood_motor = hood_motor
         self.piston = piston
         self.last_not_stalled_timestamp = time.time()
@@ -18,6 +19,14 @@ class IntakeV2:
         """Stop the upper intake motor"""
         self.upper_intake_motor.set(0)
 
+    def run_floating_intake(self, speed):
+        """Run the upper intake motor at a specified speed."""
+        self.floating_intake_motor.set(speed)
+
+    def stop_floating_intake(self):
+        """Stop the upper intake motor"""
+        self.floating_intake_motor.set(0)
+
     def run_hood(self, speed):
         """Run the hood motor at a specified speed."""
         self.hood_motor.set(speed)
@@ -28,11 +37,13 @@ class IntakeV2:
 
     def run_intake(self, speed):
         """Run the full intake motor at a specified speed."""
+        self.run_floating_intake(speed)
         self.run_upper_intake(speed)
         self.run_hood(speed)
 
     def stop_intake(self):
         """Stop the full intake"""
+        self.run_floating_intake(0)
         self.run_upper_intake(0)
         self.run_hood(0)
 

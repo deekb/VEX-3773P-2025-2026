@@ -51,6 +51,7 @@ class DebugPreferences(DefaultPreferences):
 class CompetitionSmartPorts:
     """Drivetrain"""
 
+    FLOATING_INTAKE_MOTOR = Ports.PORT19
     FRONT_LEFT_DRIVETRAIN_MOTOR = Ports.PORT3
     REAR_LOWER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT5
     REAR_UPPER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT9
@@ -73,7 +74,8 @@ class ThreeWirePorts:
 
 class GearRatios:
     DRIVETRAIN = GearSetting.RATIO_6_1
-    INTAKE = GearSetting.RATIO_18_1
+    UPPER_INTAKE = GearSetting.RATIO_18_1
+    FLOATING_INTAKE = GearSetting.RATIO_18_1
     HOOD = GearSetting.RATIO_18_1
 
 

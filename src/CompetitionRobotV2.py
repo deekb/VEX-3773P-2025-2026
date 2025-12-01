@@ -106,7 +106,8 @@ class Robot(RobotBase):
         self.driver_rotation_pid = PIDController(PIDGains(3, 0, 0))
 
         self.intake = IntakeV2(
-            Motor(SmartPorts.UPPER_INTAKE_MOTOR, GearRatios.INTAKE, False),
+            Motor(SmartPorts.UPPER_INTAKE_MOTOR, GearRatios.UPPER_INTAKE, False),
+            Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.UPPER_INTAKE, True),
             Motor(SmartPorts.HOOD_MOTOR, GearRatios.HOOD, False),
             DigitalOut(ThreeWirePorts.SCORING_SOLENOID),
         )
@@ -501,24 +502,24 @@ class Robot(RobotBase):
         self.controller.buttonL2.released(lambda: (self.intake.stop_intake(),self.intake.stop_hood()))
 
         self.controller.buttonR1.pressed(
-            lambda: (self.intake.run_upper_intake(1.0), self.intake.stop_hood())
+            lambda: (self.intake.run_intake(1.0), self.intake.stop_hood())
         )
         self.controller.buttonR1.released(
             lambda: (self.intake.stop_intake(), self.intake.stop_hood())
         )
 
         self.controller.buttonR2.pressed(
-            lambda: (self.intake.run_upper_intake(-1.0), self.intake.stop_hood())
+            lambda: (self.intake.run_intake(-1.0), self.intake.stop_hood())
         )
         self.controller.buttonR2.released(
             lambda: (self.intake.stop_intake(), self.intake.stop_hood())
         )
 
-        self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(1.0), self.descoring_arm.extend()))
+        self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(1.0)))
         self.controller.buttonL1.released(self.intake.stop_intake)
 
 
-        self.controller.buttonY.pressed(lambda: (self.intake.toggle_intake_piston(), self.descoring_arm.retract() if self.intake.piston.value() else None))
+        self.controller.buttonY.pressed(lambda: (self.intake.toggle_intake_piston()))
 
         self.controller.buttonB.pressed(self.match_load_helper.extend)
         self.controller.buttonB.released(self.match_load_helper.retract)
