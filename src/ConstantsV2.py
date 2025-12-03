@@ -5,7 +5,7 @@ from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Sensors.Controller import ControlStyles
 from vex import Ports, GearSetting, Brain
 
-NO_LOGGING = True
+NO_LOGGING = False
 
 class PIDGains:
     def __init__(self, kp, ki, kd):
