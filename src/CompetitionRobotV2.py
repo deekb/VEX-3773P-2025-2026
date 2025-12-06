@@ -494,6 +494,13 @@ class Robot(RobotBase):
             robot_log.warn("Retracting match load helper because intake is down")
             self.controller.rumble("..")
 
+    def toggle_intake(self):
+        if self.intake.piston.value():
+            self.descoring_arm.retract()
+            self.intake.lower_intake()
+        else:
+            self.intake.raise_intake()
+
     @robot_log.logged
     def setup_default_bindings(self):
         robot_log.info("Setting up default controller bindings")
@@ -519,7 +526,7 @@ class Robot(RobotBase):
         self.controller.buttonL1.released(self.intake.stop_intake)
 
 
-        self.controller.buttonY.pressed(lambda: (self.intake.toggle_intake_piston()))
+        self.controller.buttonY.pressed(self.toggle_intake)
 
         self.controller.buttonB.pressed(self.match_load_helper.extend)
         self.controller.buttonB.released(self.match_load_helper.retract)

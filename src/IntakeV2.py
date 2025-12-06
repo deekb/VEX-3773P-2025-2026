@@ -29,7 +29,10 @@ class IntakeV2:
 
     def run_hood(self, speed):
         """Run the hood motor at a specified speed."""
-        self.hood_motor.set(speed)
+        if self.piston.value():
+            self.hood_motor.set(speed)
+        else:
+            self.hood_motor.set(speed * 0.4)  # Reduced speed when intake is lowered
 
     def stop_hood(self):
         """Stop the hood motor."""
