@@ -252,6 +252,7 @@ class Controller(vex.Controller):
             selected (Any): The selected option from the list.
         """
         selection_index = 0
+        went_back = False
 
         wait_until_not(lambda: self.buttonA.pressing())
 
@@ -282,7 +283,11 @@ class Controller(vex.Controller):
                 or should_go_back()
             )
 
-            if should_finish() or should_go_back():
+            if should_go_back():
+                went_back = True
+                break
+
+            if should_finish():
                 break
 
             if self.buttonRight.pressing():
@@ -301,7 +306,7 @@ class Controller(vex.Controller):
         wait_until_not(lambda: should_finish() or should_go_back())
 
         if allow_back:
-            return should_go_back(), options[selection_index]
+            return went_back, options[selection_index]
 
         return options[selection_index]
 
@@ -329,7 +334,7 @@ class Controller(vex.Controller):
 
             if question_index < 0:
                 question_index = 0
-            elif question_index >= len(questions) - 1:
+            elif question_index >= len(questions):
                 return selections
 
     def get_wheel_speeds(self, control_style, drive_speed=1.0, turn_speed=1.0):

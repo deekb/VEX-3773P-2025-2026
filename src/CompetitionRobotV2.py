@@ -148,28 +148,6 @@ class Robot(RobotBase):
         robot_log.log(message)
         print(message)
 
-    def select_autonomous_routine(self):
-        robot_log.debug("Starting autonomous routine selection")
-        robot_log.trace("Available autonomous routines:", self.available_autonomous_routines)
-        self.alliance_color = self.controller.get_selection(
-            ["red", "blue"]
-        )
-        robot_log.debug("Alliance color:", self.alliance_color)
-
-        selected_auto = self.controller.get_selection([auto.name for auto in self.available_autonomous_routines])
-        self.drivetrain.set_angles_inverted(False) # Hardcoded to False because of how the field is set up this year
-        robot_log.trace("set_angles_inverted:", False)
-
-        for autonomous in self.available_autonomous_routines:
-            if selected_auto == autonomous.name:
-                self.selected_autonomous = autonomous(self)
-                break
-
-        if isinstance(self.selected_autonomous, DoNothingAutonomous):
-            robot_log.warn("DoNothingAutonomous autonomous routine selected")
-
-        return self.alliance_color + " " + self.selected_autonomous.name
-
     def start(self):
         robot_log.info("Robot start called")
         try:
@@ -185,8 +163,34 @@ class Robot(RobotBase):
     @robot_log.logged
     def on_setup(self):
         robot_log.info("Robot on_setup called")
-        # Break down the setup process into dedicated steps.
-        self.select_autonomous_and_drive_style()
+        robot_log.info("Selecting autonomous and drive style")
+        robot_log.trace(
+            "Available autonomous routines:", self.available_autonomous_routines
+        )
+        selected_auto, drive_style = self.controller.get_multiple_selections([[auto.name for auto in self.available_autonomous_routines], ["Colton", "Debug"]])
+
+        for autonomous in self.available_autonomous_routines:
+            if selected_auto == autonomous.name:
+                self.selected_autonomous = autonomous(self)
+                break
+
+        if isinstance(self.selected_autonomous, DoNothingAutonomous):
+            robot_log.warn("DoNothingAutonomous autonomous routine selected")
+
+        self.log_and_print("Selected autonomous routine:", selected_auto)
+        self.selected_autonomous.pre_match_setup()
+
+        self.log_and_print("Selected drive style:", drive_style)
+
+        if drive_style == "Colton":
+            self.user_preferences = ColtonPreferences
+            self.setup_default_bindings()
+        elif drive_style == "Debug":
+            self.user_preferences = DebugPreferences
+            self.setup_default_bindings()
+
+        self.log_and_print("Set up user preferences:", drive_style)
+
         self.align_robot()
         robot_log.info("Setup complete")
         robot_log.debug("Unlocking setup lock")
@@ -303,27 +307,6 @@ class Robot(RobotBase):
         final_deg = self.drivetrain.odometry.get_rotation_normalized().to_degrees()
         self.brain.screen.clear_screen()
         self.log_and_print("Lined up, current angle:", final_deg)
-
-    def select_autonomous_and_drive_style(self):
-        robot_log.info("Selecting autonomous and drive style")
-        autonomous_routine = self.select_autonomous_routine()
-        self.log_and_print("Selected autonomous routine:", autonomous_routine)
-        self.selected_autonomous.pre_match_setup()
-
-        drive_style = self.controller.get_selection(
-            ["Colton",
-             "Debug"]
-        )
-        self.log_and_print("Selected drive style:", drive_style)
-
-        if drive_style == "Colton":
-            self.user_preferences = ColtonPreferences
-            self.setup_default_bindings()
-        elif drive_style == "Debug":
-            self.user_preferences = DebugPreferences
-            self.setup_default_bindings()
-
-        self.log_and_print("Set up user preferences:", drive_style)
 
     @robot_log.logged
     def on_driver_control(self):
