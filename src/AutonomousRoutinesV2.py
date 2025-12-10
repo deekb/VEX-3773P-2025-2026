@@ -403,7 +403,6 @@ class WinPoint(AutonomousRoutine):
         return Rotation2d.from_degrees(-90)
 
     def execute(self):
-        # self.robot.drivetrain.trapezoidal_profile.constraints.max_velocity = DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second()
         self.set_acceleration_factor(1)
         self.set_acceleration_factor(1.3)
 
@@ -444,7 +443,6 @@ class WinPoint(AutonomousRoutine):
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(44), 135)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-25), 180, commands=[TimeBasedCommand(-0.3, lambda: self.robot.intake.run_intake(1))])
         self.run_intake_and_raise_descorer(1)
-        self.robot.brain.screen.draw_rectangle(1, 1, 50, 50, Color.GREEN)
 
 # all_routines = [Skills, WinPoint, LongGoalLow, LongGoalHigh, SimpleLow, SimpleHigh, DoNothingAutonomous, ElimsLow]
 all_routines = [Skills, WinPoint, LongGoalLow, LongGoalHigh, SimpleHigh, ElimsLow, DoNothingAutonomous]
