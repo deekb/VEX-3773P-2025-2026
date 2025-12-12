@@ -62,6 +62,7 @@ class CompetitionSmartPorts:
 
     UPPER_INTAKE_MOTOR = Ports.PORT20
     HOOD_MOTOR = Ports.PORT10
+    COLOR_SENSOR = Ports.PORT18
 
     INERTIAL_SENSOR = Ports.PORT8
 

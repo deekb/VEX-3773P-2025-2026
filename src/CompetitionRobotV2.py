@@ -47,7 +47,7 @@ from vex import (
     TemperatureUnits,
     VoltageUnits,
     CurrentUnits,
-    PERCENT,
+    PERCENT, Optical,
 )
 
 SmartPorts = CompetitionSmartPorts
@@ -110,6 +110,7 @@ class Robot(RobotBase):
             Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.UPPER_INTAKE, True),
             Motor(SmartPorts.HOOD_MOTOR, GearRatios.HOOD, False),
             DigitalOut(ThreeWirePorts.SCORING_SOLENOID),
+            Optical(SmartPorts.COLOR_SENSOR)
         )
 
         self.match_load_helper = MatchLoadHelper(
@@ -154,6 +155,11 @@ class Robot(RobotBase):
         self.alliance_color = self.controller.get_selection(
             ["red", "blue"]
         )
+        if self.alliance_color == "blue":
+            self.alliance_color = Color.BLUE
+        else:
+            self.alliance_color = Color.RED
+
         robot_log.debug("Alliance color:", self.alliance_color)
 
         selected_auto = self.controller.get_selection([auto.name for auto in self.available_autonomous_routines])
@@ -168,7 +174,7 @@ class Robot(RobotBase):
         if isinstance(self.selected_autonomous, DoNothingAutonomous):
             robot_log.warn("DoNothingAutonomous autonomous routine selected")
 
-        return self.alliance_color + " " + self.selected_autonomous.name
+        return self.selected_autonomous.name
 
     def start(self):
         robot_log.info("Robot start called")
@@ -321,7 +327,7 @@ class Robot(RobotBase):
             self.setup_default_bindings()
         elif drive_style == "Debug":
             self.user_preferences = DebugPreferences
-            self.setup_default_bindings()
+            self.setup_debug_bindings()
 
         self.log_and_print("Set up user preferences:", drive_style)
 
@@ -532,3 +538,10 @@ class Robot(RobotBase):
         self.controller.buttonB.released(self.match_load_helper.retract)
 
         self.controller.buttonDown.pressed(self.descoring_arm.toggle)
+
+    @robot_log.logged
+    def setup_debug_bindings(self):
+        robot_log.info("Setting up debug controller bindings")
+        self.setup_default_bindings()
+        self.controller.buttonX.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.RED, 1))
+        self.controller.buttonA.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.BLUE, 1))
