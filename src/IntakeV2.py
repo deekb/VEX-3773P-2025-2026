@@ -1,14 +1,16 @@
 from VEXLib.Motor import Motor
 from VEXLib.Util import time
-from vex import DigitalOut, TorqueUnits, PERCENT
+from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread
 
 
 class IntakeV2:
-    def __init__(self, upper_intake_motor: Motor, floating_intake_motor: Motor, hood_motor: Motor, piston: DigitalOut):
+    def __init__(self, upper_intake_motor: Motor, floating_intake_motor: Motor, hood_motor: Motor, piston: DigitalOut, color_sensor: Optical):
         self.upper_intake_motor = upper_intake_motor
         self.floating_intake_motor = floating_intake_motor
         self.hood_motor = hood_motor
         self.piston = piston
+        self.optical = color_sensor
+        self.optical.set_light_power(100)
         self.last_not_stalled_timestamp = time.time()
 
     def run_upper_intake(self, speed):
@@ -61,6 +63,35 @@ class IntakeV2:
     def toggle_intake_piston(self):
         """Toggle the intake piston."""
         self.piston.set(not self.piston.value())
+
+
+    def get_color(self):
+        """Get the current color."""
+        hue = self.optical.hue()
+        if not self.optical.is_near_object():
+            return None
+        if 0 < hue < 20:
+            return Color.RED
+        if 180 < hue < 240:
+            return Color.BLUE
+        return None
+        # Blue is hue 180 to 220
+        # Red is hue 0 to 20
+
+    def intake_until_color(self, color: Color, speed = 1, timeout = 3):
+        self.run_intake(speed)
+        start_time = time.time()
+        while not self.get_color() == color and time.time() - start_time < timeout:
+            time.sleep_ms(2)
+        if time.time() - start_time > timeout:
+            return
+        self.stop_intake()
+        self.run_hood(-1)
+        time.sleep_ms(100)
+        self.stop_intake()
+
+    def intake_until_color_nonblocking(self, color: Color, speed = 1, timeout = 3):
+        Thread(self.intake_until_color, (color, speed, timeout))
 
     def flaps_are_stalled(self):
          # Stall if torque is high and velocity is low

@@ -47,7 +47,7 @@ from vex import (
     TemperatureUnits,
     VoltageUnits,
     CurrentUnits,
-    PERCENT,
+    PERCENT, Optical,
 )
 
 SmartPorts = CompetitionSmartPorts
@@ -110,6 +110,7 @@ class Robot(RobotBase):
             Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.UPPER_INTAKE, True),
             Motor(SmartPorts.HOOD_MOTOR, GearRatios.HOOD, False),
             DigitalOut(ThreeWirePorts.SCORING_SOLENOID),
+            Optical(SmartPorts.COLOR_SENSOR)
         )
 
         self.match_load_helper = MatchLoadHelper(
@@ -167,7 +168,11 @@ class Robot(RobotBase):
         robot_log.trace(
             "Available autonomous routines:", self.available_autonomous_routines
         )
-        selected_auto, drive_style = self.controller.get_multiple_selections([[auto.name for auto in self.available_autonomous_routines], ["Colton", "Debug"]])
+        selected_auto, drive_style, alliance_color = self.controller.get_multiple_selections([[auto.name for auto in self.available_autonomous_routines], ["Colton", "Debug"], ["red", "blue"]])
+        if alliance_color == "blue":
+            self.alliance_color = Color.BLUE
+        else:
+            alliance_color = Color.RED
 
         for autonomous in self.available_autonomous_routines:
             if selected_auto == autonomous.name:
@@ -187,7 +192,7 @@ class Robot(RobotBase):
             self.setup_default_bindings()
         elif drive_style == "Debug":
             self.user_preferences = DebugPreferences
-            self.setup_default_bindings()
+            self.setup_debug_bindings()
 
         self.log_and_print("Set up user preferences:", drive_style)
 
@@ -508,10 +513,16 @@ class Robot(RobotBase):
         self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(1.0)))
         self.controller.buttonL1.released(self.intake.stop_intake)
 
-
         self.controller.buttonY.pressed(self.toggle_intake)
 
         self.controller.buttonB.pressed(self.match_load_helper.extend)
         self.controller.buttonB.released(self.match_load_helper.retract)
 
         self.controller.buttonDown.pressed(self.descoring_arm.toggle)
+
+    @robot_log.logged
+    def setup_debug_bindings(self):
+        robot_log.info("Setting up debug controller bindings")
+        self.setup_default_bindings()
+        self.controller.buttonX.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.RED, 1))
+        self.controller.buttonA.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.BLUE, 1))
