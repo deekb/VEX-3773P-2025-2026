@@ -1,6 +1,6 @@
 from VEXLib.Motor import Motor
 from VEXLib.Util import time
-from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread
+from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread, FORWARD
 
 
 class IntakeV2:
@@ -31,10 +31,11 @@ class IntakeV2:
 
     def run_hood(self, speed):
         """Run the hood motor at a specified speed."""
-        if self.piston.value():
-            self.hood_motor.set(speed)
-        else:
-            self.hood_motor.set(speed * 0.4)  # Reduced speed when intake is lowered
+        # if self.piston.value():
+        self.hood_motor.set(speed)
+        # else:
+        #     self.hood_motor.set_velocity(speed * 40)
+        #     self.hood_motor.spin(FORWARD)
 
     def stop_hood(self):
         """Stop the hood motor."""
@@ -63,7 +64,6 @@ class IntakeV2:
     def toggle_intake_piston(self):
         """Toggle the intake piston."""
         self.piston.set(not self.piston.value())
-
 
     def get_color(self):
         """Get the current color."""
@@ -94,20 +94,20 @@ class IntakeV2:
         Thread(self.intake_until_color, (color, speed, timeout))
 
     def flaps_are_stalled(self):
-         # Stall if torque is high and velocity is low
-         torque_threshold = 1  # Adjust as needed
-         velocity_threshold = 10  # Adjust as needed
+        # Stall if torque is high and velocity is low
+        torque_threshold = 1  # Adjust as needed
+        velocity_threshold = 10  # Adjust as needed
 
-         is_stalled = (
+        is_stalled = (
              self.upper_intake_motor.get() != 0 and
              self.upper_intake_motor.torque(TorqueUnits.NM) > torque_threshold and
              abs(self.upper_intake_motor.velocity(PERCENT)) < velocity_threshold
          )
 
-         current_time = time.time()
-         if not is_stalled:
+        current_time = time.time()
+        if not is_stalled:
             self.last_not_stalled_timestamp = current_time
 
-         # Only report stall if the condition has persisted for at least 0.1s
-         stalled_duration = current_time - self.last_not_stalled_timestamp
-         return is_stalled and stalled_duration > 0.1
+        # Only report stall if the condition has persisted for at least 0.1s
+        stalled_duration = current_time - self.last_not_stalled_timestamp
+        return is_stalled and stalled_duration > 0.1
