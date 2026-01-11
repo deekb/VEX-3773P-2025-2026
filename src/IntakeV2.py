@@ -5,6 +5,8 @@ from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread, FORWAR
 
 class IntakeV2:
     def __init__(self, upper_intake_motor: Motor, floating_intake_motor: Motor, hood_motor: Motor, piston: DigitalOut, color_sensor: Optical):
+        self.PASSIVE_SPEED = 0.2
+
         self.upper_intake_motor = upper_intake_motor
         self.floating_intake_motor = floating_intake_motor
         self.hood_motor = hood_motor
@@ -12,6 +14,7 @@ class IntakeV2:
         self.optical = color_sensor
         self.optical.set_light_power(100)
         self.last_not_stalled_timestamp = time.time()
+        self.stop_hood()
 
     def run_upper_intake(self, speed):
         """Run the upper intake motor at a specified speed."""
@@ -31,15 +34,14 @@ class IntakeV2:
 
     def run_hood(self, speed):
         """Run the hood motor at a specified speed."""
-        # if self.piston.value():
-        self.hood_motor.set(speed)
-        # else:
-        #     self.hood_motor.set_velocity(speed * 40)
-        #     self.hood_motor.spin(FORWARD)
+        if speed == 0:
+            self.hood_motor.set(-self.PASSIVE_SPEED)
+        else:
+            self.hood_motor.set(speed)
 
     def stop_hood(self):
         """Stop the hood motor."""
-        self.hood_motor.set(0)
+        self.run_hood(0)
 
     def run_intake(self, speed):
         """Run the full intake motor at a specified speed."""
