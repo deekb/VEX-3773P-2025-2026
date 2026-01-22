@@ -1,6 +1,6 @@
 from VEXLib.Geometry.GeometryUtil import circle_circumference
 from VEXLib.Geometry.Rotation2d import Rotation2d
-from VEXLib.Geometry.Translation1d import Distance
+from VEXLib.Geometry.Translation1d import Distance, Translation1d
 from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Sensors.Controller import ControlStyles
 from vex import Ports, GearSetting, Brain

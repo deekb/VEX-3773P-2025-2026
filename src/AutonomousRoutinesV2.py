@@ -211,6 +211,36 @@ class DriveInASquare(AutonomousRoutine):
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), 180)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), -90)
 
+class DriveInACircle(AutonomousRoutine):
+    name = "DriveInACircle"
+
+    def __init__(self, robot: Robot):
+        super().__init__(robot)
+
+    @staticmethod
+    def startup_angle():
+        return Rotation2d.from_degrees(180)
+
+    def execute(self):
+        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(180), Translation1d.from_inches(-12), "CCW", 180)
+        # self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(180), Translation1d.from_inches(12), "CCW", 180)
+
+
+class SMove(AutonomousRoutine):
+    name = "SMove"
+
+    def __init__(self, robot: Robot):
+        super().__init__(robot)
+
+    @staticmethod
+    def startup_angle():
+        return Rotation2d.from_degrees(180)
+
+    def execute(self):
+        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(180), Translation1d.from_inches(12), "CW", 180, dont_stop=True, max_extra_time=0)
+        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(180), Translation1d.from_inches(12), "CCW", 0, dont_start=True, turn_first=False)
+        self.robot.drivetrain.move_until_distance_away(Rotation2d.from_degrees(180), Translation1d.from_inches(12))
+
 
 class LongGoalLow(AutonomousRoutine):
     name = "Long Goal Low"
@@ -421,7 +451,6 @@ class ElimsLow(AutonomousRoutine):
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-25), 180)
 
 
-
 class TurnTest(AutonomousRoutine):
     name = "TurnTest"
     def __init__(self, robot: Robot):
@@ -501,4 +530,4 @@ class WinPoint(AutonomousRoutine):
         # self.robot.brain.screen.draw_rectangle(1, 1, 50, 50, Color.GREEN)
 
 # all_routines = [Skills, WinPoint, LongGoalLow, LongGoalHigh, SimpleLow, SimpleHigh, DoNothingAutonomous, ElimsLow]
-all_routines = [Skills, WinPoint, LongGoalLow, LongGoalHigh, SimpleHigh, ElimsLow, ElimsHigh, DoNothingAutonomous]
+all_routines = [DriveInACircle, Skills, WinPoint, LongGoalLow, LongGoalHigh, SimpleHigh, ElimsLow, ElimsHigh, DoNothingAutonomous, SMove]

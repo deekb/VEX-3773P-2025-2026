@@ -1,9 +1,9 @@
 import json
-
-from VEXLib.Kinematics.TankOdometry import TankOdometry
+import math
 
 import VEXLib.Math.MathUtil as MathUtil
 from ConstantsV2 import DrivetrainProperties, NO_LOGGING, DefaultPreferences
+from Logging import NoLogger
 from VEXLib.Algorithms.LinearRegressor import LinearRegressor
 from VEXLib.Algorithms.PID import PIDController
 from VEXLib.Algorithms.PIDF import PIDFController
@@ -12,17 +12,18 @@ from VEXLib.Algorithms.TrapezoidProfile import *
 from VEXLib.Geometry import GeometryUtil
 from VEXLib.Geometry.Pose2d import Pose2d
 from VEXLib.Geometry.Rotation2d import Rotation2d
-from VEXLib.Geometry.Translation1d import Translation1d, Distance
+from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Geometry.Velocity1d import Velocity1d
+from VEXLib.Kinematics.TankOdometry import TankOdometry
+from VEXLib.Math import clamp
 from VEXLib.Motor import Motor
 from VEXLib.Units import Units
 from VEXLib.Util import time
 from VEXLib.Util.Logging import Logger, TimeSeriesLogger
 from VEXLib.Util.motor_analysis import collect_power_relationship_data
-from Logging import NoLogger
-from vex import DEGREES, Thread
-
+from src.CompetitionRobotV2 import SmartPorts
+from vex import DEGREES, Thread, Distance, DistanceUnits
 
 if NO_LOGGING:
     drivetrain_log = NoLogger("logs/Drivetrain")
@@ -54,7 +55,6 @@ class Drivetrain:
         left_motors: list[Motor],
         right_motors: list[Motor],
         inertial_sensor,
-        log_function=print,
     ):
         self.log = drivetrain_log
         self.debug_log = debug_log
@@ -62,6 +62,9 @@ class Drivetrain:
 
         self.left_motors = left_motors
         self.right_motors = right_motors
+
+        self.left_distance = Distance(SmartPorts.LEFT_DISTANCE)
+        self.right_distance = Distance(SmartPorts.RIGHT_DISTANCE)
 
         self.odometry = TankOdometry(
             inertial_sensor,
@@ -201,6 +204,9 @@ class Drivetrain:
             DrivetrainProperties.WHEEL_CIRCUMFERENCE, wheel_rotation
         )
 
+    def get_distance_from_object(self):
+        return Translation1d.from_millimeters(MathUtil.average(self.left_distance.object_distance(units=DistanceUnits.MM), self.right_distance.object_distance(units=DistanceUnits.MM)))
+
     def set_speed_zero_to_one(self, left_speed, right_speed):
         self.set_speed(
             DrivetrainProperties.MAX_ACHIEVABLE_SPEED * left_speed,
@@ -258,7 +264,6 @@ class Drivetrain:
             else:
                 pid_output -= 0.03
 
-
             output = MathUtil.clamp(
                 pid_output,
                 -0.6,
@@ -300,7 +305,194 @@ class Drivetrain:
             distance = distance.inverse()
         self.move_distance_towards_direction_trap(distance, (angle.to_degrees() if turn else Units.radians_to_degrees(self.rotation_PID.setpoint)), stop_immediately=stop_immediately, commands=commands)
 
-    # def move_
+    def arc_movement(
+        self,
+        arc_angle,
+        arc_radius,
+        direction,
+        start_direction_degrees,
+        turn_first=True,
+        turn_correct=True,
+        stop_immediately=False,
+        commands=None,
+        max_extra_time=DrivetrainProperties.MOVEMENT_MAX_EXTRA_TIME,
+        dont_stop=False,
+    ):
+        # self.log.trace("Entering move_distance_towards_direction_trap")
+        # self.log.debug(
+        #     "Driving",
+        #     ("forwards" if distance.to_meters() > 0 else "backwards"),
+        #     distance.to_inches(),
+        #     "in at",
+        #     direction_degrees,
+        #     "degrees",
+        # )
+
+        if commands is None:
+            commands = []
+
+        if turn_first:
+            self.turn_to(Rotation2d.from_degrees(start_direction_degrees))
+
+        left_start_position = self.get_left_distance().to_meters()
+        right_start_position = self.get_right_distance().to_meters()
+
+        full_circle_arc_length = arc_radius.to_meters() * math.pi * 2
+
+        arc_length = full_circle_arc_length * arc_angle.to_revolutions()
+
+        inner_ratio = 1 - (DrivetrainProperties.TRACK_WIDTH.to_meters() / arc_radius.to_meters()) / 2
+        outer_ratio = 1 + (DrivetrainProperties.TRACK_WIDTH.to_meters() / arc_radius.to_meters()) / 2
+
+        if direction == "CCW":
+            left_ratio = inner_ratio
+            right_ratio = outer_ratio
+        else:
+            left_ratio = outer_ratio
+            right_ratio = inner_ratio
+
+        left_arc_length = arc_length * left_ratio
+        right_arc_length = arc_length * right_ratio
+
+        left_initial_state = State(0, self.get_left_speed().to_meters_per_second())
+        right_initial_state = State(0, self.get_right_speed().to_meters_per_second())
+
+        if dont_stop:
+            left_goal_state = State(left_arc_length, DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * 0.5 * left_ratio)
+            right_goal_state = State(right_arc_length, DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * 0.5 * right_ratio)
+        else:
+            left_goal_state = State(left_arc_length, 0)
+            right_goal_state = State(right_arc_length, 0)
+
+        start_time = time.time()
+        left_trapezoidal_profile = TrapezoidProfile(
+            Constraints(
+                DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * 0.5 * left_ratio,
+                DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * left_ratio,
+            )
+        )
+
+        right_trapezoidal_profile = TrapezoidProfile(
+            Constraints(
+                DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * 0.5 * right_ratio,
+                DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * right_ratio,
+            )
+        )
+
+        left_pid = PIDController(DrivetrainProperties.POSITION_PID_GAINS, 1e-5, 10)
+        right_pid = PIDController(DrivetrainProperties.POSITION_PID_GAINS, 1e-5, 10)
+
+        left_trapezoidal_profile.calculate(0, left_initial_state, left_goal_state)
+        right_trapezoidal_profile.calculate(0, right_initial_state, right_goal_state)
+
+        total_time = max(left_trapezoidal_profile.total_time(), right_trapezoidal_profile.total_time())
+
+        # self.log.log_vars({
+        #     "full_circle_arc_length": full_circle_arc_length,
+        #     "arc_length": arc_length,
+        #     "inner_ratio": inner_ratio,
+        #     "outer_ratio": outer_ratio,
+        #     "left_constraints": Constraints(
+        #         DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * left_ratio,
+        #         DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * left_ratio,
+        #     ),
+        #     "right_constraints": Constraints(
+        #         DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * right_ratio,
+        #         DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * right_ratio,
+        #     )
+        #
+        # })
+
+        while True:
+            elapsed_time = time.time() - start_time
+            target_left_distance_traveled = left_trapezoidal_profile.calculate(
+                elapsed_time, left_initial_state, left_goal_state
+            )
+            target_right_distance_traveled = right_trapezoidal_profile.calculate(
+                elapsed_time, right_initial_state, right_goal_state
+            )
+
+            remaining_time = total_time - elapsed_time
+
+            for command in commands:
+                if command.time >= 0:
+                    # Reference from start of movement
+                    if command.time <= elapsed_time:
+                        command.execute_once()
+
+                else:
+                    # Reference from end of movement
+                    if (-command.time) >= remaining_time:
+                        command.execute_once()
+
+            left_position = self.get_left_distance().to_meters() - left_start_position
+            right_position = self.get_right_distance().to_meters() - right_start_position
+
+            distance_traveled = MathUtil.average(left_position, right_position)
+
+            left_pid.setpoint = target_left_distance_traveled.position
+            right_pid.setpoint = target_right_distance_traveled.position
+
+            if False:
+                rotation_output = (
+                    -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
+                    * DrivetrainProperties.TURN_CORRECTION_SCALAR_WHILE_MOVING
+                )
+            else:
+                rotation_output = 0
+
+            self.set_speed_zero_to_one(
+                left_pid.update(left_position) + rotation_output, right_pid.update(right_position) - rotation_output
+            )
+            self.update_powers()
+            self.update_odometry()
+
+            at_setpoint = left_pid.at_setpoint(
+                left_position,
+                DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters() / 2
+            ) and right_pid.at_setpoint(
+                right_position,
+                DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters() / 2
+            )
+
+            if stop_immediately:
+                time_exceeded = (
+                        elapsed_time >= total_time
+                )
+            else:
+                time_exceeded = (
+                    elapsed_time >= total_time + max_extra_time
+                )
+            if elapsed_time >= total_time and (at_setpoint or time_exceeded):
+                self.log.debug(
+                    "Terminating movement: at_setpoint: ",
+                    at_setpoint,
+                    "time_exceeded: ",
+                    time_exceeded,
+                )
+                if time_exceeded:
+                    self.log.warn("time_exceeded")
+                break
+            # debug_log.log_vars({
+            #     "movement_pid_output": output_speed,
+            #     "current_position": distance_traveled,
+            #     "target_position": self.position_PID.setpoint,
+            #     "current_heading (rev)": self.odometry.get_rotation().to_revolutions(),
+            #     "target_heading (rev)": Rotation2d.from_radians(self.rotation_PID.setpoint).to_revolutions(),
+            #
+            # })
+
+        # self.log.debug(
+        #     "Remaining Distance: " + str(arc_length - Units.meters_to_inches(distance_traveled)) + " in"
+        # )
+        # self.log.debug("Distance Traveled: " + str(Units.meters_to_inches(distance_traveled)) + " in")
+        if not dont_stop:
+            self.set_speed_zero_to_one(0, 0)
+            self.set_powers(0, 0)
+            self.left_drivetrain_PID.reset()
+            self.right_drivetrain_PID.reset()
+
+        # self.log.flush_logs()
 
     def move_distance_towards_direction_trap(
         self,
@@ -310,7 +502,8 @@ class Drivetrain:
         turn_correct=True,
         stop_immediately=False,
         commands=None,
-        max_extra_time=DrivetrainProperties.MOVEMENT_MAX_EXTRA_TIME
+        max_extra_time=DrivetrainProperties.MOVEMENT_MAX_EXTRA_TIME,
+        dont_stop=False,
     ):
         self.position_PID.reset()
         self.rotation_PID.reset()
@@ -333,7 +526,7 @@ class Drivetrain:
         left_start_position = self.get_left_distance().to_meters()
         right_start_position = self.get_right_distance().to_meters()
 
-        initial_state = State(0, 0)
+        initial_state = State(0, MathUtil.average(self.get_left_speed().to_meters_per_second(), self.get_right_speed().to_meters_per_second()))
         goal_state = State(distance.to_meters(), 0)
 
         start_time = time.time()
@@ -417,21 +610,44 @@ class Drivetrain:
                 "target_heading (rev)": Rotation2d.from_radians(self.rotation_PID.setpoint).to_revolutions(),
 
             })
+        if not dont_stop:
+            self.set_speed_zero_to_one(0, 0)
+            self.set_powers(0, 0)
+            self.left_drivetrain_PID.reset()
+            self.right_drivetrain_PID.reset()
 
         self.log.debug(
             "Remaining Distance: " + str(distance.to_inches() - Units.meters_to_inches(distance_traveled)) + " in"
         )
         self.log.debug("Distance Traveled: " + str(Units.meters_to_inches(distance_traveled)) + " in")
 
-        self.set_speed_zero_to_one(0, 0)
-        self.set_powers(0, 0)
-
         self.update_target_translation(
             distance, Rotation2d.from_degrees(direction_degrees)
         )
+        
+    def move_until_distance_away(self, distance, direction_degrees, turn_correct=True, turn_first=True):
 
-        self.left_drivetrain_PID.reset()
-        self.right_drivetrain_PID.reset()
+        if turn_first:
+            self.turn_to(Rotation2d.from_degrees(direction_degrees))
+
+        while True:
+            error = self.get_distance_from_object() - distance
+            forward_speed = clamp(error, -0.8, 0.8)
+            
+            if turn_correct:
+                rotation_output = (
+                    -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
+                    * DrivetrainProperties.TURN_CORRECTION_SCALAR_WHILE_MOVING
+                )
+            else:
+                rotation_output = 0
+            
+            self.set_speed_zero_to_one(forward_speed+rotation_output, forward_speed-rotation_output)
+
+            if self.get_distance_from_object() <= distance:
+                break
+            
+        
 
     def update_zero_pose(self, new_zero_pose):
         self.log.trace("Entering update_zero_pose")

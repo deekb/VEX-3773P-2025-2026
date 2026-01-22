@@ -7,6 +7,7 @@ kilograms_per_pound = 0.453592
 milliseconds_per_second = 1000.0
 microseconds_per_millisecond = 1000.0
 centimeters_per_meter = 100.0
+millimeters_per_centimeter = 10.0
 
 
 def meters_to_feet(meters):
@@ -32,6 +33,8 @@ def inches_to_meters(inches):
 def centimeters_to_meters(centimeters):
     return centimeters / centimeters_per_meter
 
+def millimeters_to_meters(millimeters):
+    return millimeters / millimeters_per_centimeter / centimeters_per_meter
 
 def degrees_to_radians(degrees):
     return math.radians(degrees)

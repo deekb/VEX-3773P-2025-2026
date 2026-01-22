@@ -439,6 +439,10 @@ class Drivetrain:
 
     def init(self):
         self.log.debug("Entering init")
+        for motor in self.left_motors:
+            motor.stop()
+        for motor in self.right_motors:
+            motor.stop()
         self.left_drivetrain_PID.reset()
         self.right_drivetrain_PID.reset()
 

@@ -6,7 +6,6 @@ from Logging import Logger, NoLogger
 from DescoringArm import DescoringArm
 from ConstantsV2 import *
 
-
 # This gets done first so any loggers that are created during imports use the updated index
 startup_count = Shelf("logs/startup_count.csv")
 startup_count.set("startup_count", startup_count.get("startup_count", -1) + 1)
@@ -26,6 +25,7 @@ import sys
 import VEXLib.Math.MathUtil as MathUtil
 from JoystickCalibration import normalize_joystick_input
 from MatchLoadHelper import MatchLoadHelper
+from MidgoalHoodActuator import MidgoalHoodActuator
 from VEXLib.Geometry.GeometryUtil import hypotenuse
 from TankDrivetrainV2 import Drivetrain
 from VEXLib.Motor import Motor
@@ -98,7 +98,6 @@ class Robot(RobotBase):
                 ),
             ],
             Inertial(SmartPorts.INERTIAL_SENSOR),
-            self.log_and_print,
         )
 
         self.calibrate_sensors()
@@ -119,6 +118,10 @@ class Robot(RobotBase):
 
         self.descoring_arm = DescoringArm(
             DigitalOut(ThreeWirePorts.DESCORING_ARM_SOLENOID)
+        )
+
+        self.midgoal_hood_actuator = MidgoalHoodActuator(
+            DigitalOut(ThreeWirePorts.MIDGOAL_HOOD_ACTUATOR)
         )
 
         self.screen = ScrollingScreen(self.brain.screen, Buffer(20))
@@ -493,8 +496,8 @@ class Robot(RobotBase):
     def setup_default_bindings(self):
         robot_log.info("Setting up default controller bindings")
 
-        self.controller.buttonL2.pressed(lambda: (self.intake.run_intake(-1.0), self.intake.run_hood(-1.0)))
-        self.controller.buttonL2.released(lambda: (self.intake.stop_intake(),self.intake.stop_hood()))
+        self.controller.buttonL2.pressed(lambda: (self.intake.run_intake(-1.0), self.intake.run_hood(-1.0), (self.midgoal_hood_actuator.extend() if not self.intake.piston.value() else None)))
+        self.controller.buttonL2.released(lambda: (self.intake.stop_intake(), self.intake.stop_hood(), self.midgoal_hood_actuator.retract()))
 
         self.controller.buttonR1.pressed(
             lambda: (self.intake.run_intake(1.0), self.intake.stop_hood())

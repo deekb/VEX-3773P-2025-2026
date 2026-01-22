@@ -9,6 +9,12 @@ class Constraints:
         self.max_velocity = max_velocity
         self.max_acceleration = max_acceleration
 
+    def __repr__(self):
+        return "Constraints <max_velocity=" + str(self.max_velocity) + ", max_acceleration=" + str(self.max_acceleration) + ">"
+
+    def __str__(self):
+        return self.__repr__()
+
 
 class State:
     position: float

@@ -53,7 +53,7 @@ class AutonomousRoutine:
     def cleanup(self):
         self.robot.drivetrain.init()
         self.robot.drivetrain.set_powers(0, 0)
-        self.robot.flush_all_logs()
+        # self.robot.flush_all_logs()
 
 
 class DoNothingAutonomous(AutonomousRoutine):

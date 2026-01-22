@@ -183,6 +183,9 @@ class Translation1d:
         """
         return str(self.magnitude) + "m"
 
+    def __repr__(self):
+        return self.__str__()
+
     @classmethod
     def from_zero(cls):
         """
@@ -205,6 +208,19 @@ class Translation1d:
             Translation1d: A new Translation1d object with the magnitude in meters.
         """
         return cls(x_meters)
+
+    @classmethod
+    def from_millimeters(cls, x_millimeters):
+        """
+        Create a Translation1d object from millimeters.
+
+        Args:
+            x_millimeters (float): The magnitude in millimeters.
+
+        Returns:
+            Translation1d: A new Translation1d object with the magnitude in millimeters.
+        """
+        return cls(Units.millimeters_to_meters(x_millimeters))
 
     @classmethod
     def from_centimeters(cls, x_centimeters):

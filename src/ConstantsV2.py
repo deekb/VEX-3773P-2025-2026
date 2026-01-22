@@ -5,7 +5,7 @@ from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Sensors.Controller import ControlStyles
 from vex import Ports, GearSetting, Brain
 
-NO_LOGGING = True
+NO_LOGGING = False
 
 class PIDGains:
     def __init__(self, kp, ki, kd):
@@ -65,12 +65,15 @@ class CompetitionSmartPorts:
     COLOR_SENSOR = Ports.PORT18
 
     INERTIAL_SENSOR = Ports.PORT7
+    LEFT_DISTANCE = Ports.PORT16
+    RIGHT_DISTANCE = Ports.PORT17
 
 class ThreeWirePorts:
     brain = Brain()
     SCORING_SOLENOID = brain.three_wire_port.c
     MATCH_LOAD_HELPER_SOLENOID = brain.three_wire_port.b
     DESCORING_ARM_SOLENOID = brain.three_wire_port.a
+    MIDGOAL_HOOD_ACTUATOR = brain.three_wire_port.d
 
 
 class GearRatios:
@@ -82,15 +85,16 @@ class GearRatios:
 
 class DrivetrainProperties:
     POSITION_PID_GAINS = PIDGains(6, 0.6, 0)
-    ROTATION_PID_GAINS = PIDGains(0.65, 0.0, 0.05)
+    ROTATION_PID_GAINS = PIDGains(0.62, 0.0, 0.01)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     TURN_TIMEOUT_SECONDS = 1
     TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.8
-    TURNING_THRESHOLD = Rotation2d.from_degrees(2)
-    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.5)
-    MOVEMENT_MAX_EXTRA_TIME = 0.2
+    TURNING_THRESHOLD = Rotation2d.from_degrees(0.5)
+    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.3)
+    MOVEMENT_MAX_EXTRA_TIME = 0.5
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.77)
     MOTOR_TO_WHEEL_GEAR_RATIO = 36 / 60
     WHEEL_DIAMETER = Distance.from_inches(3.233)
     WHEEL_CIRCUMFERENCE = circle_circumference(WHEEL_DIAMETER / 2)
+    TRACK_WIDTH = Distance.from_meters(0.308) # Actual 0.308

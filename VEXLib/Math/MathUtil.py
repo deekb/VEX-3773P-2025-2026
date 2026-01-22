@@ -120,7 +120,7 @@ def apply_deadband(value: float, deadband: float = 0.05, max_magnitude: float = 
     between the deadband and the maximum magnitude is scaled from 0.0 to the maximum magnitude.
 
     Args:
-        value: The value to clip.
+        value: The value to deadband.
         deadband: The range around zero.
         max_magnitude: The maximum magnitude of the input.
 
@@ -142,6 +142,37 @@ def apply_deadband(value: float, deadband: float = 0.05, max_magnitude: float = 
 
     if abs(value) <= deadband:
         return 0.0
+
+    return sign(value) * max_magnitude * (abs(value) - deadband) / (max_magnitude - deadband)
+
+def apply_undeadband(value: float, deadband: float = 0.05, max_magnitude: float = 1.0) -> float:
+    """
+    Returns deadband value with the correct sign if the given value is within the specified range around zero.
+    The remaining range between the deadband and the maximum magnitude is scaled from deadband to the maximum magnitude.
+
+    Args:
+        value: The value to undeadband.
+        deadband: The range around zero.
+        max_magnitude: The maximum magnitude of the input.
+
+    Returns:
+        The value after the deadband is applied.
+
+    Examples:
+        >>> apply_undeadband(0.03)
+        0.05
+        >>> apply_undeadband(0.1)
+
+        >>> apply_undeadband(-0.1)
+
+        >>> apply_undeadband(0.1, 0.1)
+        0.1
+    """
+    if abs(value) > max_magnitude:
+        raise ValueError
+
+    if abs(value) <= deadband:
+        return sign(value) * deadband
 
     return sign(value) * max_magnitude * (abs(value) - deadband) / (max_magnitude - deadband)
 

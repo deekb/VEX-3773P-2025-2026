@@ -27,7 +27,7 @@ import VEXLib.Math.MathUtil as MathUtil
 from JoystickCalibration import normalize_joystick_input
 from MatchLoadHelper import MatchLoadHelper
 from VEXLib.Geometry.GeometryUtil import hypotenuse
-from TankDrivetrain import Drivetrain
+from TankDrivetrainV2 import Drivetrain
 from VEXLib.Motor import Motor
 from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollingScreen import ScrollingScreen
