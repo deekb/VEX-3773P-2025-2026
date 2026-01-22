@@ -2,7 +2,7 @@ import json
 import math
 
 import VEXLib.Math.MathUtil as MathUtil
-from ConstantsV2 import DrivetrainProperties, NO_LOGGING, DefaultPreferences
+from ConstantsV2 import DrivetrainProperties, NO_LOGGING, DefaultPreferences, CompetitionSmartPorts
 from Logging import NoLogger
 from VEXLib.Algorithms.LinearRegressor import LinearRegressor
 from VEXLib.Algorithms.PID import PIDController
@@ -22,8 +22,9 @@ from VEXLib.Units import Units
 from VEXLib.Util import time
 from VEXLib.Util.Logging import Logger, TimeSeriesLogger
 from VEXLib.Util.motor_analysis import collect_power_relationship_data
-from src.CompetitionRobotV2 import SmartPorts
 from vex import DEGREES, Thread, Distance, DistanceUnits
+
+SmartPorts = CompetitionSmartPorts
 
 if NO_LOGGING:
     drivetrain_log = NoLogger("logs/Drivetrain")
@@ -886,14 +887,14 @@ class Drivetrain:
                 "The robot did not move to the correct position on the Y axis, check the log above"
             )
 
-    def verify_odometry(self, imperial=False, tolerance=Distance.from_centimeters(5)):
-        self.log.trace("Entering verify_odometry")
-        self.init()
-
-        self.log_translation_discrepancy(imperial, tolerance)
-        self.log.info("First movement")
-        self.move_distance_towards_direction_trap(Translation1d.from_feet(8), 0)
-        self.log_translation_discrepancy(imperial, tolerance)
-        self.log.info("Second movement")
-        self.move_distance_towards_direction_trap(Translation1d.from_meters(0.5), -90)
-        self.log_translation_discrepancy(imperial, tolerance)
+    # def verify_odometry(self, imperial=False, tolerance=Distance.from_centimeters(5)):
+    #     self.log.trace("Entering verify_odometry")
+    #     self.init()
+    #
+    #     self.log_translation_discrepancy(imperial, tolerance)
+    #     self.log.info("First movement")
+    #     self.move_distance_towards_direction_trap(Translation1d.from_feet(8), 0)
+    #     self.log_translation_discrepancy(imperial, tolerance)
+    #     self.log.info("Second movement")
+    #     self.move_distance_towards_direction_trap(Translation1d.from_meters(0.5), -90)
+    #     self.log_translation_discrepancy(imperial, tolerance)

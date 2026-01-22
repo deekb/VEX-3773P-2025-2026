@@ -498,8 +498,8 @@ class Robot(RobotBase):
     def setup_default_bindings(self):
         robot_log.info("Setting up default controller bindings")
 
-        self.controller.buttonL2.pressed(lambda: (self.intake.run_intake(-1.0), self.intake.run_hood(-1.0), (self.midgoal_hood_actuator.extend() if not self.intake.piston.value() else None)))
-        self.controller.buttonL2.released(lambda: (self.intake.stop_intake(), self.intake.stop_hood(), self.midgoal_hood_actuator.retract()))
+        self.controller.buttonL2.pressed(lambda: (self.intake.run_intake(-1.0), self.intake.run_hood(-1.0)))
+        self.controller.buttonL2.released(lambda: (self.intake.stop_intake(), self.intake.stop_hood(), ))
 
         self.controller.buttonR1.pressed(
             lambda: (self.intake.run_intake(1.0), self.intake.stop_hood())
@@ -515,8 +515,8 @@ class Robot(RobotBase):
             lambda: (self.intake.stop_intake(), self.intake.stop_hood())
         )
 
-        self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(1.0)))
-        self.controller.buttonL1.released(self.intake.stop_intake)
+        self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(1.0),  (self.midgoal_hood_actuator.extend() if not self.intake.piston.value() else None)))
+        self.controller.buttonL1.released(lambda: (self.intake.stop_intake(), self.midgoal_hood_actuator.retract()))
 
         self.controller.buttonY.pressed(self.toggle_intake)
 

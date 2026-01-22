@@ -1,6 +1,6 @@
 from VEXLib.Motor import Motor
 from VEXLib.Util import time
-from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread, FORWARD
+from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread, FORWARD, HOLD, COAST
 
 
 class IntakeV2:
@@ -35,8 +35,12 @@ class IntakeV2:
     def run_hood(self, speed):
         """Run the hood motor at a specified speed."""
         if speed == 0:
-            self.hood_motor.set(-self.PASSIVE_SPEED)
+            # self.hood_motor.set(-self.PASSIVE_SPEED)
+            self.hood_motor.set_stopping(HOLD)
+            self.hood_motor.set_velocity(0)
+            self.hood_motor.stop()
         else:
+            self.hood_motor.set_stopping(COAST)
             self.hood_motor.set(speed)
 
     def stop_hood(self):
