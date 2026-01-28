@@ -117,3 +117,7 @@ class IntakeV2:
         # Only report stall if the condition has persisted for at least 0.1s
         stalled_duration = current_time - self.last_not_stalled_timestamp
         return is_stalled and stalled_duration > 0.1
+
+    def pickup(self, speed=1):
+        self.run_floating_intake(speed)
+        self.run_upper_intake(speed)

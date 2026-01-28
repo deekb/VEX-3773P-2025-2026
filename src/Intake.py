@@ -27,10 +27,6 @@ class Intake:
         """Stop the upper intake motor"""
         self.upper_intake_motor.set(0)
 
-    def pickup(self, speed=1):
-        self.run_floating_intake(speed)
-        self.run_upper_intake(speed)
-
     def run_hood(self, speed):
         """Run the hood motor at a specified speed."""
         self.hood_motor.set(speed)

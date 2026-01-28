@@ -28,10 +28,10 @@ class DefaultPreferences:
     DO_TURN_DECAY = False
     USE_PIDF_CONTROL = False
     PIDF_GAINS_LEFT_DRIVER = PIDFGains(0.04, 0, 0, 0.6)
-    PIDF_GAINS_RIGHT_DRIVER = PIDFGains(0.03, 0, 0, 0.6)
+    PIDF_GAINS_RIGHT_DRIVER = PIDFGains(0.04, 0, 0, 0.6)
 
-    PIDF_GAINS_LEFT_AUTO = PIDFGains(0.35, 0.1, 0, 0.65)
-    PIDF_GAINS_RIGHT_AUTO = PIDFGains(0.35, 0.1, 0, 0.6)
+    PIDF_GAINS_LEFT_AUTO = PIDFGains(0.45, 0.1, 0, 0.7)
+    PIDF_GAINS_RIGHT_AUTO = PIDFGains(0.45, 0.1, 0, 0.7)
     ENABLE_DRIVING = True
     INPUT_DEBUG_MODE = False
 

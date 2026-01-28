@@ -531,3 +531,4 @@ class Robot(RobotBase):
         self.setup_default_bindings()
         self.controller.buttonX.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.RED, 1))
         self.controller.buttonA.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.BLUE, 1))
+        self.controller.buttonX.pressed(self.drivetrain.verify_speed_pid)
