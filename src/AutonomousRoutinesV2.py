@@ -44,7 +44,7 @@ class AutonomousRoutine:
         return False
 
     def set_acceleration_factor(self, factor):
-        self.robot.drivetrain.trapezoidal_profile.constraints.max_acceleration = DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * factor
+        self.robot.drivetrain.acceleration_scalar = factor
 
     def run_intake_and_raise_descorer(self, speed):
         self.robot.intake.run_intake(speed)
@@ -542,9 +542,11 @@ class SkillsArcTurn(AutonomousRoutine):
 
     def execute(self):
         self.set_acceleration_factor(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(19), 90, dont_stop=True)
-        self.robot.match_load_helper.extend()
-        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(10), "CCW", 90, dont_stop=True, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(19), 90, dont_stop=True, max_extra_time=0)
+        # self.robot.match_load_helper.extend()
+        # time.sleep(0.5)
+        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(9), "CCW", 90, max_extra_time=0, turn_first=False)
+        return
         self.robot.intake.pickup()
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(3), 180, max_extra_time=0)
 
