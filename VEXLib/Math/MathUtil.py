@@ -5,6 +5,8 @@ calculating angular differences, and applying filters. These functions are desig
 relevant to robotics, geometry, and numerical computation.
 """
 import math
+if False:
+    from typing import Iterable
 
 from VEXLib.Geometry.GeometryUtil import hypotenuse
 
@@ -53,7 +55,7 @@ def average(*args: float) -> float:
     return average_iterable(list(args))
 
 
-def average_iterable(iterable: list[float]) -> float:
+def average_iterable(iterable: Iterable[float]) -> float:
     """
     Calculates the average of the input iterable.
 

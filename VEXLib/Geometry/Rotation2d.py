@@ -93,6 +93,10 @@ class Rotation2d:
         return cls.from_radians(math.atan2(translation2d.y_component.to_meters(), translation2d.x_component.to_meters()))
 
     @classmethod
+    def from_zero(cls):
+        return cls.from_radians(0)
+
+    @classmethod
     def from_radians(cls, angle_radians):
         """Create a Rotation2d object from an angle in radians."""
         return cls(angle_radians)

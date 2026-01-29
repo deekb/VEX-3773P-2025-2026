@@ -88,6 +88,7 @@ class DrivetrainProperties:
     ROTATION_PID_GAINS = PIDGains(0.62, 0.0, 0.01)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
+    STARTUP_ANGLE = Rotation2d.from_degrees(180)
     TURN_TIMEOUT_SECONDS = 1
     TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.8
     TURNING_THRESHOLD = Rotation2d.from_degrees(0.5)
