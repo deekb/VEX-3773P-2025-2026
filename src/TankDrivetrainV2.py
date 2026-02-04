@@ -342,8 +342,15 @@ class Drivetrain:
         if commands is None:
             commands = []
 
+        self.left_drivetrain_PID.reset()
+        self.right_drivetrain_PID.reset()
+        self.rotation_PID.reset()
+
         if turn_first:
             self.turn_to(Rotation2d.from_degrees(start_direction_degrees))
+
+        self.left_drivetrain_PID.reset()
+        self.right_drivetrain_PID.reset()
 
         left_start_position = self.get_left_distance().to_meters()
         right_start_position = self.get_right_distance().to_meters()
@@ -400,7 +407,6 @@ class Drivetrain:
 
         self.left_trapezoidal_profile.calculate(0, left_initial_state, left_goal_state)
         self.right_trapezoidal_profile.calculate(0, right_initial_state, right_goal_state)
-
         total_time = max(self.left_trapezoidal_profile.total_time(), self.right_trapezoidal_profile.total_time())
 
         # self.log.log_vars({
@@ -489,6 +495,10 @@ class Drivetrain:
             self.left_drivetrain_PID.reset()
             self.right_drivetrain_PID.reset()
 
+        self.update_odometry()
+        self.rotation_PID.setpoint = self.odometry.get_rotation().to_radians()
+
+
 
     def move_distance_towards_direction_trap(
             self,
@@ -515,8 +525,15 @@ class Drivetrain:
         if commands is None:
             commands = []
 
+        self.left_drivetrain_PID.reset()
+        self.right_drivetrain_PID.reset()
+        self.rotation_PID.reset()
+
         if turn_first:
             self.turn_to(Rotation2d.from_degrees(direction_degrees))
+
+        self.left_drivetrain_PID.reset()
+        self.right_drivetrain_PID.reset()
 
         left_start_position = self.get_left_distance().to_meters()
         right_start_position = self.get_right_distance().to_meters()

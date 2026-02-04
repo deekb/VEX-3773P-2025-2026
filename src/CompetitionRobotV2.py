@@ -360,6 +360,9 @@ class Robot(RobotBase):
 
     def driver_control_periodic(self):
         self.log_telemetry()
+        if self.controller.buttonLeft.pressing():
+            i = int(self.iteration_count / 1) % 94
+            self.brain.screen.draw_image_from_file("assets/output_frame_" + ("0" * (4 - len(str(i))) + str(i)) + "-fs8.png", 0, 0)
         left_speed, right_speed = self.controller.get_wheel_speeds(self.user_preferences.CONTROL_STYLE)
 
         # target_forward_speed = self.controller.left_stick_y_raw()
@@ -525,6 +528,8 @@ class Robot(RobotBase):
 
         self.controller.buttonDown.pressed(self.descoring_arm.toggle)
 
+        self.controller.buttonLeft.released(self.brain.screen.clear_screen)
+
     @robot_log.logged
     def setup_debug_bindings(self):
         robot_log.info("Setting up debug controller bindings")
@@ -532,3 +537,8 @@ class Robot(RobotBase):
         self.controller.buttonX.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.RED, 1))
         self.controller.buttonA.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.BLUE, 1))
         self.controller.buttonX.pressed(self.drivetrain.verify_speed_pid)
+        self.controller.buttonUp.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(0)))
+        self.controller.buttonLeft.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(90)))
+        self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(180)))
+        self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(270)))
+

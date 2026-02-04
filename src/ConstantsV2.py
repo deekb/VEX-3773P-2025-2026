@@ -5,7 +5,7 @@ from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Sensors.Controller import ControlStyles
 from vex import Ports, GearSetting, Brain
 
-NO_LOGGING = False
+NO_LOGGING = True
 
 class PIDGains:
     def __init__(self, kp, ki, kd):
@@ -92,7 +92,7 @@ class DrivetrainProperties:
     TURN_TIMEOUT_SECONDS = 1
     TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.8
     TURNING_THRESHOLD = Rotation2d.from_degrees(0.5)
-    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(0.3)
+    MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
     MOVEMENT_MAX_EXTRA_TIME = 0.5
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.77)
     MOTOR_TO_WHEEL_GEAR_RATIO = 36 / 60
