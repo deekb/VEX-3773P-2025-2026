@@ -16,7 +16,7 @@ from VEXLib.Geometry.Translation1d import Translation1d
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Kinematics.TankOdometry import TankOdometry
-from VEXLib.Math import clamp, average
+from VEXLib.Math import clamp, average, is_near
 from VEXLib.Motor import Motor
 from VEXLib.Units import Units
 from VEXLib.Util import time
@@ -462,13 +462,16 @@ class Drivetrain:
             self.update_powers()
             self.update_odometry()
 
-            at_setpoint = self.left_position_pid.at_setpoint(
-                left_position,
-                DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters() / 2
-            ) and self.right_position_pid.at_setpoint(
-                right_position,
-                DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters() / 2
-            )
+            # at_setpoint = self.left_position_pid.at_setpoint(
+            #     left_position,
+            #     DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters() / 2
+            # ) and self.right_position_pid.at_setpoint(
+            #     right_position,
+            #     DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters() / 2
+            # )
+
+            is_near_end = is_near(left_position, left_goal_state.position, DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters()) and is_near(right_position, right_goal_state.position, DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters())
+
 
             if stop_immediately:
                 time_exceeded = (
@@ -478,10 +481,10 @@ class Drivetrain:
                 time_exceeded = (
                         elapsed_time >= total_time + max_extra_time
                 )
-            if elapsed_time >= total_time and (at_setpoint or time_exceeded):
+            if elapsed_time >= total_time or (is_near_end or time_exceeded):
                 self.log.debug(
-                    "Terminating movement: at_setpoint: ",
-                    at_setpoint,
+                    "Terminating movement: is_near_end: ",
+                    is_near_end,
                     "time_exceeded: ",
                     time_exceeded,
                 )
@@ -614,13 +617,15 @@ class Drivetrain:
             self.update_powers()
             self.update_odometry()
 
-            at_setpoint = self.left_position_pid.at_setpoint(
-                left_position,
-                DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters()
-            ) and self.right_position_pid.at_setpoint(
-                right_position,
-                DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters()
-            )
+            # at_setpoint = self.left_position_pid.at_setpoint(
+            #     left_position,
+            #     DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters()
+            # ) and self.right_position_pid.at_setpoint(
+            #     right_position,
+            #     DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters()
+            # )
+
+            is_near_end = is_near(left_position, left_goal_state.position, DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters()) and is_near(right_position, right_goal_state.position, DrivetrainProperties.MOVEMENT_DISTANCE_THRESHOLD.to_meters())
 
             if stop_immediately:
                 time_exceeded = (
@@ -630,10 +635,10 @@ class Drivetrain:
                 time_exceeded = (
                         elapsed_time >= total_time + max_extra_time
                 )
-            if elapsed_time >= total_time and (at_setpoint or time_exceeded):
+            if elapsed_time >= total_time or (is_near_end or time_exceeded):
                 # self.log.debug(
-                #     "Terminating movement: at_setpoint: ",
-                #     at_setpoint,
+                #     "Terminating movement: is_near_end: ",
+                #     is_near_end,
                 #     "time_exceeded: ",
                 #     time_exceeded,
                 # )
