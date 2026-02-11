@@ -12,7 +12,7 @@ from VEXLib.Subsystems.TankDrivetrain import TimeBasedCommand
 from vex import Color
 
 if False:
-    from CompetitionRobot import Robot
+    from CompetitionRobotV2 import Robot
 
 autonomous_log = Logger("logs/Autonomous")
 
@@ -538,37 +538,40 @@ class SkillsArcTurn(AutonomousRoutine):
 
     @staticmethod
     def startup_angle():
-        return Rotation2d.from_degrees(9)
+        return Rotation2d.from_degrees(90)
 
     def execute(self):
+    #     self.robot.midgoal_hood_actuator.extend()
+    #
+    #     self.set_acceleration_factor(0.8)
+    #     self.robot.intake.run_floating_intake(1)
+    #     self.robot.intake.run_upper_intake(1)
+    #     self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(38), 9, commands=[TimeBasedCommand(-0.45, lambda: self.robot.match_load_helper.extend())])
+    #     self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-6), 9)
+    #
+    #     self.robot.intake.lower_intake()
+    #     time.sleep(0.5)
+    #
+    #     self.set_acceleration_factor(1)
+    #     self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-11), 135, max_extra_time=0)
+    #     self.robot.intake.run_hood(1)
+    #     time.sleep(1)
+    #     self.robot.intake.stop_hood()
+    #     self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(36), 135, max_extra_time=0)
+    #     self.robot.midgoal_hood_actuator.retract()
+    #     self.robot.match_load_helper.extend()
+    #     self.robot.intake.raise_intake()
+    #     self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(45), Translation1d.from_inches(18), "CCW", 135)
+    #     self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 180, max_extra_time=0)
+    #
 
 
-        self.set_acceleration_factor(0.8)
-        self.robot.intake.run_floating_intake(1)
-        self.robot.intake.run_upper_intake(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(38), 9, commands=[TimeBasedCommand(-0.375, lambda: self.robot.match_load_helper.extend())])
-
-        self.robot.intake.lower_intake()
-        time.sleep(0.5)
-
-        self.set_acceleration_factor(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-16), 135, max_extra_time=0)
-        self.robot.intake.run_hood(1)
-        time.sleep(3)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(35), 135, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(21), 90, max_extra_time=0)
         self.robot.match_load_helper.extend()
-        self.robot.intake.raise_intake()
-        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(45), Translation1d.from_inches(18), "CCW", 135)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 180, max_extra_time=0)
-
-
-
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(21), 90, max_extra_time=0)
-        # self.robot.match_load_helper.extend()
-        # # time.sleep(0.5)
-        # self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(9), "CCW", 90, turn_first=False)
-        # self.robot.intake.pickup()
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(7), 180, turn_first=False)
+        # time.sleep(0.5)
+        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(9), "CCW", 90, turn_first=False)
+        self.robot.intake.pickup()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(7), 180, turn_first=False)
 
         # Pick up #1 from match loader
         self.robot.drivetrain.set_powers(0.1, 0.1)
@@ -584,26 +587,36 @@ class SkillsArcTurn(AutonomousRoutine):
         self.set_acceleration_factor(1)
 
         self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(-11), "CW", 90, max_extra_time=0)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-12), 0, turn_first=False)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-14), 0, turn_first=False)
         self.robot.intake.run_hood(1)
         time.sleep(1.7)
-        self.robot.match_load_helper.extend()
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(35), 0)
-        self.robot.intake.stop_hood()
-        self.robot.drivetrain.set_powers(0.1, 0.1)
-        time.sleep(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-31), 0, turn_first=False)
-        self.robot.match_load_helper.retract()
+        self.robot.intake.run_hood(-1)
+        time.sleep(0.2)
         self.robot.intake.run_hood(1)
+        time.sleep(0.8)
+        self.robot.match_load_helper.extend()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), 0)
+        self.robot.intake.stop_hood()
+        self.robot.drivetrain.set_powers(0.2, 0.2)
         time.sleep(1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-5), 0, turn_first=False, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-29), -2)
+        self.robot.match_load_helper.retract()
+        self.robot.intake.run_hood(0.8)
+        time.sleep(2.4)
+        self.robot.intake.run_hood(-1)
+        time.sleep(0.2)
+        self.robot.intake.run_hood(0.8)
         time.sleep(1)
         self.robot.intake.stop_hood()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(3), 0, turn_first=False, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-8), 0, turn_first=False, max_extra_time=0)
         # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(2), 0)
-        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(13), "CW", 0, max_extra_time=0)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(64), -90, turn_first=False, max_extra_time=0)
+        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(11), "CW", 0, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(70), -90, turn_first=False, max_extra_time=1.5)
         self.robot.match_load_helper.extend()
-        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(13), "CCW", -90, turn_first=False, max_extra_time=0)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(6), 0, turn_first=False, max_extra_time=0)
+        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(11), "CCW", -90, turn_first=False, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(11), 0, turn_first=False, max_extra_time=0)
         self.robot.drivetrain.set_powers(0.1, 0.1)
         time.sleep(1)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-18), 0, commands=[TimeBasedCommand(0.5, self.robot.match_load_helper.retract)], turn_first=False)
@@ -614,24 +627,67 @@ class SkillsArcTurn(AutonomousRoutine):
         self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(-12), "CW", -90, max_extra_time=0)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-14), 180, turn_first=False)
         self.robot.intake.run_hood(1)
-        time.sleep(1.7)
-        self.robot.match_load_helper.extend()
+        time.sleep(2)
+        self.robot.intake.run_hood(-1)
+        time.sleep(0.2)
+        self.robot.intake.run_hood(1)
+        time.sleep(0.8)
         self.robot.intake.stop_hood()
+        self.robot.match_load_helper.extend()
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(35), 180)
         self.robot.drivetrain.set_powers(0.1, 0.1)
         time.sleep(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-30), 180, turn_first=False)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-3), 180, turn_first=False)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-27), 180)
         self.robot.match_load_helper.retract()
         self.robot.intake.run_hood(1)
         time.sleep(2)
+        self.robot.intake.run_hood(-1)
+        time.sleep(0.2)
+        self.robot.intake.run_hood(1)
+        time.sleep(0.8)
         self.robot.intake.stop_hood()
-        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(33), "CW", 180, max_extra_time=0)
-        self.robot.match_load_helper.extend()
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 90, turn_first=False)
-        time.sleep(0.5)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(10), 90, turn_first=False)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(3), 180, turn_first=False, max_extra_time=0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-8), 180, turn_first=False, max_extra_time=0)
+        self.robot.intake.run_floating_intake(1)
+        self.robot.intake.run_upper_intake(1)
+        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(35), "CW", 180, max_extra_time=0, commands=[TimeBasedCommand(-0.5, self.robot.match_load_helper.extend)])
+        self.set_acceleration_factor(1.3)
+        self.robot.intake.run_hood(1)
+        self.robot.drivetrain.set_powers(0.5, 0.7)
+        time.sleep(1)
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 90, turn_first=False, max_extra_time=2, commands=[TimeBasedCommand(-0.25, self.robot.match_load_helper.retract)])
+        # time.sleep(1)
+        self.robot.match_load_helper.retract()
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(12), 90, turn_first=False)
+        self.robot.drivetrain.set_powers(0, 0)
+
+class ParkTest(AutonomousRoutine):
+    name = "Park Test"
+
+    def __init__(self, robot: Robot):
+        super().__init__(robot)
+
+    @staticmethod
+    def startup_angle():
+        return Rotation2d.from_degrees(180)
+
+    def execute(self):
+        self.robot.intake.run_floating_intake(1)
+        self.robot.intake.run_upper_intake(1)
+        self.robot.drivetrain.arc_movement(Rotation2d.from_degrees(90), Translation1d.from_inches(35), "CW", 180, max_extra_time=0, commands=[TimeBasedCommand(-0.5, self.robot.match_load_helper.extend)])
+        self.set_acceleration_factor(1.3)
+        self.robot.intake.run_hood(1)
+        self.robot.drivetrain.set_powers(0.5, 0.7)
+        time.sleep(1)
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 90, turn_first=False, max_extra_time=2, commands=[TimeBasedCommand(-0.25, self.robot.match_load_helper.retract)])
+        # time.sleep(1)
+        self.robot.match_load_helper.retract()
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(12), 90, turn_first=False)
+        self.robot.drivetrain.set_powers(0, 0)
+
 
 
 
 # all_routines = [Skills, WinPoint, LongGoalLow, LongGoalHigh, SimpleLow, SimpleHigh, DoNothingAutonomous, ElimsLow]
-all_routines = [SkillsArcTurn, DriveInACircle, Skills, WinPoint, LongGoalLow, LongGoalHigh, SimpleHigh, ElimsLow, ElimsHigh, DoNothingAutonomous, SMove]
+all_routines = [SkillsArcTurn, ParkTest, DriveInACircle, Skills, WinPoint, LongGoalLow, LongGoalHigh, SimpleHigh, ElimsLow, ElimsHigh, DoNothingAutonomous, SMove]

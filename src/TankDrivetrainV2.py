@@ -259,8 +259,10 @@ class Drivetrain:
 
         self.rotation_PID.setpoint = self.rotation_PID.setpoint + angular_difference
         self.update_odometry()
-        self.rotation_PID.reset()
-        self.rotation_PID.update(self.odometry.get_rotation().to_radians())
+
+        self.left_drivetrain_PID.reset(self.get_left_distance().to_meters())
+        self.right_drivetrain_PID.reset(self.get_right_distance().to_meters())
+        self.rotation_PID.reset(self.odometry.get_rotation().to_radians())
         start_time = time.time()
         while True:
             pid_output = -self.rotation_PID.update(self.odometry.get_rotation().to_radians())
@@ -305,8 +307,9 @@ class Drivetrain:
             )
         self.set_speed_zero_to_one(0, 0)
         self.set_powers(0, 0)
-        self.left_drivetrain_PID.reset()
-        self.right_drivetrain_PID.reset()
+        self.left_drivetrain_PID.reset(self.get_left_distance().to_meters())
+        self.right_drivetrain_PID.reset(self.get_right_distance().to_meters())
+        self.rotation_PID.reset(self.odometry.get_rotation().to_radians())
 
     def move_to_point(self, translation: Translation2d, use_back=False, turn=True, stop_immediately=False, commands=None):
         self.log.trace("Entering move_to_point")
@@ -342,15 +345,16 @@ class Drivetrain:
         if commands is None:
             commands = []
 
-        self.left_drivetrain_PID.reset()
-        self.right_drivetrain_PID.reset()
-        self.rotation_PID.reset()
+        self.left_drivetrain_PID.reset(self.get_left_distance().to_meters())
+        self.right_drivetrain_PID.reset(self.get_right_distance().to_meters())
+        self.rotation_PID.reset(self.odometry.get_rotation().to_radians())
 
         if turn_first:
             self.turn_to(Rotation2d.from_degrees(start_direction_degrees))
 
-        self.left_drivetrain_PID.reset()
-        self.right_drivetrain_PID.reset()
+        self.left_drivetrain_PID.reset(self.get_left_distance().to_meters())
+        self.right_drivetrain_PID.reset(self.get_right_distance().to_meters())
+        self.rotation_PID.reset(self.odometry.get_rotation().to_radians())
 
         left_start_position = self.get_left_distance().to_meters()
         right_start_position = self.get_right_distance().to_meters()
@@ -495,11 +499,12 @@ class Drivetrain:
         if not dont_stop:
             self.set_speed_zero_to_one(0, 0)
             self.set_powers(0, 0)
-            self.left_drivetrain_PID.reset()
-            self.right_drivetrain_PID.reset()
+            self.left_drivetrain_PID.reset(self.get_left_distance().to_meters())
+            self.right_drivetrain_PID.reset(self.get_right_distance().to_meters())
+            self.rotation_PID.reset(self.odometry.get_rotation().to_radians())
 
         self.update_odometry()
-        self.rotation_PID.setpoint = self.odometry.get_rotation().to_radians()
+        self.rotation_PID.setpoint = self.rotation_PID.setpoint + MathUtil.smallest_angular_difference(self.rotation_PID.setpoint, Units.degrees_to_radians(start_direction_degrees + arc_angle.to_radians()))
 
 
 
@@ -514,7 +519,6 @@ class Drivetrain:
             max_extra_time=DrivetrainProperties.MOVEMENT_MAX_EXTRA_TIME,
             dont_stop=False,
     ):
-        self.rotation_PID.reset()
         self.log.trace("Entering move_distance_towards_direction_trap")
         self.log.debug(
             "Driving",
@@ -528,15 +532,18 @@ class Drivetrain:
         if commands is None:
             commands = []
 
-        self.left_drivetrain_PID.reset()
-        self.right_drivetrain_PID.reset()
-        self.rotation_PID.reset()
+        self.left_drivetrain_PID.reset(self.get_left_distance().to_meters())
+        self.right_drivetrain_PID.reset(self.get_right_distance().to_meters())
+        self.rotation_PID.reset(self.odometry.get_rotation().to_radians())
 
         if turn_first:
             self.turn_to(Rotation2d.from_degrees(direction_degrees))
+        else:
+            self.rotation_PID.setpoint = self.rotation_PID.setpoint + MathUtil.smallest_angular_difference(self.rotation_PID.setpoint, Units.degrees_to_radians(direction_degrees))
 
-        self.left_drivetrain_PID.reset()
-        self.right_drivetrain_PID.reset()
+        self.left_drivetrain_PID.reset(self.get_left_distance().to_meters())
+        self.right_drivetrain_PID.reset(self.get_right_distance().to_meters())
+        self.rotation_PID.reset(self.odometry.get_rotation().to_radians())
 
         left_start_position = self.get_left_distance().to_meters()
         right_start_position = self.get_right_distance().to_meters()
@@ -660,8 +667,9 @@ class Drivetrain:
         if not dont_stop:
             self.set_speed_zero_to_one(0, 0)
             self.set_powers(0, 0)
-            self.left_drivetrain_PID.reset()
-            self.right_drivetrain_PID.reset()
+            self.left_drivetrain_PID.reset(self.get_left_distance().to_meters())
+            self.right_drivetrain_PID.reset(self.get_right_distance().to_meters())
+            self.rotation_PID.reset(self.odometry.get_rotation().to_radians())
 
         # self.log.debug(
         #     "Remaining Distance: " + str(distance.to_inches() - Units.meters_to_inches(average(left_position, right_position))) + " in"
@@ -704,8 +712,9 @@ class Drivetrain:
         self.log.debug("Entering init")
         self.velocity_scalar = 1
         self.acceleration_scalar = 1
-        self.left_drivetrain_PID.reset()
-        self.right_drivetrain_PID.reset()
+        self.left_drivetrain_PID.reset(self.get_left_distance().to_meters())
+        self.right_drivetrain_PID.reset(self.get_right_distance().to_meters())
+        self.rotation_PID.reset(self.odometry.get_rotation().to_radians())
 
     def set_pose(self):
         self.log.trace("Entering set_pose")

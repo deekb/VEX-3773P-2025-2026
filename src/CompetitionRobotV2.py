@@ -518,10 +518,10 @@ class Robot(RobotBase):
             lambda: (self.intake.stop_intake(), self.intake.stop_hood())
         )
 
-        self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(1.0),  (self.midgoal_hood_actuator.extend() if not self.intake.piston.value() else None)))
-        self.controller.buttonL1.released(lambda: (self.intake.stop_intake(), self.midgoal_hood_actuator.retract()))
+        self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(1.0)))
+        self.controller.buttonL1.released(lambda: (self.intake.stop_intake()))
 
-        self.controller.buttonY.pressed(self.toggle_intake)
+        self.controller.buttonY.pressed(lambda: (self.toggle_intake(), (self.midgoal_hood_actuator.extend() if self.intake.piston.value() else self.midgoal_hood_actuator.retract())))
 
         self.controller.buttonB.pressed(self.match_load_helper.extend)
         self.controller.buttonB.released(self.match_load_helper.retract)
@@ -529,6 +529,8 @@ class Robot(RobotBase):
         self.controller.buttonDown.pressed(self.descoring_arm.toggle)
 
         self.controller.buttonLeft.released(self.brain.screen.clear_screen)
+
+        self.controller.buttonA.pressed(self.midgoal_hood_actuator.toggle)
 
     @robot_log.logged
     def setup_debug_bindings(self):

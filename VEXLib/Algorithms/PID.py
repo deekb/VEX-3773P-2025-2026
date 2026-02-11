@@ -143,8 +143,8 @@ class PIDController:
     def at_setpoint(self, measurement, threshold=0.05):
         return abs(self.setpoint - measurement) <= threshold
 
-    def reset(self):
-        self._current_value = 0
+    def reset(self, current_value=0):
+        self._current_value = current_value
         self._previous_error = 0
         self._error_integral = 0
         self._control_output = 0

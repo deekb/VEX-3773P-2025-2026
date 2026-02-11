@@ -40,13 +40,13 @@ class IntakeV2:
             self.hood_motor.set_velocity(0)
             self.hood_motor.stop()
             return
-        # else:
-        #     if not self.piston.value():
-        #         self.hood_motor.spin(FORWARD)
-        #         self.hood_motor.set_velocity(speed * 50)  # Speed is -100 to 100, so half the requested speed
         else:
             self.hood_motor.set_stopping(COAST)
             self.hood_motor.set(speed)
+        if not self.piston.value():
+            self.hood_motor.spin(FORWARD)
+            self.hood_motor.set_velocity(speed * 80)  # Speed is -100 to 100, so half the requested speed
+            self.hood_motor.set_max_torque(100, PERCENT)  # Speed is -100 to 100, so half the requested speed
 
     def stop_hood(self):
         """Stop the hood motor."""
