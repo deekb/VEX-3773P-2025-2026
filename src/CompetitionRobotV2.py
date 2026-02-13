@@ -35,7 +35,7 @@ from VEXLib.Sensors.Controller import Controller
 from VEXLib.Util import time
 from VEXLib.Util.Buffer import Buffer
 from IntakeV2 import IntakeV2
-from AutonomousRoutinesV2 import DoNothingAutonomous, all_routines, Skills
+from AutonomousRoutinesV2 import Drive, all_routines, Skills
 from VEXLib.Util.motor_analysis import collect_power_relationship_data
 from vex import (
     Competition,
@@ -132,7 +132,7 @@ class Robot(RobotBase):
         self.competition = Competition(self.on_driver_control, self.on_autonomous)
 
         self.available_autonomous_routines = all_routines
-        self.selected_autonomous = DoNothingAutonomous(self)
+        self.selected_autonomous = Drive(self)
 
         self.brain.screen.pressed(self.flush_all_logs)
 
@@ -182,7 +182,7 @@ class Robot(RobotBase):
                 self.selected_autonomous = autonomous(self)
                 break
 
-        if isinstance(self.selected_autonomous, DoNothingAutonomous):
+        if isinstance(self.selected_autonomous, Drive):
             robot_log.warn("DoNothingAutonomous autonomous routine selected")
 
         self.log_and_print("Selected autonomous routine:", selected_auto)

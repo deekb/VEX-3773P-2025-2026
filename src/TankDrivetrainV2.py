@@ -619,7 +619,7 @@ class Drivetrain:
                 rotation_output = 0
 
             self.set_speed_zero_to_one(
-                left_output_speed + rotation_output, right_output_speed - rotation_output
+                left_output_speed, right_output_speed - (rotation_output * 2)
             )
             self.update_powers()
             self.update_odometry()

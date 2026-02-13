@@ -90,7 +90,7 @@ class DrivetrainProperties:
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     STARTUP_ANGLE = Rotation2d.from_degrees(180)
     TURN_TIMEOUT_SECONDS = 1
-    TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.8
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 1
     TURNING_THRESHOLD = Rotation2d.from_degrees(0.5)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
     MOVEMENT_MAX_EXTRA_TIME = 0.5
