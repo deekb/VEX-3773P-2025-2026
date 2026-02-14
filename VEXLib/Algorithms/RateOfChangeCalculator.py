@@ -32,7 +32,7 @@ class RateOfChangeCalculator:
         # Calculate time difference
         delta_time = current_time - self.previous_time
 
-        if not self.ready_for_sample:
+        if not self.ready_for_sample(current_time):
             # Not enough time has elapsed, return the last calculated rate
             return self.last_rate
 
