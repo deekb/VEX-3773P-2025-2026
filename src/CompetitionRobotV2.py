@@ -1,6 +1,6 @@
 from VEXLib.Algorithms.PID import PIDController
 from VEXLib.Geometry.Translation2d import Translation2d
-from VEXLib.Util.Logging import TimeSeriesLogger
+from VEXLib.Util.time import wait_until, wait_until_not
 from shelve import Shelf
 from Logging import Logger, NoLogger
 from DescoringArm import DescoringArm
@@ -35,19 +35,17 @@ from VEXLib.Sensors.Controller import Controller
 from VEXLib.Util import time
 from VEXLib.Util.Buffer import Buffer
 from IntakeV2 import IntakeV2
-from AutonomousRoutinesV2 import Drive, all_routines, Skills
-from VEXLib.Util.motor_analysis import collect_power_relationship_data
+from AutonomousRoutinesV2 import Drive, all_routines
 from vex import (
     Competition,
     Color,
     FontType,
     Inertial,
     DigitalOut,
-    DEGREES,
     TemperatureUnits,
     VoltageUnits,
     CurrentUnits,
-    PERCENT, Optical,
+    Optical,
 )
 
 SmartPorts = CompetitionSmartPorts
@@ -62,7 +60,6 @@ class Robot(RobotBase):
 
         self.controller = Controller()
         self.controller.add_deadband_step(0.05)
-        # self.controller.add_cubic_step()
 
         self.drivetrain = Drivetrain(
             [
@@ -306,6 +303,8 @@ class Robot(RobotBase):
             self.drivetrain.update_odometry()
             time.sleep_ms(20)
 
+
+
         # Reset colors
         self.brain.screen.set_fill_color(Color.BLACK)
         self.brain.screen.set_pen_color(Color.WHITE)
@@ -315,6 +314,8 @@ class Robot(RobotBase):
         final_deg = self.drivetrain.odometry.get_rotation_normalized().to_degrees()
         self.brain.screen.clear_screen()
         self.log_and_print("Lined up, current angle:", final_deg)
+        wait_until_not(self.controller.buttonA.pressing)
+
 
     @robot_log.logged
     def on_driver_control(self):
