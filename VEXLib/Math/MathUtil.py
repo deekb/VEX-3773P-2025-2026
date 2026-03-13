@@ -55,7 +55,7 @@ def average(*args: float) -> float:
     return average_iterable(list(args))
 
 
-def average_iterable(iterable: Iterable[float]) -> float:
+def average_iterable(iterable) -> float:
     """
     Calculates the average of the input iterable.
 

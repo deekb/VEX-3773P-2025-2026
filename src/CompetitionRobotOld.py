@@ -1,11 +1,10 @@
 from VEXLib.Algorithms.PID import PIDController
 from VEXLib.Geometry.Translation2d import Translation2d
-from VEXLib.Util.time import wait_until_not
+from VEXLib.Util.time import wait_until, wait_until_not
 from shelve import Shelf
-from VEXLib.Util.Logging import Logger, NoLogger
+from Logging import Logger, NoLogger
 from DescoringArm import DescoringArm
-from Constants import *
-from Intake import Intake
+from ConstantsV2 import *
 
 # This gets done first so any loggers that are created during imports use the updated index
 startup_count = Shelf("logs/startup_count.csv")
@@ -16,6 +15,7 @@ if NO_LOGGING:
 else:
     robot_log = Logger("logs/robot")
     telemetry_log = Logger("logs/telemetry")
+# voltage_velocity = TimeSeriesLogger("logs/voltage_velocity.csv", ["time", "left_voltage", "right_voltage", "left_speed", "right_speed"])
 
 
 import io
@@ -23,7 +23,9 @@ import math
 import sys
 
 import VEXLib.Math.MathUtil as MathUtil
-from MatchLoadHelperOld import MatchLoadHelper
+from JoystickCalibration import normalize_joystick_input
+from MatchLoadHelper import MatchLoadHelper
+from MidgoalHoodActuator import MidgoalHoodActuator
 from VEXLib.Geometry.GeometryUtil import hypotenuse
 from TankDrivetrainOld import Drivetrain
 from VEXLib.Motor import Motor
@@ -32,6 +34,7 @@ from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import Controller
 from VEXLib.Util import time
 from VEXLib.Util.Buffer import Buffer
+from IntakeOld import IntakeOld
 from AutonomousRoutinesOld import Drive, all_routines
 from vex import (
     Competition,
@@ -42,16 +45,13 @@ from vex import (
     TemperatureUnits,
     VoltageUnits,
     CurrentUnits,
+    Optical,
 )
 
 SmartPorts = CompetitionSmartPorts
 
 
 class Robot(RobotBase):
-    """
-    This class contains initialization routines, controller bindings, objects representing each subsystem of the robot,
-    and driver control periodic
-    """
     def __init__(self, brain):
         robot_log.info("Robot __init__ called")
 
@@ -99,11 +99,14 @@ class Robot(RobotBase):
 
         self.calibrate_sensors()
 
-        self.intake = Intake(
-            Motor(SmartPorts.LEVER_MOTOR, GearRatios.LEVER_MOTOR, True),
-            Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.FLOATING_INTAKE, False),
-            DigitalOut(ThreeWirePorts.RAISE_SOLENOID),
-            DigitalOut(ThreeWirePorts.HOOD_SOLENOID),
+        self.driver_rotation_pid = PIDController(PIDGains(3, 0, 0))
+
+        self.intake = IntakeV2(
+            Motor(SmartPorts.UPPER_INTAKE_MOTOR, GearRatios.UPPER_INTAKE, False),
+            Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.UPPER_INTAKE, True),
+            Motor(SmartPorts.HOOD_MOTOR, GearRatios.HOOD, False),
+            DigitalOut(ThreeWirePorts.SCORING_SOLENOID),
+            Optical(SmartPorts.COLOR_SENSOR)
         )
 
         self.match_load_helper = MatchLoadHelper(
@@ -111,8 +114,11 @@ class Robot(RobotBase):
         )
 
         self.descoring_arm = DescoringArm(
-            DigitalOut(ThreeWirePorts.DESCORING_ARM_SOLENOID_OUT),
-            DigitalOut(ThreeWirePorts.DESCORING_ARM_SOLENOID_UP)
+            DigitalOut(ThreeWirePorts.DESCORING_ARM_SOLENOID)
+        )
+
+        self.midgoal_hood_actuator = MidgoalHoodActuator(
+            DigitalOut(ThreeWirePorts.MIDGOAL_HOOD_ACTUATOR)
         )
 
         self.screen = ScrollingScreen(self.brain.screen, Buffer(20))
@@ -166,7 +172,7 @@ class Robot(RobotBase):
         if alliance_color == "blue":
             self.alliance_color = Color.BLUE
         else:
-            self.alliance_color = Color.RED
+            alliance_color = Color.RED
 
         for autonomous in self.available_autonomous_routines:
             if selected_auto == autonomous.name:
@@ -193,6 +199,20 @@ class Robot(RobotBase):
         self.align_robot()
         robot_log.info("Setup complete")
         robot_log.debug("Unlocking setup lock")
+
+        # time.sleep(2)
+        #
+        # if self.controller.buttonA.pressing():
+        #     with open("logs/left_drivetrain.csv", "w") as f:
+        #         f.flush()
+        #         f.close()
+        #     with open("logs/right_drivetrain.csv", "w") as f:
+        #         f.flush()
+        #         f.close()
+        #
+        #     collect_power_relationship_data("logs/left_drivetrain.csv", self.drivetrain.left_motors)
+        #     time.sleep(3)
+        #     collect_power_relationship_data("logs/right_drivetrain.csv", self.drivetrain.right_motors)
 
         self.setup_complete = True
 
@@ -283,6 +303,8 @@ class Robot(RobotBase):
             self.drivetrain.update_odometry()
             time.sleep_ms(20)
 
+
+
         # Reset colors
         self.brain.screen.set_fill_color(Color.BLACK)
         self.brain.screen.set_pen_color(Color.WHITE)
@@ -294,14 +316,17 @@ class Robot(RobotBase):
         self.log_and_print("Lined up, current angle:", final_deg)
         wait_until_not(self.controller.buttonA.pressing)
 
+
     @robot_log.logged
     def on_driver_control(self):
-        self.intake.stop_floating_intake()
+        self.intake.stop_intake()
         self.selected_autonomous.cleanup()
         self.flush_all_logs("Flushing logs before driver control")
         self.drivetrain.left_drivetrain_PID.pid_gains = self.user_preferences.PIDF_GAINS_LEFT_DRIVER
         self.drivetrain.right_drivetrain_PID.pid_gains = self.user_preferences.PIDF_GAINS_RIGHT_DRIVER
         robot_log.trace("Driver control started")
+        self.intake.stop_intake()
+        self.intake.stop_hood()
         self.intake.raise_intake()
         while not self.setup_complete and self.competition.is_driver_control():
             time.sleep_ms(20)
@@ -312,7 +337,7 @@ class Robot(RobotBase):
 
     @robot_log.logged
     def on_autonomous(self):
-        self.intake.stop_floating_intake()
+        self.intake.stop_intake()
         self.drivetrain.left_drivetrain_PID.pid_gains = self.user_preferences.PIDF_GAINS_LEFT_AUTO
         self.drivetrain.right_drivetrain_PID.pid_gains = self.user_preferences.PIDF_GAINS_RIGHT_AUTO
         self.drivetrain.odometry.pose.translation = Translation2d()
@@ -341,11 +366,45 @@ class Robot(RobotBase):
             self.brain.screen.draw_image_from_file("assets/output_frame_" + ("0" * (4 - len(str(i))) + str(i)) + "-fs8.png", 0, 0)
         left_speed, right_speed = self.controller.get_wheel_speeds(self.user_preferences.CONTROL_STYLE)
 
+        # target_forward_speed = self.controller.left_stick_y_raw()
+        # target_rotational_speed = -self.controller.right_stick_x_raw()
+        #
+        # actual_speeds = self.drivetrain.get_speeds()
+        # left_measured_speed = actual_speeds[0].to_meters_per_second() / DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second()
+        # right_measures_speed = actual_speeds[1].to_meters_per_second() / DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second()
+        # measured_rotational_speed = (left_measured_speed - right_measures_speed) / 2
+        #
+        # self.driver_rotation_pid.setpoint = target_rotational_speed
+        # rotational_output_power = self.driver_rotation_pid.update(measured_rotational_speed)
+        #
+        # left_speed = target_forward_speed + rotational_output_power
+        # right_speed = target_forward_speed - rotational_output_power
+
         if self.user_preferences.ENABLE_DRIVING:
+            # self.drivetrain.set_powers(
+            #     -left_speed * self.user_preferences.MOVE_SPEED,
+            #     -right_speed * self.user_preferences.MOVE_SPEED,
+            # )
             if self.user_preferences.USE_PIDF_CONTROL:
+                # self.drivetrain.get_speeds()
+                # voltage_velocity.write_data({
+                #     "time": time.time(),
+                #     "left_voltage":left_speed,
+                #     "right_voltage":right_speed,
+                #     "left_speed": self.drivetrain.get_left_speed().to_meters_per_second(),
+                #     "right_speed": self.drivetrain.get_right_speed().to_meters_per_second(),
+                # })
                 self.drivetrain.set_speed_zero_to_one(left_speed, right_speed)
                 self.drivetrain.update_powers()
             else:
+                # self.drivetrain.get_speeds()
+                # voltage_velocity.write_data({
+                #     "time": time.time(),
+                #     "left_voltage":left_speed,
+                #     "right_voltage":right_speed,
+                #     "left_speed": self.drivetrain.get_left_speed().to_meters_per_second(),
+                #     "right_speed": self.drivetrain.get_right_speed().to_meters_per_second(),
+                # })
                 self.drivetrain.set_powers(
                     left_speed * self.user_preferences.MOVE_SPEED,
                     right_speed * self.user_preferences.MOVE_SPEED,
@@ -354,7 +413,7 @@ class Robot(RobotBase):
         self.drivetrain.update_odometry()
         left_stick_x = self.controller.left_stick_x()
         left_stick_y = self.controller.left_stick_y()
-        left_stick_x_processed, left_stick_y_processed = left_stick_x, left_stick_y
+        left_stick_x_processed, left_stick_y_processed = normalize_joystick_input(left_stick_x, left_stick_y)
 
         if hypotenuse(left_stick_x_processed, left_stick_y_processed) > 1:
             angle = math.atan2(left_stick_y_processed, left_stick_x_processed)
@@ -366,46 +425,123 @@ class Robot(RobotBase):
             self.brain.screen.draw_pixel(left_stick_x * 100 + 120, -left_stick_y * 100 + 120)
             self.brain.screen.set_pen_color(Color.GREEN)
             self.brain.screen.draw_pixel(left_stick_x_processed * 100 + 360, -left_stick_y_processed * 100 + 120)
+            # robot_log.info("Wheel Speeds Linear: " + str(self.drivetrain.get_speeds()))
 
         self.ensure_match_loader_in_size()
+        # self.intake.flaps_are_stalled()
+        # if self.controller.buttonL1.pressing():
+        #     if self.intake.flaps_are_stalled():
+        #         self.intake.run_upper_intake(-1)
+        #     else:
+        #         self.intake.run_intake(1)
+        # else:
+        #     self.intake.stop_intake()
 
-        self.intake.periodic()
+        # if self.controller.buttonX.pressing():
+        #     # self.drivetrain.measure_properties()
+        #     robot_log.info("Lifting mass and testing properties...")
+        #     # collect_power_relationship_data(
+        #     #     "logs/FRONT_RIGHT_DRIVETRAIN.csv", [self.drivetrain.right_motors[0]]
+        #     # )
+        #     # collect_power_relationship_data(
+        #     #     "logs/REAR_LOWER_RIGHT_DRIVETRAIN.csv", [self.drivetrain.right_motors[1]]
+        #     # )
+        #     # collect_power_relationship_data(
+        #     #     "logs/REAR_UPPER_RIGHT_DRIVETRAIN.csv", [self.drivetrain.right_motors[2]]
+        #     # )
+        #
+        #     testing_motor = self.drivetrain.right_motors[2]
+        #
+        #     initial_position = testing_motor.position(DEGREES)
+        #     robot_log.debug("Initial position of mass is {}".format(initial_position))
+        #     # for test in ["GREEN_100G", "GREEN_200G", "GREEN_300G", "GREEN_400G", "GREEN_500G", "GREEN_600G", "GREEN_700G", "GREEN_800G"]:
+        #     # for test in ["GREEN_900G", "GREEN_1000G", "GREEN_1100G", "GREEN_1200G", "GREEN_1300G", "GREEN_1400G", "GREEN_1500G", "GREEN_1600G"]:
+        #     # for test in ["GREEN_1700G", "GREEN_1800G", "GREEN_1900G", "GREEN_2000G", "GREEN_2100G", "GREEN_2200G", "GREEN_2300G", "GREEN_2400G"]:
+        #
+        # mass = 2500
+        # while True:
+        #     test = "GREEN_" + str(mass)
+        #     self.brain.screen.clear_screen()
+        #     self.brain.screen.set_cursor(1, 1)
+        #     robot_log.debug("Testing \"{}\"...".format(test))
+        #     self.brain.screen.print("Testing \"{}\"...".format(test))
+        #     time.sleep(5)
+        #     collect_power_relationship_data(
+        #         "logs/friction_tests/" + test + ".csv",
+        #         [testing_motor],
+        #         power_range=(0.0, 1.0)
+        #     )
+        #     robot_log.debug("Done")
+        #     self.brain.screen.print("Done")
+        #     self.brain.screen.next_row()
+        #     time.sleep(1)
+        #     self.brain.screen.print("Returning to start position...")
+        #     robot_log.debug("Returning to start position...")
+        #     testing_motor.set_velocity(100, PERCENT)
+        #     testing_motor.spin_to_position(initial_position, DEGREES)
+        #     self.brain.screen.print("Done")
+        #     robot_log.debug("Done")
+        #     robot_log.debug("Reset position of mass is {}".format(testing_motor.position(DEGREES)))
+        #     time.sleep(3)
+        #     mass += 100
 
     def ensure_match_loader_in_size(self):
-        if (not self.intake.raise_piston.value()) and self.match_load_helper.piston.value():
+        if (not self.intake.piston.value()) and self.match_load_helper.piston.value():
             self.match_load_helper.retract()
             robot_log.warn("Retracting match load helper because intake is down")
             self.controller.rumble("..")
+
+    def toggle_intake(self):
+        if self.intake.piston.value():
+            self.descoring_arm.retract()
+            self.intake.lower_intake()
+        else:
+            self.intake.raise_intake()
 
     @robot_log.logged
     def setup_default_bindings(self):
         robot_log.info("Setting up default controller bindings")
 
-        self.controller.buttonR1.pressed(lambda: (self.intake.run_floating_intake(1.0)))
-        self.controller.buttonR1.released(self.intake.stop_floating_intake)
+        self.controller.buttonL2.pressed(lambda: (self.intake.run_intake(-1.0), self.intake.run_hood(-1.0)))
+        self.controller.buttonL2.released(lambda: (self.intake.stop_intake(), self.intake.stop_hood(), ))
 
-        self.controller.buttonR2.pressed(lambda: (self.intake.run_floating_intake(-1.0)))
-        self.controller.buttonR2.released(self.intake.stop_floating_intake)
+        self.controller.buttonR1.pressed(
+            lambda: (self.intake.run_intake(1.0), self.intake.stop_hood())
+        )
+        self.controller.buttonR1.released(
+            lambda: (self.intake.stop_intake(), self.intake.stop_hood())
+        )
+
+        self.controller.buttonR2.pressed(
+            lambda: (self.intake.run_intake(-1.0), self.intake.stop_hood())
+        )
+        self.controller.buttonR2.released(
+            lambda: (self.intake.stop_intake(), self.intake.stop_hood())
+        )
+
+        self.controller.buttonL1.pressed(lambda: (self.intake.run_intake(1.0)))
+        self.controller.buttonL1.released(lambda: (self.intake.stop_intake()))
+
+        self.controller.buttonY.pressed(lambda: (self.toggle_intake(), (self.midgoal_hood_actuator.extend() if self.intake.piston.value() else self.midgoal_hood_actuator.retract())))
 
         self.controller.buttonB.pressed(self.match_load_helper.extend)
         self.controller.buttonB.released(self.match_load_helper.retract)
 
-        self.controller.buttonY.pressed(self.intake.toggle_intake_piston)
-
-        self.controller.buttonA.pressed(self.descoring_arm.next_state)
-        self.controller.buttonB.pressed(self.descoring_arm.previous_state)
-
-        self.controller.buttonL1.pressed(self.intake.step_up)
-        self.controller.buttonL2.pressed(lambda: (self.intake.set_lever_setpoint(120)))
+        self.controller.buttonDown.pressed(self.descoring_arm.toggle)
 
         self.controller.buttonLeft.released(self.brain.screen.clear_screen)
+
+        self.controller.buttonA.pressed(self.midgoal_hood_actuator.toggle)
 
     @robot_log.logged
     def setup_debug_bindings(self):
         robot_log.info("Setting up debug controller bindings")
         self.setup_default_bindings()
+        self.controller.buttonX.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.RED, 1))
+        self.controller.buttonA.pressed(lambda: self.intake.intake_until_color_nonblocking(Color.BLUE, 1))
         self.controller.buttonX.pressed(self.drivetrain.verify_speed_pid)
         self.controller.buttonUp.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(0)))
         self.controller.buttonLeft.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(90)))
         self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(180)))
         self.controller.buttonRight.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(270)))
+

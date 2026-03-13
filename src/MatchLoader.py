@@ -1,8 +1,11 @@
 from vex import DigitalOut
 
-class DescoringArm:
+class MatchLoadHelperOld:
     """
-    A subsystem class that controls a pneumatic piston for the descoring arm.
+    A subsystem class that controls a pneumatic piston for a VEX robot’s match loader mechanism.
+
+    The Match Load Helper manages the piston responsible for assisting with  removing
+    game elements from the match-load towers during a match.
 
     Attributes:
         piston (DigitalOut): A digital output object controlling the pneumatic solenoid.
@@ -16,7 +19,6 @@ class DescoringArm:
             piston (DigitalOut): The digital output that activates the pneumatic piston.
         """
         self.piston = piston
-        self._state = False
 
     def extend(self):
         """
@@ -25,8 +27,7 @@ class DescoringArm:
         This method sends a high (True) signal to the digital output,
         opening the pneumatic valve and extending the piston.
         """
-        self._state = True
-        self.piston.set(self._state)
+        self.piston.set(True)
 
     def retract(self):
         """
@@ -35,17 +36,4 @@ class DescoringArm:
         This method sends a low (False) signal to the digital output,
         closing the pneumatic valve and retracting the piston.
         """
-        self._state = False
-        self.piston.set(self._state)
-
-    def toggle(self):
-        """
-        Toggles the state of the piston between extended and retracted.
-
-    def previous_state(self):
-        if self.out_state and not self.up_state:
-            self.wing_stow()
-        elif self.out_state and not self.up_state:
-            self.wing_out_and_down()
-
-
+        self.piston.set(False)
