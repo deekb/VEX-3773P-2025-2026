@@ -2,9 +2,9 @@ from VEXLib.Algorithms.PID import PIDController
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Util.time import wait_until, wait_until_not
 from shelve import Shelf
-from Logging import Logger, NoLogger
+from VEXLib.Util.Logging import Logger, NoLogger
 from DescoringArm import DescoringArm
-from ConstantsV2 import *
+from ConstantsOld import *
 
 # This gets done first so any loggers that are created during imports use the updated index
 startup_count = Shelf("logs/startup_count.csv")

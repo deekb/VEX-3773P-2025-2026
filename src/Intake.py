@@ -1,79 +1,95 @@
+from VEXLib.Math import MathUtil
 from VEXLib.Motor import Motor
 from VEXLib.Util import time
-from vex import DigitalOut, TorqueUnits, PERCENT
+from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread, FORWARD, HOLD, COAST, DEGREES
 
 
 class Intake:
-    def __init__(self, upper_intake_motor: Motor, floating_intake_motor: Motor, hood_motor: Motor, piston: DigitalOut):
-        self.upper_intake_motor = upper_intake_motor
+    def __init__(self, lever_motor: Motor, floating_intake_motor: Motor, flap_piston: DigitalOut, raise_piston: DigitalOut):
+        self.lever_motor = lever_motor
         self.floating_intake_motor = floating_intake_motor
-        self.hood_motor = hood_motor
-        self.piston = piston
-        self.last_not_stalled_timestamp = time.time()
+        self.flap_piston = flap_piston
+        self.raise_piston = raise_piston
+        self.lever_target = 0
+        self.lever_speed = 0
+        self.time_updated_setpoint = 0
+        self.lever_step_amount = 20
+
+    def set_lever_velocity(self, velocity):
+        self.lever_motor.set_velocity(velocity)
+
+    def set_lever_setpoint(self, setpoint):
+        self.lever_target = setpoint
+        self.time_updated_setpoint = time.time()
+
+    def set_lever_speed(self, speed):
+        self.lever_speed = speed
 
     def run_floating_intake(self, speed):
-        """Run the floating intake motor at a specified speed."""
+        """Run the upper intake motor at a specified speed."""
         self.floating_intake_motor.set(speed)
 
     def stop_floating_intake(self):
-        """Stop the floating intake motor"""
-        self.floating_intake_motor.set(0)
-
-    def run_upper_intake(self, speed):
-        """Run the upper intake motor at a specified speed."""
-        self.upper_intake_motor.set(speed)
-
-    def stop_upper_intake(self):
         """Stop the upper intake motor"""
-        self.upper_intake_motor.set(0)
-
-    def run_hood(self, speed):
-        """Run the hood motor at a specified speed."""
-        self.hood_motor.set(speed)
-
-    def stop_hood(self):
-        """Stop the hood motor."""
-        self.hood_motor.set(0)
-
-    def run_intake(self, speed):
-        """Run the full intake motor at a specified speed."""
-        self.run_upper_intake(speed)
-        self.run_floating_intake(speed)
-        self.run_hood(speed)
-
-    def stop_intake(self):
-        """Stop the full intake"""
-        self.run_upper_intake(0)
-        self.run_floating_intake(0)
-        self.run_hood(0)
+        self.floating_intake_motor.set(0)
 
     def raise_intake(self):
         """Raise the intake piston."""
-        self.piston.set(False)
+        self.raise_piston.set(True)
 
     def lower_intake(self):
         """Lower the intake piston."""
-        self.piston.set(True)
+        self.raise_piston.set(False)
 
     def toggle_intake_piston(self):
         """Toggle the intake piston."""
-        self.piston.set(not self.piston.value())
+        self.raise_piston.set(not self.raise_piston.value())
 
-    def flaps_are_stalled(self):
-         # Stall if torque is high and velocity is low
-         torque_threshold = 1  # Adjust as needed
-         velocity_threshold = 10  # Adjust as needed
+    def extend_flap(self):
+        """Raise the intake piston."""
+        self.flap_piston.set(True)
 
-         is_stalled = (
-             self.upper_intake_motor.get() != 0 and
-             self.upper_intake_motor.torque(TorqueUnits.NM) > torque_threshold and
-             abs(self.upper_intake_motor.velocity(PERCENT)) < velocity_threshold
+    def retract_flap(self):
+        """Lower the intake piston."""
+        self.flap_piston.set(False)
+
+    def toggle_flap_piston(self):
+        """Toggle the intake piston."""
+        self.raise_piston.set(not self.flap_piston.value())
+
+    def step_up(self):
+        self.set_lever_setpoint(self.lever_target + self.lever_step_amount)
+
+    def lever_is_stalled(self):
+        # Stall if torque is high and velocity is low
+        torque_threshold = 1  # Adjust as needed
+        velocity_threshold = 10  # Adjust as needed
+
+        is_stalled = (
+             self.lever_motor.get() != 0 and
+             self.lever_motor.torque(TorqueUnits.NM) > torque_threshold and
+             abs(self.lever_motor.velocity(PERCENT)) < velocity_threshold
          )
 
-         current_time = time.time()
-         if not is_stalled:
+        current_time = time.time()
+        if not is_stalled:
             self.last_not_stalled_timestamp = current_time
 
-         # Only report stall if the condition has persisted for at least 0.1s
-         stalled_duration = current_time - self.last_not_stalled_timestamp
-         return is_stalled and stalled_duration > 0.1
+        # Only report stall if the condition has persisted for at least 0.1s
+        stalled_duration = current_time - self.last_not_stalled_timestamp
+        return is_stalled and stalled_duration > 0.1
+
+    def periodic(self):
+        error = self.lever_target - self.lever_motor.position(DEGREES)
+        if MathUtil.is_near(self.lever_target, self.lever_motor.position(DEGREES), 3):
+            self.set_lever_velocity(0)
+        else:
+            self.set_lever_velocity(MathUtil.clamp(self.lever_speed * error * 0.1, -self.lever_speed, self.lever_speed))
+
+        # Check if we should return to lowered setpoint
+        # If we are
+
+        time_since_setpoint_changed = time.time() - self.time_updated_setpoint
+
+        if self.lever_target != 0 and time_since_setpoint_changed > 1:
+            self.set_lever_setpoint(0)
