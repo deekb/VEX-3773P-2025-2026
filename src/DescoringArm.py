@@ -19,6 +19,8 @@ class DescoringArm:
         self.up_down_piston = up_down_piston
         self.up_state = False
         self.out_state = False
+        self.STATES = [self.wing_stow, self.wing_out_and_down, self.wing_out_and_up]
+        self.state_index = 0
 
     def piston_out(self):
         """
@@ -74,15 +76,15 @@ class DescoringArm:
         self.piston_up()
 
     def next_state(self):
-        if not self.out_state:
-            self.wing_out_and_down()
-        elif self.out_state and not self.up_state:
-            self.wing_out_and_up()
+        self.state_index += 1
+        if self.state_index > len(self.STATES) - 1:
+            self.state_index = len(self.STATES) - 1
+        self.STATES[self.state_index]()
 
     def previous_state(self):
-        if self.out_state and not self.up_state:
-            self.wing_stow()
-        elif self.out_state and not self.up_state:
-            self.wing_out_and_down()
+        self.state_index -= 1
+        if self.state_index < 0:
+            self.state_index = 0
+        self.STATES[self.state_index]()
 
 

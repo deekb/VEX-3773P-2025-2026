@@ -30,7 +30,7 @@ from VEXLib.Motor import Motor
 from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import Controller
-from VEXLib.Util import time
+from VEXLib.Util import time, pass_function
 from VEXLib.Util.Buffer import Buffer
 from AutonomousRoutinesOld import Drive, all_routines
 from vex import (
@@ -41,7 +41,7 @@ from vex import (
     DigitalOut,
     TemperatureUnits,
     VoltageUnits,
-    CurrentUnits,
+    CurrentUnits, DEGREES,
 )
 
 SmartPorts = CompetitionSmartPorts
@@ -369,7 +369,7 @@ class Robot(RobotBase):
 
         self.ensure_match_loader_in_size()
 
-        self.intake.periodic()
+        # self.intake.periodic()
 
     def ensure_match_loader_in_size(self):
         if (not self.intake.raise_piston.value()) and self.match_load_helper.piston.value():
@@ -393,10 +393,16 @@ class Robot(RobotBase):
         self.controller.buttonY.pressed(self.intake.toggle_intake_piston)
 
         self.controller.buttonA.pressed(self.descoring_arm.next_state)
-        self.controller.buttonB.pressed(self.descoring_arm.previous_state)
+        self.controller.buttonDown.pressed(self.descoring_arm.previous_state)
 
-        self.controller.buttonL1.pressed(self.intake.step_up)
-        self.controller.buttonL2.pressed(lambda: (self.intake.set_lever_setpoint(120)))
+        # self.controller.buttonL1.pressed(self.intake.step_up)
+        # self.controller.buttonL2.pressed(lambda: (self.intake.set_lever_setpoint(120)))
+
+
+        self.controller.buttonL1.pressed( lambda:  (self.intake.set_lever_velocity(100), self.intake.extend_flap()) )
+        self.controller.buttonL1.released( lambda:( self.intake.move_lever_to_position(0), self.intake.retract_flap()) if not self.controller.buttonL2.pressing() else pass_function())
+        self.controller.buttonL2.pressed(lambda: ( self.intake.set_lever_velocity(50), self.intake.extend_flap()))
+        self.controller.buttonL2.released(  lambda: (self.intake.move_lever_to_position(0), self.intake.retract_flap()) if not self.controller.buttonL1.pressing() else pass_function())
 
         self.controller.buttonLeft.released(self.brain.screen.clear_screen)
 

@@ -1,6 +1,7 @@
 from VEXLib.Math import MathUtil
 from VEXLib.Motor import Motor
 from VEXLib.Util import time
+from Constants import IntakeConstants
 from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread, FORWARD, HOLD, COAST, DEGREES
 
 
@@ -14,9 +15,16 @@ class Intake:
         self.lever_speed = 0
         self.time_updated_setpoint = 0
         self.lever_step_amount = 20
+        self.lever_motor.spin(FORWARD)
+        self.set_lever_velocity(0)
 
     def set_lever_velocity(self, velocity):
+        self.lever_motor.spin(FORWARD)
         self.lever_motor.set_velocity(velocity)
+
+    def move_lever_to_position(self, position_deg):
+        self.lever_motor.set_velocity(IntakeConstants.RETURN_SPEED, PERCENT)
+        self.lever_motor.spin_to_position(position_deg, DEGREES)
 
     def set_lever_setpoint(self, setpoint):
         self.lever_target = setpoint
@@ -89,7 +97,7 @@ class Intake:
         # Check if we should return to lowered setpoint
         # If we are
 
-        time_since_setpoint_changed = time.time() - self.time_updated_setpoint
-
-        if self.lever_target != 0 and time_since_setpoint_changed > 1:
-            self.set_lever_setpoint(0)
+        # time_since_setpoint_changed = time.time() - self.time_updated_setpoint
+        #
+        # if self.lever_target != 0 and time_since_setpoint_changed > 1:
+        #     self.set_lever_setpoint(0)

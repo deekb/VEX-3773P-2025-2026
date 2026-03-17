@@ -53,9 +53,9 @@ class CompetitionSmartPorts:
 
     FRONT_LEFT_DRIVETRAIN_MOTOR = Ports.PORT10
     REAR_LOWER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT5
-    REAR_UPPER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT6
+    REAR_UPPER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT14
 
-    FRONT_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT4
+    FRONT_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT12
     REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT20
     REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT1
 
@@ -68,17 +68,20 @@ class CompetitionSmartPorts:
 
 class ThreeWirePorts:
     brain = Brain()
-    RAISE_SOLENOID = brain.three_wire_port.g
+    RAISE_SOLENOID = brain.three_wire_port.h
     MATCH_LOAD_HELPER_SOLENOID = brain.three_wire_port.b
-    DESCORING_ARM_SOLENOID_UP = brain.three_wire_port.c
+    DESCORING_ARM_SOLENOID_UP = brain.three_wire_port.g
     DESCORING_ARM_SOLENOID_OUT = brain.three_wire_port.a
-    HOOD_SOLENOID = brain.three_wire_port.h
+    HOOD_SOLENOID = brain.three_wire_port.c
 
 
 class GearRatios:
     DRIVETRAIN = GearSetting.RATIO_6_1
     LEVER_MOTOR = GearSetting.RATIO_36_1
     FLOATING_INTAKE = GearSetting.RATIO_6_1
+
+class IntakeConstants:
+    RETURN_SPEED = 25
 
 
 class DrivetrainProperties:
