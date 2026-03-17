@@ -68,9 +68,9 @@ class CompetitionSmartPorts:
 
 class ThreeWirePorts:
     brain = Brain()
-    RAISE_SOLENOID = brain.three_wire_port.h
+    RAISE_SOLENOID = brain.three_wire_port.g
     MATCH_LOAD_HELPER_SOLENOID = brain.three_wire_port.b
-    DESCORING_ARM_SOLENOID_UP = brain.three_wire_port.g
+    DESCORING_ARM_SOLENOID_UP = brain.three_wire_port.h
     DESCORING_ARM_SOLENOID_OUT = brain.three_wire_port.a
     HOOD_SOLENOID = brain.three_wire_port.c
 

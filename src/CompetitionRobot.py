@@ -102,8 +102,8 @@ class Robot(RobotBase):
         self.intake = Intake(
             Motor(SmartPorts.LEVER_MOTOR, GearRatios.LEVER_MOTOR, True),
             Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.FLOATING_INTAKE, False),
-            DigitalOut(ThreeWirePorts.RAISE_SOLENOID),
             DigitalOut(ThreeWirePorts.HOOD_SOLENOID),
+            DigitalOut(ThreeWirePorts.RAISE_SOLENOID),
         )
 
         self.match_load_helper = MatchLoadHelper(
