@@ -1,8 +1,7 @@
-from VEXLib.Algorithms.PID import PIDController
 from VEXLib.Geometry.Translation2d import Translation2d
-from VEXLib.Util.time import wait_until_not
-from shelve import Shelf
+from VEXLib.Util.time import wait_until_not, time
 from VEXLib.Util.Logging import Logger, NoLogger
+from VEXLib.Util.Shelf import Shelf
 from DescoringArm import DescoringArm
 from Constants import *
 from Intake import Intake
@@ -32,7 +31,7 @@ from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import Controller
 from VEXLib.Util import time, pass_function
 from VEXLib.Util.Buffer import Buffer
-from AutonomousRoutinesOld import Drive, all_routines
+from AutonomousRoutines import Drive, all_routines
 from vex import (
     Competition,
     Color,
@@ -181,6 +180,8 @@ class Robot(RobotBase):
 
         self.log_and_print("Selected drive style:", drive_style)
 
+        self.align_robot()
+
         if drive_style == "Colton":
             self.user_preferences = ColtonPreferences
             self.setup_default_bindings()
@@ -190,7 +191,6 @@ class Robot(RobotBase):
 
         self.log_and_print("Set up user preferences:", drive_style)
 
-        self.align_robot()
         robot_log.info("Setup complete")
         robot_log.debug("Unlocking setup lock")
 
@@ -336,7 +336,7 @@ class Robot(RobotBase):
 
     def driver_control_periodic(self):
         self.log_telemetry()
-        if self.controller.buttonLeft.pressing():
+        if self.controller.buttonDown.pressing():
             i = int(self.iteration_count / 1) % 94
             self.brain.screen.draw_image_from_file("assets/output_frame_" + ("0" * (4 - len(str(i))) + str(i)) + "-fs8.png", 0, 0)
         left_speed, right_speed = self.controller.get_wheel_speeds(self.user_preferences.CONTROL_STYLE)
@@ -387,30 +387,34 @@ class Robot(RobotBase):
         self.controller.buttonR2.pressed(lambda: (self.intake.run_floating_intake(-1.0)))
         self.controller.buttonR2.released(self.intake.stop_floating_intake)
 
-        self.controller.buttonB.pressed(self.match_load_helper.extend)
-        self.controller.buttonB.released(self.match_load_helper.retract)
+        self.controller.buttonLeft.pressed(self.match_load_helper.extend)
+        self.controller.buttonLeft.released(self.match_load_helper.retract)
 
         self.controller.buttonY.pressed(self.intake.toggle_intake_piston)
+        #
+        # self.controller.buttonA.pressed(self.descoring_arm.next_state)
+        # self.controller.buttonDown.pressed(self.descoring_arm.previous_state)
 
-        self.controller.buttonA.pressed(self.descoring_arm.next_state)
-        self.controller.buttonDown.pressed(self.descoring_arm.previous_state)
+        self.controller.buttonB.pressed(self.descoring_arm.toggle_up)
+        self.controller.buttonA.pressed(self.descoring_arm.toggle_stow)
 
         # self.controller.buttonL1.pressed(self.intake.step_up)
         # self.controller.buttonL2.pressed(lambda: (self.intake.set_lever_setpoint(120)))
 
 
-        self.controller.buttonL1.pressed( lambda:  (self.intake.set_lever_velocity(100), self.intake.extend_flap()) )
-        self.controller.buttonL1.released( lambda:( self.intake.move_lever_to_position(0), self.intake.retract_flap()) if not self.controller.buttonL2.pressing() else pass_function())
-        self.controller.buttonL2.pressed(lambda: ( self.intake.set_lever_velocity(50), self.intake.extend_flap()))
-        self.controller.buttonL2.released(  lambda: (self.intake.move_lever_to_position(0), self.intake.retract_flap()) if not self.controller.buttonL1.pressing() else pass_function())
+        self.controller.buttonL1.pressed( lambda:  (self.intake.set_lever_velocity(100), self.intake.extend_flap(), self.intake.run_floating_intake(1.0)))
+        self.controller.buttonL1.released( lambda:( self.intake.move_lever_to_position(0), self.intake.retract_flap(), self.intake.stop_floating_intake()) if not self.controller.buttonL2.pressing() else pass_function())
+        self.controller.buttonL2.pressed(lambda: ( self.intake.set_lever_velocity(35), self.intake.extend_flap(), self.intake.run_floating_intake(1.0)))
+        self.controller.buttonL2.released(  lambda: (self.intake.move_lever_to_position(0), self.intake.retract_flap(), self.intake.stop_floating_intake()) if not self.controller.buttonL1.pressing() else pass_function())
 
-        self.controller.buttonLeft.released(self.brain.screen.clear_screen)
+        self.controller.buttonDown.released(lambda: (time.sleep_ms(5), self.brain.screen.clear_screen))
 
     @robot_log.logged
     def setup_debug_bindings(self):
         robot_log.info("Setting up debug controller bindings")
         self.setup_default_bindings()
         self.controller.buttonX.pressed(self.drivetrain.verify_speed_pid)
+        self.controller.buttonA.pressed(lambda: self.drivetrain.measure_properties(True))
         self.controller.buttonUp.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(0)))
         self.controller.buttonLeft.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(90)))
         self.controller.buttonDown.pressed(lambda: self.drivetrain.turn_to(Rotation2d.from_degrees(180)))

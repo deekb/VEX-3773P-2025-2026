@@ -9,7 +9,7 @@ from TankDrivetrainOld import TimeBasedCommand
 from vex import Color
 
 if False:
-    from CompetitionRobotOld import Robot
+    from CompetitionRobot import Robot
 
 autonomous_log = Logger("logs/Autonomous")
 
@@ -78,7 +78,7 @@ class Drive(AutonomousRoutine):
         return Rotation2d.from_degrees(180)
 
     def execute(self):
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(3), 180)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(35), 180)
 
 
 
@@ -679,4 +679,4 @@ class ColorTest(AutonomousRoutine):
 
 
 
-all_routines = [Right7Long, Left7Long, SketchyWorldsWinPoint, Left2Mid5Long, Right4Long, Left4Long, Skills, Drive, LocalWinPoint]
+all_routines = [Drive, Skills]

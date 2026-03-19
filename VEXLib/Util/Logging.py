@@ -168,7 +168,7 @@ class Logger:
 
 
 class TimeSeriesLogger:
-    def __init__(self, filename, fieldnames=None):
+    def __init__(self, filename, fieldnames=None, force_overwrite=False):
         """
         Initialize the logger with a file name and an optional list of fieldnames.
         If no fieldnames are provided, the class will try to infer them from the data.
@@ -178,7 +178,7 @@ class TimeSeriesLogger:
         """
         self.filename = filename
         self.fieldnames = fieldnames
-        self._initialize_csv(False)
+        self._initialize_csv(force_overwrite)
 
     def _initialize_csv(self, force_overwrite):
         """Initialize the CSV file by writing the header if the file doesn't already exist."""

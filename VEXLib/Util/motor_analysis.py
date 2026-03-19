@@ -17,7 +17,8 @@ def collect_power_relationship_data(filename, motor_list: list[Motor], power_ran
          "speed",
          "torque",
          "efficiency",
-         "output_power"]
+         "output_power"],
+        force_overwrite=True
     )
 
     for motor in motor_list:

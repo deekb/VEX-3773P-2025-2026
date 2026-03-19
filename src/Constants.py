@@ -27,8 +27,8 @@ class DefaultPreferences:
     TURN_SPEED = 1.0
     DO_TURN_DECAY = False
     USE_PIDF_CONTROL = False
-    PIDF_GAINS_LEFT_DRIVER = PIDFGains(0.04, 0, 0, 0.6)
-    PIDF_GAINS_RIGHT_DRIVER = PIDFGains(0.04, 0, 0, 0.6)
+    PIDF_GAINS_LEFT_DRIVER = PIDFGains(0.05, 0, 0, 0.6)
+    PIDF_GAINS_RIGHT_DRIVER = PIDFGains(0.05, 0, 0, 0.6)
 
     PIDF_GAINS_LEFT_AUTO = PIDFGains(0.45, 0.1, 0, 0.7)
     PIDF_GAINS_RIGHT_AUTO = PIDFGains(0.45, 0.1, 0, 0.7)
@@ -46,6 +46,7 @@ class DebugPreferences(DefaultPreferences):
     CUBIC_FILTER_LINEARITY = 1
     USE_PIDF_CONTROL = True
     INPUT_DEBUG_MODE = True
+    ENABLE_DRIVING = False
 
 
 class CompetitionSmartPorts:
@@ -55,7 +56,7 @@ class CompetitionSmartPorts:
     REAR_LOWER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT5
     REAR_UPPER_LEFT_DRIVETRAIN_MOTOR = Ports.PORT14
 
-    FRONT_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT12
+    FRONT_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT15
     REAR_LOWER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT20
     REAR_UPPER_RIGHT_DRIVETRAIN_MOTOR = Ports.PORT1
 
@@ -85,7 +86,7 @@ class IntakeConstants:
 
 
 class DrivetrainProperties:
-    POSITION_PID_GAINS = PIDGains(6, 0.6, 0)
+    POSITION_PID_GAINS = PIDGains(1.4, 0.0, 0.0)
     ROTATION_PID_GAINS = PIDGains(0.62, 0.0, 0.01)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
@@ -95,8 +96,8 @@ class DrivetrainProperties:
     TURNING_THRESHOLD = Rotation2d.from_degrees(0.5)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
     MOVEMENT_MAX_EXTRA_TIME = 0.5
-    MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(1.77)
-    MOTOR_TO_WHEEL_GEAR_RATIO = 36 / 60
+    MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(2.0) # TODO: CHECK
+    MOTOR_TO_WHEEL_GEAR_RATIO = 36 / 48
     WHEEL_DIAMETER = Distance.from_inches(3.233)
     WHEEL_CIRCUMFERENCE = circle_circumference(WHEEL_DIAMETER / 2)
-    TRACK_WIDTH = Distance.from_meters(0.308) # Actual 0.308
+    TRACK_WIDTH = Distance.from_meters(0.254)

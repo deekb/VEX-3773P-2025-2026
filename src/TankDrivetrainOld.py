@@ -1,8 +1,9 @@
 import json
 import math
 
+import VEXLib
 import VEXLib.Math.MathUtil as MathUtil
-from ConstantsOld import DrivetrainProperties, NO_LOGGING, DefaultPreferences, CompetitionSmartPorts
+from Constants import DrivetrainProperties, NO_LOGGING, DefaultPreferences, CompetitionSmartPorts
 from VEXLib.Util.Logging import NoLogger
 from VEXLib.Algorithms.LinearRegressor import LinearRegressor
 from VEXLib.Algorithms.PID import PIDController
@@ -698,16 +699,26 @@ class Drivetrain:
         self.odometry.pose = Pose2d()
         self.odometry.inertial_sensor.reset_rotation()
 
-    def measure_properties(self):
+    def measure_properties(self, each_motor=False):
         self.log.trace("Entering measure_properties")
         self.log.info("Measuring drivetrain properties...")
-        collect_power_relationship_data(
-            "logs/left_drivetrain.csv", self.left_motors
-        )
-        self.log.info("Measured left drivetrain properties...")
-        collect_power_relationship_data(
-            "logs/right_drivetrain.csv", self.right_motors
-        )
+        if each_motor:
+            for i, motor in VEXLib.Util.enumerate(self.left_motors):
+                collect_power_relationship_data(
+                    "logs/left_{}_drivetrain.csv".format(i), [self.left_motors[i]]
+                )
+            for i, motor in VEXLib.Util.enumerate(self.right_motors):
+                collect_power_relationship_data(
+                    "logs/right_{}_drivetrain.csv".format(i), [self.right_motors[i]]
+                )
+        else:
+            collect_power_relationship_data(
+                "logs/left_drivetrain.csv", self.left_motors
+            )
+            self.log.info("Measured left drivetrain properties...")
+            collect_power_relationship_data(
+                "logs/right_drivetrain.csv", self.right_motors
+            )
         self.log.info("Measured right drivetrain properties...")
 
     def debug(self, imperial=False):

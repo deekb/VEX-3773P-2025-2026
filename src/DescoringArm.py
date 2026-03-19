@@ -63,6 +63,20 @@ class DescoringArm:
         self.up_down_piston.set(self.up_state)
 
 
+    def toggle_stow(self):
+        if self.out_state:
+            self.wing_stow()
+        else:
+            self.wing_out_and_down()
+
+    def toggle_up(self):
+        if not self.out_state:
+            self.wing_out_and_down()
+        elif self.up_state:
+            self.wing_out_and_down()
+        else:
+            self.wing_out_and_up()
+
     def wing_stow(self):
         self.piston_in()
         self.piston_down()
