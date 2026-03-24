@@ -1,9 +1,9 @@
 from VEXLib.Algorithms.PID import PIDController
 from VEXLib.Geometry.Translation2d import Translation2d
 from VEXLib.Util.time import wait_until, wait_until_not
-from shelve import Shelf
+from VEXLib.Util.Shelf import Shelf
 from VEXLib.Util.Logging import Logger, NoLogger
-from DescoringArm import DescoringArm
+from DescoringArmOld import DescoringArm
 from ConstantsOld import *
 
 # This gets done first so any loggers that are created during imports use the updated index
@@ -23,8 +23,7 @@ import math
 import sys
 
 import VEXLib.Math.MathUtil as MathUtil
-from JoystickCalibration import normalize_joystick_input
-from MatchLoadHelper import MatchLoadHelper
+from MatchLoadHelperOld import MatchLoadHelper
 from MidgoalHoodActuator import MidgoalHoodActuator
 from VEXLib.Geometry.GeometryUtil import hypotenuse
 from TankDrivetrainOld import Drivetrain
@@ -101,7 +100,7 @@ class Robot(RobotBase):
 
         self.driver_rotation_pid = PIDController(PIDGains(3, 0, 0))
 
-        self.intake = IntakeV2(
+        self.intake = IntakeOld(
             Motor(SmartPorts.UPPER_INTAKE_MOTOR, GearRatios.UPPER_INTAKE, False),
             Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.UPPER_INTAKE, True),
             Motor(SmartPorts.HOOD_MOTOR, GearRatios.HOOD, False),
@@ -413,7 +412,7 @@ class Robot(RobotBase):
         self.drivetrain.update_odometry()
         left_stick_x = self.controller.left_stick_x()
         left_stick_y = self.controller.left_stick_y()
-        left_stick_x_processed, left_stick_y_processed = normalize_joystick_input(left_stick_x, left_stick_y)
+        left_stick_x_processed, left_stick_y_processed = left_stick_x, left_stick_y
 
         if hypotenuse(left_stick_x_processed, left_stick_y_processed) > 1:
             angle = math.atan2(left_stick_y_processed, left_stick_x_processed)

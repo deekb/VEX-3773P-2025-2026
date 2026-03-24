@@ -26,6 +26,10 @@ class Intake:
         self.lever_motor.set_velocity(IntakeConstants.RETURN_SPEED, PERCENT)
         self.lever_motor.spin_to_position(position_deg, DEGREES)
 
+    def move_lever_down(self):
+        self.set_lever_speed(100)
+        self.set_lever_setpoint(0)
+
     def set_lever_setpoint(self, setpoint):
         self.lever_target = setpoint
         self.time_updated_setpoint = time.time()
@@ -33,7 +37,7 @@ class Intake:
     def set_lever_speed(self, speed):
         self.lever_speed = speed
 
-    def run_floating_intake(self, speed):
+    def run_floating_intake(self, speed = 1):
         """Run the upper intake motor at a specified speed."""
         self.floating_intake_motor.set(speed)
 
