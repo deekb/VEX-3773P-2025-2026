@@ -5,7 +5,7 @@ from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Sensors.Controller import ControlStyles
 from vex import Ports, GearSetting, Brain
 
-NO_LOGGING = False
+NO_LOGGING = True
 
 class PIDGains:
     def __init__(self, kp, ki, kd):
@@ -87,12 +87,12 @@ class IntakeConstants:
 
 class DrivetrainProperties:
     POSITION_PID_GAINS = PIDGains(6, 0.6, 0.0)
-    ROTATION_PID_GAINS = PIDGains(0.62, 0.0, 0.01)
+    ROTATION_PID_GAINS = PIDGains(0.3, 0.0, 0.02)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     STARTUP_ANGLE = Rotation2d.from_degrees(180)
     TURN_TIMEOUT_SECONDS = 1
-    TURN_CORRECTION_SCALAR_WHILE_MOVING = 1
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 2.5
     TURNING_THRESHOLD = Rotation2d.from_degrees(0.5)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
     MOVEMENT_MAX_EXTRA_TIME = 0.5

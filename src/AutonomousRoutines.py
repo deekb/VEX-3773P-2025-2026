@@ -43,6 +43,9 @@ class AutonomousRoutine:
     def set_acceleration_factor(self, factor):
         self.robot.drivetrain.acceleration_scalar = factor
 
+    def set_speed_factor(self, factor):
+        self.robot.drivetrain.velocity_scalar = factor
+
     def run_intake_and_raise_descorer(self, speed):
         self.robot.intake.run_intake(speed)
         self.robot.descoring_arm.extend()
@@ -92,44 +95,31 @@ class Right4Long(AutonomousRoutine):
         return Rotation2d.from_degrees(-90)
 
     def execute(self):
-        self.set_acceleration_factor(1.2)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(25), -90, max_extra_time=0)
-        self.set_acceleration_factor(1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(31.5), -90, max_extra_time=0)
         self.robot.match_load_helper.extend()
-        # time.sleep(0.5)
-        self.set_acceleration_factor(0.5)
-        self.robot.drivetrain.arc_movement(arc_angle=Rotation2d.from_degrees(90),
-                                           arc_radius=Translation1d.from_inches(9),
-                                           direction="CW",
-                                           start_direction_degrees=-90,
-                                           turn_first=False,
-                                           max_extra_time = 5)
-        self.set_acceleration_factor(1)
         self.robot.intake.run_floating_intake(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(7), 180, turn_first=False)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(10), 180)
 
         # Pick up #1 from match loader
-        self.robot.drivetrain.set_powers(0.1, 0.1)
-        time.sleep(0.05)
-        self.set_acceleration_factor(1.2)
+        time.sleep(0.1)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-32), 180, max_extra_time=0, turn_first=False)
         self.robot.match_load_helper.retract()
-        # self.robot.drivetrain.set_powers(-0.1, -0.1)
+
 
         self.robot.intake.extend_flap()
-        self.robot.intake.move_lever_to_position(120)
+        self.robot.intake.set_lever_velocity(100)
+        time.sleep(0.5)
         self.robot.intake.retract_flap()
-        self.robot.intake.move_lever_down()
-        # self.robot.descoring_arm.extend()
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 180, turn_first=False)
-        # self.robot.drivetrain.arc_movement(arc_angle=Rotation2d.from_degrees(-45),
-        #                                    arc_radius=Translation1d.from_inches(29),
-        #                                    direction="CCW",
-        #                                    start_direction_degrees=-135,
-        #                                    commands=[TimeBasedCommand(-0.2, self.robot.descoring_arm.retract)])
-        # # time.sleep(4)
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-9), 180, turn_first=False)
-        # #TODO: ANGRY PID HOLD
+        self.robot.intake.move_lever_to_position(0)
+        self.robot.descoring_arm.wing_out_and_down()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 180, turn_first=False)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-15), 125)
+        self.set_speed_factor(0.4)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-28), 180)
+        self.robot.drivetrain.set_speed(Velocity1d.from_zero(), Velocity1d.from_zero())
+        while True:
+            self.robot.drivetrain.update_powers()
+
 
 class Left4Long(AutonomousRoutine):
     name = "Left 4 Long" #Add Hook
@@ -141,42 +131,29 @@ class Left4Long(AutonomousRoutine):
         return Rotation2d.from_degrees(90)
 
     def execute(self):
-
-        self.set_acceleration_factor(1.2)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(21), 90, max_extra_time=0)
-        self.set_acceleration_factor(1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(31.5), 90, max_extra_time=0)
         self.robot.match_load_helper.extend()
-        # time.sleep(0.5)
-        self.robot.drivetrain.arc_movement(arc_angle=Rotation2d.from_degrees(90),
-                                           arc_radius=Translation1d.from_inches(9),
-                                           direction="CCW",
-                                           start_direction_degrees=90,
-                                           turn_first=False)
-        self.robot.intake.pickup()
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(7), 180, turn_first=False)
+        self.robot.intake.run_floating_intake(1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(10), 180)
 
         # Pick up #1 from match loader
-        self.robot.drivetrain.set_powers(0.1, 0.1)
-        time.sleep(0.05)
-        self.set_acceleration_factor(1.2)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-32), 180, max_extra_time=0, turn_first=False, commands=[TimeBasedCommand(0.1, self.robot.intake.stop_upper_intake), TimeBasedCommand(-0.5, lambda: self.robot.intake.run_hood(1)), TimeBasedCommand(-0.5, lambda: self.robot.intake.run_upper_intake(1))])
+        time.sleep(0.1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-32), 180, max_extra_time=0, turn_first=False)
         self.robot.match_load_helper.retract()
-        # self.robot.drivetrain.set_powers(-0.1, -0.1)
 
-        self.robot.intake.run_hood(1)
-        time.sleep(1)
-        self.robot.descoring_arm.extend()
-        self.robot.intake.run_hood(0)
+
+        self.robot.intake.extend_flap()
+        self.robot.intake.set_lever_velocity(100)
+        time.sleep(0.5)
+        self.robot.intake.retract_flap()
+        self.robot.intake.move_lever_to_position(0)
+        self.robot.descoring_arm.wing_out_and_down()
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 180, turn_first=False)
-        self.robot.drivetrain.arc_movement(arc_angle=Rotation2d.from_degrees(-45),
-                                           arc_radius=Translation1d.from_inches(35),
-                                           direction="CCW",
-                                           start_direction_degrees=-135,
-                                           commands=[TimeBasedCommand(-0.2, self.robot.descoring_arm.retract)])
-        # time.sleep(4)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-9), 180, turn_first=False)
-        #TODO: ANGRY PID HOLD
-
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-15), 125)
+        self.set_speed_factor(0.4)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-28), 180)
+        while True:
+            self.robot.drivetrain.update_powers()
 
 class Right7Long(AutonomousRoutine):
     name = "Right 7 Long"
@@ -188,48 +165,29 @@ class Right7Long(AutonomousRoutine):
         return Rotation2d.from_degrees(-9)
 
     def execute(self):
-        #TODO: TEST
-        self.set_acceleration_factor(1.2)
-        self.robot.descoring_arm.extend()
         self.robot.intake.run_floating_intake(1)
-        self.robot.intake.run_upper_intake(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(36), -9, commands=[TimeBasedCommand(-0.375, lambda: self.robot.match_load_helper.extend())])
+        self.set_acceleration_factor(0.8)
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), -9, commands=[TimeBasedCommand(-0.5, self.robot.match_load_helper.extend)])
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), -9, commands=[TimeBasedCommand(-0, self.robot.match_load_helper.extend)])
+        self.set_acceleration_factor(1)
 
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(21), -9)
-        # self.set_acceleration_factor(0.8)
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), -9)
-        # self.set_acceleration_factor(1.2)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(32), -135)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), -135)
         self.robot.match_load_helper.extend()
-        # self.set_acceleration_factor(1)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(21), -180, max_extra_time=0)
-        self.robot.drivetrain.set_powers(0.1, 0.1)
-        # self.shake(3)
-        # time.sleep(1)
-        # self.robot.match_load_helper.retract()
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-33), -180, max_extra_time=0, commands=[TimeBasedCommand(-0.4, lambda: self.robot.intake.run_hood(1))])
-        # self.robot.intake.run_hood(1)
-        time.sleep(1.5)
-        self.robot.intake.stop_intake()
-        #
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 180)
-        # self.robot.descoring_arm.retract()
-        # self.robot.match_load_helper.retract()
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-14), -135)
-        # # self.set_acceleration_factor(1.2)
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-25), 180)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-32), -185, max_extra_time=0)
 
-        self.robot.descoring_arm.extend()
-        self.robot.intake.run_hood(0)
+        self.robot.intake.extend_flap()
+        self.robot.intake.set_lever_velocity(30)
+        time.sleep(0.7)
+        self.robot.intake.retract_flap()
+        self.robot.intake.move_lever_to_position(0)
+        self.robot.descoring_arm.wing_out_and_down()
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 180, turn_first=False)
-        self.robot.drivetrain.arc_movement(arc_angle=Rotation2d.from_degrees(-45),
-                                           arc_radius=Translation1d.from_inches(35),
-                                           direction="CCW",
-                                           start_direction_degrees=-135,
-                                           commands=[TimeBasedCommand(-0.5, self.robot.descoring_arm.retract)])
-        # time.sleep(4)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-9), 180, turn_first=False)
-        #TODO: ANGRY PID HOLD
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-15), 125)
+        self.set_speed_factor(0.4)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-28), 180)
+        while True:
+            self.robot.drivetrain.update_powers()
 
 
 class Left7Long(AutonomousRoutine):
@@ -683,4 +641,4 @@ class ColorTest(AutonomousRoutine):
 
 
 
-all_routines = [Right4Long, Drive, Skills]
+all_routines = [Right7Long, Left4Long, Right4Long, Drive, Skills]

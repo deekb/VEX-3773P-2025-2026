@@ -74,6 +74,10 @@ class Velocity1d:
         return self.__str__()
 
     @classmethod
+    def from_zero(cls):
+        return cls(0)
+
+    @classmethod
     def from_meters_per_second(cls, x_meters_per_second):
         return cls(x_meters_per_second)
 

@@ -95,7 +95,7 @@ class Drivetrain:
             DrivetrainProperties.POSITION_PID_GAINS, 0.075, 10
         )
         self.rotation_PID = PIDController(
-            DrivetrainProperties.ROTATION_PID_GAINS, 0.075, 10
+            DrivetrainProperties.ROTATION_PID_GAINS, 0.0075, 10
         )
         self.log.debug("Position and Rotation PID Controllers initialized with gains")
 
