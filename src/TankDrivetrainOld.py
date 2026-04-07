@@ -57,6 +57,7 @@ class Drivetrain:
             left_motors: list[Motor],
             right_motors: list[Motor],
             inertial_sensor,
+            vision,
     ):
         self.log = drivetrain_log
         self.debug_log = debug_log
@@ -67,6 +68,8 @@ class Drivetrain:
 
         self.left_distance = Distance(SmartPorts.LEFT_DISTANCE)
         self.right_distance = Distance(SmartPorts.RIGHT_DISTANCE)
+
+        self.vision = vision
 
         self.odometry = TankOdometry(
             inertial_sensor,
@@ -680,6 +683,16 @@ class Drivetrain:
             if self.get_distance_from_object() <= distance:
                 break
 
+    def back_up_to_goal(self, speed):
+        start_time = time.time
+        while True:
+            amount = self.vision.get_adjustment_amount()
+            left = speed - amount
+            right = speed + amount
+            self.set_speed_zero_to_one(left, right)
+            self.update_powers()
+            if time.time() - start_time < 1:
+                break
 
 
     def update_zero_pose(self, new_zero_pose):

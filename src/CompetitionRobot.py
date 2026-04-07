@@ -5,6 +5,7 @@ from VEXLib.Util.Shelf import Shelf
 from DescoringArm import DescoringArm
 from Constants import *
 from Intake import Intake
+from Vision import Vision
 
 # This gets done first so any loggers that are created during imports use the updated index
 startup_count = Shelf("logs/startup_count.csv")
@@ -94,6 +95,8 @@ class Robot(RobotBase):
                 ),
             ],
             Inertial(SmartPorts.INERTIAL_SENSOR),
+
+            Vision(SmartPorts.VISION_SENSOR)
         )
 
         self.calibrate_sensors()

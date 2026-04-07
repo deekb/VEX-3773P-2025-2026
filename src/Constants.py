@@ -66,6 +66,7 @@ class CompetitionSmartPorts:
     INERTIAL_SENSOR = Ports.PORT2
     LEFT_DISTANCE = Ports.PORT8
     RIGHT_DISTANCE = Ports.PORT11
+    VISION_SENSOR = Ports.PORT3
 
 class ThreeWirePorts:
     brain = Brain()
