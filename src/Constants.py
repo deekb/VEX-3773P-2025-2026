@@ -3,7 +3,7 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance
 from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Sensors.Controller import ControlStyles
-from vex import Ports, GearSetting, Brain
+from vex import Ports, GearSetting, Brain, Colordesc
 
 NO_LOGGING = True
 
@@ -68,6 +68,8 @@ class CompetitionSmartPorts:
     RIGHT_DISTANCE = Ports.PORT11
     VISION_SENSOR = Ports.PORT3
 
+    OPTICAL_SENSOR = Ports.PORT4
+
 class ThreeWirePorts:
     brain = Brain()
     RAISE_SOLENOID = brain.three_wire_port.g
@@ -93,7 +95,7 @@ class DrivetrainProperties:
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     STARTUP_ANGLE = Rotation2d.from_degrees(180)
     TURN_TIMEOUT_SECONDS = 1
-    TURN_CORRECTION_SCALAR_WHILE_MOVING = 2.5
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 1.8
     TURNING_THRESHOLD = Rotation2d.from_degrees(0.5)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
     MOVEMENT_MAX_EXTRA_TIME = 0.5
@@ -102,3 +104,6 @@ class DrivetrainProperties:
     WHEEL_DIAMETER = Distance.from_inches(3.233)
     WHEEL_CIRCUMFERENCE = circle_circumference(WHEEL_DIAMETER / 2)
     TRACK_WIDTH = Distance.from_meters(0.25)
+
+    LONG_GOAL_COLOR_DESC = Colordesc(1, 129, 66, 35, 12, 0.2)
+

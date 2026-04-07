@@ -155,37 +155,45 @@ class Left4Long(AutonomousRoutine):
         while True:
             self.robot.drivetrain.update_powers()
 
-class Right7Long(AutonomousRoutine):
-    name = "Right 7 Long"
+class Right6Long(AutonomousRoutine):
+    name = "Right 6 Long"
     def __init__(self, robot: Robot):
         super().__init__(robot)
 
     @staticmethod
     def startup_angle():
-        return Rotation2d.from_degrees(-9)
+        return Rotation2d.from_degrees(-12.5)
 
     def execute(self):
         self.robot.intake.run_floating_intake(1)
-        self.set_acceleration_factor(0.8)
-        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), -9, commands=[TimeBasedCommand(-0.5, self.robot.match_load_helper.extend)])
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), -9, commands=[TimeBasedCommand(-0, self.robot.match_load_helper.extend)])
+        self.set_acceleration_factor(0.6)
+        self.set_speed_factor(0.6)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(21), -12.5)
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(5), -12.5)
         self.set_acceleration_factor(1)
 
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), -135)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(30), -120)
         self.robot.match_load_helper.extend()
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(21), -180, max_extra_time=0)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-32), -185, max_extra_time=0)
+        # Picking up
+        self.robot.drivetrain.set_powers(0.3, 0.3)
+        self.robot.intake.intake_until_color(bad_color(self.robot))
+        self.robot.drivetrain.set_powers(0, 0)
+        self.robot.intake.run_floating_intake(1)
+        self.robot.drivetrain.back_up_to_goal(-0.5)
+        # self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-32), -185, max_extra_time=0, commands=[TimeBasedCommand(0.5, lambda: self.robot.intake.run_floating_intake(1))])
 
         self.robot.intake.extend_flap()
         self.robot.intake.set_lever_velocity(30)
         time.sleep(0.7)
-        self.robot.intake.retract_flap()
-        self.robot.intake.move_lever_to_position(0)
         self.robot.descoring_arm.wing_out_and_down()
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(15), 180, turn_first=False)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-15), 125)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(14), 180, turn_first=False)
+        self.robot.intake.move_lever_to_position(0)
+        self.robot.intake.retract_flap()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-17), 125)
         self.set_speed_factor(0.4)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-28), 180)
+        self.robot.intake.run_floating_intake(-1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-26), 182)
         while True:
             self.robot.drivetrain.update_powers()
 
@@ -651,7 +659,22 @@ class ColorTest(AutonomousRoutine):
         self.robot.intake.run_intake(1)
         self.robot.intake.intake_until_color(bad_color(self.robot))
 
+class Square(AutonomousRoutine):
+    name = "Square"
+    def __init__(self, robot: Robot):
+        super().__init__(robot)
+
+    @staticmethod
+    def startup_angle():
+        return Rotation2d.from_degrees(180)
+
+    def execute(self):
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), 180)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), -90)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), 0)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), 90)
 
 
 
-all_routines = [Right7Long, Left4Long, Right4Long, Left2Mid5Long, Drive, Skills, GoalLineTest]
+
+all_routines = [Right6Long, Left4Long, Right4Long, Left2Mid5Long, Drive, Skills, GoalLineTest]

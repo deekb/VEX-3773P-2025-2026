@@ -684,14 +684,19 @@ class Drivetrain:
                 break
 
     def back_up_to_goal(self, speed):
-        start_time = time.time
+        start_time = time.time()
         while True:
             amount = self.vision.get_adjustment_amount()
-            left = speed - amount
-            right = speed + amount
+            if abs(amount) < 0.1:
+                left = -amount
+                right = amount
+            else:
+                left = speed - amount
+                right = speed + amount
+
             self.set_speed_zero_to_one(left, right)
             self.update_powers()
-            if time.time() - start_time < 1:
+            if time.time() - start_time < 3:
                 break
 
 

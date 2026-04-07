@@ -2,12 +2,13 @@ from VEXLib.Math import MathUtil
 from VEXLib.Motor import Motor
 from VEXLib.Util import time
 from Constants import IntakeConstants
-from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread, FORWARD, HOLD, COAST, DEGREES
+from vex import DigitalOut, TorqueUnits, PERCENT, Color, Optical, Thread, FORWARD, HOLD, COAST, DEGREES, LedStateType
 
 
 class Intake:
-    def __init__(self, lever_motor: Motor, floating_intake_motor: Motor, flap_piston: DigitalOut, raise_piston: DigitalOut):
+    def __init__(self, lever_motor: Motor, floating_intake_motor: Motor, flap_piston: DigitalOut, raise_piston: DigitalOut, optical_sensor: Optical):
         self.lever_motor = lever_motor
+        self.optical_sensor = optical_sensor
         self.floating_intake_motor = floating_intake_motor
         self.flap_piston = flap_piston
         self.raise_piston = raise_piston
@@ -17,6 +18,8 @@ class Intake:
         self.lever_step_amount = 20
         self.lever_motor.spin(FORWARD)
         self.set_lever_velocity(0)
+        self.optical_sensor.set_light(LedStateType.ON)
+        self.optical_sensor.set_light_power(100)
 
     def set_lever_velocity(self, velocity):
         self.lever_motor.spin(FORWARD)
@@ -71,6 +74,12 @@ class Intake:
 
     def step_up(self):
         self.set_lever_setpoint(self.lever_target + self.lever_step_amount)
+
+    def intake_until_color(self, color):
+        self.run_floating_intake(1)
+        while not self.optical_sensor.color() == color:
+            time.sleep_ms(5)
+        self.stop_floating_intake()
 
     def lever_is_stalled(self):
         # Stall if torque is high and velocity is low

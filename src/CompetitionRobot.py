@@ -41,7 +41,7 @@ from vex import (
     DigitalOut,
     TemperatureUnits,
     VoltageUnits,
-    CurrentUnits, DEGREES,
+    CurrentUnits, Optical, AiVision,
 )
 
 SmartPorts = CompetitionSmartPorts
@@ -95,8 +95,7 @@ class Robot(RobotBase):
                 ),
             ],
             Inertial(SmartPorts.INERTIAL_SENSOR),
-
-            Vision(SmartPorts.VISION_SENSOR)
+            Vision(AiVision(SmartPorts.VISION_SENSOR, DrivetrainProperties.LONG_GOAL_COLOR_DESC))
         )
 
         self.calibrate_sensors()
@@ -106,6 +105,7 @@ class Robot(RobotBase):
             Motor(SmartPorts.FLOATING_INTAKE_MOTOR, GearRatios.FLOATING_INTAKE, False),
             DigitalOut(ThreeWirePorts.HOOD_SOLENOID),
             DigitalOut(ThreeWirePorts.RAISE_SOLENOID),
+            Optical(SmartPorts.OPTICAL_SENSOR)
         )
 
         self.match_load_helper = MatchLoadHelper(
