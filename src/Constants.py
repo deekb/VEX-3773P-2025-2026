@@ -86,16 +86,17 @@ class GearRatios:
 
 class IntakeConstants:
     RETURN_SPEED = 25
+    SCORE_POSITION = 120
 
 
 class DrivetrainProperties:
     POSITION_PID_GAINS = PIDGains(6, 0.6, 0.0)
-    ROTATION_PID_GAINS = PIDGains(0.3, 0.0, 0.02)
+    ROTATION_PID_GAINS = PIDGains(0.28, 0.0, 0.02)
 
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     STARTUP_ANGLE = Rotation2d.from_degrees(180)
     TURN_TIMEOUT_SECONDS = 1
-    TURN_CORRECTION_SCALAR_WHILE_MOVING = 1.8
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 1.6
     TURNING_THRESHOLD = Rotation2d.from_degrees(0.5)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
     MOVEMENT_MAX_EXTRA_TIME = 0.5

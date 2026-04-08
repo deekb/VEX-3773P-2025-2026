@@ -25,6 +25,9 @@ class Intake:
         self.lever_motor.spin(FORWARD)
         self.lever_motor.set_velocity(velocity)
 
+    def get_lever_position(self):
+        return self.lever_motor.position(DEGREES)
+
     def move_lever_to_position(self, position_deg):
         self.lever_motor.set_velocity(IntakeConstants.RETURN_SPEED, PERCENT)
         self.lever_motor.spin_to_position(position_deg, DEGREES)
@@ -75,9 +78,10 @@ class Intake:
     def step_up(self):
         self.set_lever_setpoint(self.lever_target + self.lever_step_amount)
 
-    def intake_until_color(self, color):
+    def intake_until_color(self, color, timeout=3):
         self.run_floating_intake(1)
-        while not self.optical_sensor.color() == color:
+        start_time = time.time()
+        while (self.optical_sensor.color() != color) and (time.time() - start_time < timeout):
             time.sleep_ms(5)
         self.stop_floating_intake()
 
