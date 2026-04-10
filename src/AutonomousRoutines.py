@@ -365,29 +365,53 @@ class WorldsWinPoint(AutonomousRoutine):
         self.robot.intake.intake_until_color(bad_color(self.robot), timeout=3)
         self.robot.drivetrain.set_powers(0, 0)
 
-        self.robot.match_load_helper.retract()
+
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-5), 180, turn_first=False)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-29), 180)
 
         # Score
+        self.robot.intake.run_floating_intake(1)
         self.robot.intake.extend_flap()
         self.robot.intake.set_lever_velocity(80)
         self.robot.drivetrain.set_powers(-0.2, -0.2)
 
         start_time = time.time()
+
         while not is_near(self.robot.intake.get_lever_position(), IntakeConstants.SCORE_POSITION, 5) and (time.time() - start_time < 2):
             time.sleep_ms(5)
         self.robot.intake.retract_flap()
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(18), 180)
         self.robot.intake.run_floating_intake(-1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(17), 180)
         Thread(lambda: self.robot.intake.move_lever_to_position(0))
-        # self.robot.intake.run_floating_intake(1)
-        self.set_speed_factor(0.8)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(48), 45, commands= [TimeBasedCommand(0.25, lambda: self.robot.intake.run_floating_intake(1))])
-        self.robot.intake.run_floating_intake(-0.4)
-        self.set_speed_factor(0.2)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-6), 45)
+        self.robot.match_load_helper.retract()
+        self.robot.intake.run_floating_intake(1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), 45)
+        self.robot.intake.run_floating_intake(1)
+        self.set_speed_factor(0.3)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(30), 45)
+        self.robot.intake.run_floating_intake(-0.6)
+        time.sleep_ms(10)
         self.set_speed_factor(1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-14), 45)
+        self.robot.intake.run_floating_intake(1)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), 90)
+        self.set_speed_factor(0.3)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 90)
+        self.set_speed_factor(1)
+        self.robot.intake.lower_intake()
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-25), 135)
+        # Score
+        self.robot.intake.run_floating_intake(1)
+        self.robot.intake.extend_flap()
+        self.robot.intake.set_lever_velocity(80)
+        self.robot.drivetrain.set_powers(-0.2, -0.2)
+
+        start_time = time.time()
+
+        while not is_near(self.robot.intake.get_lever_position(), IntakeConstants.SCORE_POSITION, 5) and (time.time() - start_time < 2):
+            time.sleep_ms(5)
+        self.robot.intake.retract_flap()
+
 
 
 class SketchyWorldsWinPoint(AutonomousRoutine):
