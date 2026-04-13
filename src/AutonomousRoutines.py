@@ -356,61 +356,59 @@ class WorldsWinPoint(AutonomousRoutine):
 
     def execute(self):
         self.robot.match_load_helper.extend()
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(32), -90)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(32), -90, max_extra_time=0)
         self.robot.intake.run_floating_intake(1)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(16), 180)
 
         # Pickup from match loader
         self.robot.drivetrain.set_powers(0.1, 0.1)
-        self.robot.intake.intake_until_color(bad_color(self.robot), timeout=3)
+        self.robot.intake.intake_until_color(bad_color(self.robot), timeout=1)
         self.robot.drivetrain.set_powers(0, 0)
 
 
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-5), 180, turn_first=False)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-5), 180, turn_first=False, dont_stop=True, max_extra_time = 0.0)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-29), 180)
 
         # Score
         self.robot.intake.run_floating_intake(1)
         self.robot.intake.extend_flap()
-        self.robot.intake.set_lever_velocity(80)
+        self.robot.intake.set_lever_velocity(100)
         self.robot.drivetrain.set_powers(-0.2, -0.2)
 
         start_time = time.time()
 
         while not is_near(self.robot.intake.get_lever_position(), IntakeConstants.SCORE_POSITION, 5) and (time.time() - start_time < 2):
             time.sleep_ms(5)
-        self.robot.intake.retract_flap()
         self.robot.intake.run_floating_intake(-1)
+        self.robot.intake.retract_flap()
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(17), 180)
         Thread(lambda: self.robot.intake.move_lever_to_position(0))
         self.robot.match_load_helper.retract()
         self.robot.intake.run_floating_intake(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), 45)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(24), 45, dont_stop=True, max_extra_time = 0.0)
         self.robot.intake.run_floating_intake(1)
-        self.set_speed_factor(0.3)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(30), 45)
-        self.robot.intake.run_floating_intake(-0.6)
-        time.sleep_ms(10)
+        self.set_speed_factor(0.6)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(30), 45, turn_first=False)
+        self.robot.intake.run_floating_intake(-0.8)
         self.set_speed_factor(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-14), 45)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-15), 45)
         self.robot.intake.run_floating_intake(1)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), 90)
-        self.set_speed_factor(0.3)
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 90)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), 90, dont_stop=True, max_extra_time = 0.0)
+        self.set_speed_factor(0.6)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 90, turn_first=False)
         self.set_speed_factor(1)
         self.robot.intake.lower_intake()
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-25), 135)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-16), 135)
         # Score
         self.robot.intake.run_floating_intake(1)
         self.robot.intake.extend_flap()
-        self.robot.intake.set_lever_velocity(80)
+        self.robot.intake.set_lever_velocity(30)
         self.robot.drivetrain.set_powers(-0.2, -0.2)
 
         start_time = time.time()
 
         while not is_near(self.robot.intake.get_lever_position(), IntakeConstants.SCORE_POSITION, 5) and (time.time() - start_time < 2):
             time.sleep_ms(5)
-        self.robot.intake.retract_flap()
 
 
 
