@@ -394,7 +394,7 @@ class WorldsWinPoint(AutonomousRoutine):
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(-15), 45)
         self.robot.intake.run_floating_intake(1)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(33), 90, dont_stop=True, max_extra_time = 0.0)
-        self.set_speed_factor(0.6)
+        self.set_speed_factor(0.5)
         self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(8), 90, turn_first=False)
         self.set_speed_factor(1)
         self.robot.intake.lower_intake()
