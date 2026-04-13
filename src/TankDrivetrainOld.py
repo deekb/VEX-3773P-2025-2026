@@ -499,6 +499,7 @@ class Drivetrain:
             commands=None,
             max_extra_time=DrivetrainProperties.MOVEMENT_MAX_EXTRA_TIME,
             dont_stop=False,
+            end_velocity=None,
     ):
         self.log.trace("Entering move_distance_towards_direction_trap")
         self.log.debug(
@@ -552,6 +553,11 @@ class Drivetrain:
         else:
             left_goal_state = State(left_start_position + distance.to_meters(), 0)
             right_goal_state = State(right_start_position + distance.to_meters(), 0)
+
+        if end_velocity is not None:
+            left_goal_state = State(left_start_position + distance.to_meters(), DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * end_velocity)
+            right_goal_state = State(right_start_position + distance.to_meters(), DrivetrainProperties.MAX_ACHIEVABLE_SPEED.to_meters_per_second() * end_velocity)
+
 
         start_time = time.time()
 
