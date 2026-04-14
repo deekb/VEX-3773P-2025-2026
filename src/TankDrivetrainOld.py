@@ -104,7 +104,7 @@ class Drivetrain:
         self.right_position_pid = PIDController(DrivetrainProperties.POSITION_PID_GAINS, 1e-5, 10)
 
         self.rotation_PID = PIDController(
-            DrivetrainProperties.ROTATION_PID_GAINS, 1e-5, 10
+            DrivetrainProperties.ROTATION_PID_GAINS, Units.milliseconds_to_seconds(10), 10
         )
         self.log.debug("Position and Rotation PID Controllers initialized with gains")
 
@@ -282,11 +282,13 @@ class Drivetrain:
             else:
                 pid_output -= 0.03
 
-            output = MathUtil.clamp(
-                pid_output,
-                -0.6,
-                0.6,
-            )
+            # output = MathUtil.clamp(
+            #     pid_output,
+            #     -0.6,
+            #     0.6,
+            # )
+            output = pid_output
+
             self.set_speed_zero_to_one(output, -output)
             self.update_powers()
             self.update_odometry()
