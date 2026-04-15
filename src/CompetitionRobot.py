@@ -30,6 +30,7 @@ from VEXLib.Motor import Motor
 from VEXLib.Robot.RobotBase import RobotBase
 from VEXLib.Robot.ScrollingScreen import ScrollingScreen
 from VEXLib.Sensors.Controller import Controller
+from VEXLib.Sensors.DualInertial import DualInertial
 from VEXLib.Util import time, pass_function
 from VEXLib.Util.Buffer import Buffer
 from AutonomousRoutines import Drive, all_routines
@@ -94,7 +95,15 @@ class Robot(RobotBase):
                     True,
                 ),
             ],
-            Inertial(SmartPorts.INERTIAL_SENSOR),
+            DualInertial(
+                Inertial(SmartPorts.INERTIAL_SENSOR),
+                Inertial(SmartPorts.INERTIAL_SENSOR_2),
+                on_divergence=lambda a, b, active: self.log_and_print(
+                    "WARNING: Gyro divergence! A={:.1f} B={:.1f}".format(a, b)
+                    if active else
+                    "Gyro re-converged. A={:.1f} B={:.1f}".format(a, b)
+                ),
+            ),
             Vision(AiVision(SmartPorts.VISION_SENSOR, DrivetrainProperties.LONG_GOAL_COLOR_DESC))
         )
 

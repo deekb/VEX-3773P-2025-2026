@@ -64,6 +64,7 @@ class CompetitionSmartPorts:
     LEVER_MOTOR = Ports.PORT21
 
     INERTIAL_SENSOR = Ports.PORT2
+    INERTIAL_SENSOR_2 = Ports.PORT6
     LEFT_DISTANCE = Ports.PORT8
     RIGHT_DISTANCE = Ports.PORT11
     VISION_SENSOR = Ports.PORT3
@@ -96,10 +97,10 @@ class DrivetrainProperties:
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     STARTUP_ANGLE = Rotation2d.from_degrees(180)
     TURN_TIMEOUT_SECONDS = 1.5
-    TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.5
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 1.6
     TURNING_THRESHOLD = Rotation2d.from_degrees(1)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
-    MOVEMENT_MAX_EXTRA_TIME = 1.6
+    MOVEMENT_MAX_EXTRA_TIME = 0.5
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(2.205)
     MOTOR_TO_WHEEL_GEAR_RATIO = 36 / 48
     WHEEL_DIAMETER = Distance.from_inches(3.233)
