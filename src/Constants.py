@@ -96,10 +96,10 @@ class DrivetrainProperties:
     ROBOT_RELATIVE_TO_FIELD_RELATIVE_ROTATION = Rotation2d.from_degrees(90)
     STARTUP_ANGLE = Rotation2d.from_degrees(180)
     TURN_TIMEOUT_SECONDS = 1.5
-    TURN_CORRECTION_SCALAR_WHILE_MOVING = 1.6
+    TURN_CORRECTION_SCALAR_WHILE_MOVING = 0.5
     TURNING_THRESHOLD = Rotation2d.from_degrees(1)
     MOVEMENT_DISTANCE_THRESHOLD = Distance.from_centimeters(1)
-    MOVEMENT_MAX_EXTRA_TIME = 0.5
+    MOVEMENT_MAX_EXTRA_TIME = 1.6
     MAX_ACHIEVABLE_SPEED = Velocity1d.from_meters_per_second(2.205)
     MOTOR_TO_WHEEL_GEAR_RATIO = 36 / 48
     WHEEL_DIAMETER = Distance.from_inches(3.233)
