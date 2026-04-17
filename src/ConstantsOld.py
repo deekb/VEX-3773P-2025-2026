@@ -3,7 +3,7 @@ from VEXLib.Geometry.Rotation2d import Rotation2d
 from VEXLib.Geometry.Translation1d import Distance
 from VEXLib.Geometry.Velocity1d import Velocity1d
 from VEXLib.Sensors.Controller import ControlStyles
-from vex import Ports, GearSetting, Brain
+from vex import Ports, GearSetting, Brain, Colordesc
 
 NO_LOGGING = True
 
@@ -67,6 +67,7 @@ class CompetitionSmartPorts:
     INERTIAL_SENSOR = Ports.PORT7
     LEFT_DISTANCE = Ports.PORT16
     RIGHT_DISTANCE = Ports.PORT17
+    VISION_SENSOR = Ports.PORT3
 
 class ThreeWirePorts:
     brain = Brain()
@@ -99,3 +100,4 @@ class DrivetrainProperties:
     WHEEL_DIAMETER = Distance.from_inches(3.233)
     WHEEL_CIRCUMFERENCE = circle_circumference(WHEEL_DIAMETER / 2)
     TRACK_WIDTH = Distance.from_meters(0.308) # Actual 0.308
+    LONG_GOAL_COLOR_DESC = Colordesc(1, 129, 66, 35, 12, 0.2)

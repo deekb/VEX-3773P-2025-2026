@@ -23,6 +23,7 @@ import math
 import sys
 
 import VEXLib.Math.MathUtil as MathUtil
+from Vision import Vision
 from MatchLoadHelperOld import MatchLoadHelper
 from MidgoalHoodActuator import MidgoalHoodActuator
 from VEXLib.Geometry.GeometryUtil import hypotenuse
@@ -44,7 +45,7 @@ from vex import (
     TemperatureUnits,
     VoltageUnits,
     CurrentUnits,
-    Optical,
+    Optical, AiVision,
 )
 
 SmartPorts = CompetitionSmartPorts
@@ -94,6 +95,8 @@ class Robot(RobotBase):
                 ),
             ],
             Inertial(SmartPorts.INERTIAL_SENSOR),
+
+            Vision(AiVision(SmartPorts.VISION_SENSOR, DrivetrainProperties.LONG_GOAL_COLOR_DESC))
         )
 
         self.calibrate_sensors()

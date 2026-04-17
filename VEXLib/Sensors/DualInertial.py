@@ -23,13 +23,6 @@ class DualInertial:
     def rotation(self, units=DEGREES):
         a = self._a.rotation(units)
         b = self._b.rotation(units)
-        diverging_now = abs(a - b) > self.DIVERGENCE_THRESHOLD
-        if diverging_now != self._diverging:
-            self._diverging = diverging_now
-            if self._on_divergence is not None:
-                self._on_divergence(a, b, diverging_now)
-        if diverging_now:
-            return a
         return (a + b) / 2.0
 
     def calibrate(self):
