@@ -84,7 +84,8 @@ class Drive(AutonomousRoutine):
         return Rotation2d.from_degrees(180)
 
     def execute(self):
-        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(20), 180)
+        time.sleep(10)
+        self.robot.drivetrain.move_distance_towards_direction_trap(Translation1d.from_inches(2), 180)
 
 
 

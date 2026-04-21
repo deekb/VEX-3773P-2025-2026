@@ -381,7 +381,7 @@ class Robot(RobotBase):
 
         self.ensure_match_loader_in_size()
 
-        # self.intake.periodic()
+        self.intake.periodic()
 
     def ensure_match_loader_in_size(self):
         if (not self.intake.raise_piston.value()) and self.match_load_helper.piston.value():
@@ -396,14 +396,14 @@ class Robot(RobotBase):
         self.controller.buttonR1.pressed(lambda: (self.intake.run_floating_intake(1.0)))
         self.controller.buttonR1.released(self.intake.stop_floating_intake)
 
-        self.controller.buttonR2.pressed(lambda: (self.intake.run_floating_intake(-1.0)))
+        self.controller.buttonR2.pressed(lambda: (self.intake.run_floating_intake(-0.6)))
         self.controller.buttonR2.released(self.intake.stop_floating_intake)
 
         self.controller.buttonLeft.pressed(self.match_load_helper.extend)
         self.controller.buttonLeft.released(self.match_load_helper.retract)
 
         self.controller.buttonY.pressed(self.intake.toggle_intake_piston)
-        #
+
         # self.controller.buttonA.pressed(self.descoring_arm.next_state)
         # self.controller.buttonDown.pressed(self.descoring_arm.previous_state)
 
@@ -416,8 +416,9 @@ class Robot(RobotBase):
 
         self.controller.buttonL1.pressed( lambda:  (self.intake.set_lever_velocity(100), self.intake.extend_flap(), self.intake.run_floating_intake(1.0)))
         self.controller.buttonL1.released( lambda:( self.intake.move_lever_to_position(0), self.intake.retract_flap(), self.intake.stop_floating_intake()) if not self.controller.buttonL2.pressing() else pass_function())
-        self.controller.buttonL2.pressed(lambda: ( self.intake.set_lever_velocity(35), self.intake.extend_flap(), self.intake.run_floating_intake(1.0)))
-        self.controller.buttonL2.released(  lambda: (self.intake.move_lever_to_position(0), self.intake.retract_flap(), self.intake.stop_floating_intake()) if not self.controller.buttonL1.pressing() else pass_function())
+
+        self.controller.buttonL2.pressed(lambda: ( self.intake.step_up(), self.intake.extend_flap(), self.intake.run_floating_intake(1.0)))
+        # self.controller.buttonL2.released(lambda: (self.intake.move_lever_to_position(0), self.intake.retract_flap(), self.intake.stop_floating_intake()) if not self.controller.buttonL1.pressing() else pass_function())
 
         self.controller.buttonDown.released(lambda: (time.sleep_ms(5), self.brain.screen.clear_screen))
 

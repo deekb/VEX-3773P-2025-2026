@@ -15,7 +15,7 @@ class Intake:
         self.lever_target = 0
         self.lever_speed = 0
         self.time_updated_setpoint = 0
-        self.lever_step_amount = 20
+        self.lever_step_amount = IntakeConstants.SCORE_POSITION / 6
         self.lever_motor.spin(FORWARD)
         self.set_lever_velocity(0)
         self.optical_sensor.set_light(LedStateType.ON)
@@ -28,9 +28,9 @@ class Intake:
     def get_lever_position(self):
         return self.lever_motor.position(DEGREES)
 
-    def move_lever_to_position(self, position_deg):
+    def move_lever_to_position(self, position_deg, blocking=False):
         self.lever_motor.set_velocity(IntakeConstants.RETURN_SPEED, PERCENT)
-        self.lever_motor.spin_to_position(position_deg, DEGREES)
+        self.lever_motor.spin_to_position(position_deg, DEGREES, blocking)
 
     def move_lever_down(self):
         self.set_lever_speed(100)
@@ -77,6 +77,7 @@ class Intake:
 
     def step_up(self):
         self.set_lever_setpoint(self.lever_target + self.lever_step_amount)
+        self.move_lever_to_position(self.lever_target, False)
 
     def intake_until_color(self, color, timeout=3):
         self.run_floating_intake(1)
@@ -105,16 +106,17 @@ class Intake:
         return is_stalled and stalled_duration > 0.1
 
     def periodic(self):
-        error = self.lever_target - self.lever_motor.position(DEGREES)
-        if MathUtil.is_near(self.lever_target, self.lever_motor.position(DEGREES), 3):
-            self.set_lever_velocity(0)
-        else:
-            self.set_lever_velocity(MathUtil.clamp(self.lever_speed * error * 0.1, -self.lever_speed, self.lever_speed))
+        # error = self.lever_target - self.lever_motor.position(DEGREES)
+        # if MathUtil.is_near(error, 0, 3):
+        #     self.set_lever_velocity(0)
+        # else:
+        #     self.lever_motor.spin(FORWARD)
+        #     self.set_lever_velocity(MathUtil.clamp(self.lever_speed * error * 0.1, -self.lever_speed, self.lever_speed))
 
-        # Check if we should return to lowered setpoint
-        # If we are
+        time_since_setpoint_changed = time.time() - self.time_updated_setpoint
 
-        # time_since_setpoint_changed = time.time() - self.time_updated_setpoint
-        #
-        # if self.lever_target != 0 and time_since_setpoint_changed > 1:
-        #     self.set_lever_setpoint(0)
+        if self.lever_target != 0 and time_since_setpoint_changed > 0.5:
+            self.set_lever_setpoint(0)
+            self.move_lever_to_position(self.lever_target, False)
+            self.retract_flap()
+            self.stop_floating_intake()
